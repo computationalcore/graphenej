@@ -1,0 +1,31 @@
+package com.luminiasoft.bitshares;
+
+import org.bitcoinj.core.ECKey;
+
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+/**
+ * Created by nelson on 11/19/16.
+ */
+public class BrainKey {
+
+    private ECKey mPrivateKey;
+
+    public BrainKey(String words, int sequence){
+        String encoded = String.format("%s %d", words, sequence);
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-512");
+            byte[] bytes = md.digest(encoded.getBytes("UTF-8"));
+            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+            byte[] result = sha256.digest(bytes);
+            System.out.println("hash: "+Util.bytesToHex(result));
+            //TODO: Transform this final result into a ECKey private key (mPrivateKey)
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgotithmException. Msg: "+e.getMessage());
+        } catch (UnsupportedEncodingException e) {
+            System.out.println("UnsupportedEncodingException. Msg: "+e.getMessage());
+        }
+    }
+}
