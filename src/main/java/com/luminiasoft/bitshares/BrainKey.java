@@ -13,19 +13,18 @@ public class BrainKey {
 
     private ECKey mPrivateKey;
 
-    public BrainKey(String words, int sequence){
+    public BrainKey(String words, int sequence) {
         String encoded = String.format("%s %d", words, sequence);
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-512");
             byte[] bytes = md.digest(encoded.getBytes("UTF-8"));
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
             byte[] result = sha256.digest(bytes);
-            System.out.println("hash: "+Util.bytesToHex(result));
-            //TODO: Transform this final result into a ECKey private key (mPrivateKey)
+            mPrivateKey = ECKey.fromPrivate(result);
         } catch (NoSuchAlgorithmException e) {
-            System.out.println("NoSuchAlgotithmException. Msg: "+e.getMessage());
+            System.out.println("NoSuchAlgotithmException. Msg: " + e.getMessage());
         } catch (UnsupportedEncodingException e) {
-            System.out.println("UnsupportedEncodingException. Msg: "+e.getMessage());
+            System.out.println("UnsupportedEncodingException. Msg: " + e.getMessage());
         }
     }
 }
