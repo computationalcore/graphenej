@@ -26,6 +26,7 @@ import java.util.*;
  * Created by nelson on 11/9/16.
  */
 public class Test {
+
     public static final String WITNESS_URL = "ws://api.devling.xyz:8088";
     private Transaction transaction;
 
@@ -33,34 +34,33 @@ public class Test {
         return transaction;
     }
 
-
     private WitnessResponseListener mListener = new WitnessResponseListener() {
 
         @Override
         public void onSuccess(WitnessResponse response) {
-            if(response.result.getClass() == AccountProperties.class){
+            if (response.result.getClass() == AccountProperties.class) {
                 AccountProperties accountProperties = (AccountProperties) response.result;
                 System.out.println("Got account properties");
-                System.out.println("id: "+accountProperties.id);
-            }else if(response.result.getClass() == ArrayList.class){
+                System.out.println("id: " + accountProperties.id);
+            } else if (response.result.getClass() == ArrayList.class) {
                 List l = (List) response.result;
-                if(l.size() > 0){
-                    if(l.get(0).getClass() == AssetAmount.class){
+                if (l.size() > 0) {
+                    if (l.get(0).getClass() == AssetAmount.class) {
                         AssetAmount assetAmount = (AssetAmount) l.get(0);
                         System.out.println("Got fee");
-                        System.out.println("amount: "+assetAmount.getAmount()+", asset id: "+assetAmount.getAsset().getObjectId());
+                        System.out.println("amount: " + assetAmount.getAmount() + ", asset id: " + assetAmount.getAsset().getObjectId());
                     }
-                }else{
+                } else {
                     System.out.println("Got empty list!");
                 }
-            }else{
-                System.out.println("Got other: "+response.result.getClass());
+            } else {
+                System.out.println("Got other: " + response.result.getClass());
             }
         }
 
         @Override
         public void onError(BaseResponse.Error error) {
-            System.out.println("onError. message: "+error.message);
+            System.out.println("onError. message: " + error.message);
         }
     };
 
@@ -115,8 +115,9 @@ public class Test {
                     }
                 }
             }
-            if (recId == -1)
+            if (recId == -1) {
                 throw new RuntimeException("Could not construct a recoverable key. This should never happen.");
+            }
         }
         int headerByte = recId + 27 + (sk.isCompressed() ? 4 : 0);
         byte[] sigData = new byte[65];  // 1 header + 32 bytes for R + 32 bytes for S
@@ -207,7 +208,8 @@ public class Test {
                 }
                 if (baseResponse.id == 2) {
                     String payload = String.format(getDynamicParameters, 3);
-                    Type ApiIdResponse = new TypeToken<WitnessResponse<Integer>>() {}.getType();
+                    Type ApiIdResponse = new TypeToken<WitnessResponse<Integer>>() {
+                    }.getType();
                     WitnessResponse<Integer> witnessResponse = gson.fromJson(response, ApiIdResponse);
                     networkBroadcastApiId = witnessResponse.result.intValue();
                     System.out.println(">>");
@@ -325,10 +327,11 @@ public class Test {
         System.out.println(call);
     }
 
-    public void testNetworkBroadcastDeserialization(){
+    public void testNetworkBroadcastDeserialization() {
         String response = "{\"id\":2,\"result\":2}";
         Gson gson = new Gson();
-        Type ApiIdResponse = new TypeToken<WitnessResponse<Integer>>() {}.getType();
+        Type ApiIdResponse = new TypeToken<WitnessResponse<Integer>>() {
+        }.getType();
         WitnessResponse<Integer> witnessResponse = gson.fromJson(response, ApiIdResponse);
     }
 
@@ -340,16 +343,17 @@ public class Test {
 
     public void testRequiredFeesResponse() {
         String response = "{\"id\":1,\"result\":[{\"amount\":264174,\"asset_id\":\"1.3.0\"}]}";
-        Type AccountLookupResponse = new TypeToken<WitnessResponse<List<AssetAmount>>>() {}.getType();
+        Type AccountLookupResponse = new TypeToken<WitnessResponse<List<AssetAmount>>>() {
+        }.getType();
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetDeserializer());
         WitnessResponse<List<AssetAmount>> witnessResponse = gsonBuilder.create().fromJson(response, AccountLookupResponse);
-        for(AssetAmount assetAmount : witnessResponse.result){
-            System.out.println("asset : "+assetAmount.toJsonString());
+        for (AssetAmount assetAmount : witnessResponse.result) {
+            System.out.println("asset : " + assetAmount.toJsonString());
         }
     }
 
-    public void testTransactionBroadcastSequence(){
+    public void testTransactionBroadcastSequence() {
         String url = "ws://api.devling.xyz:8088";
         WitnessResponseListener listener = new WitnessResponseListener() {
             @Override
@@ -364,7 +368,7 @@ public class Test {
             }
         };
 
-        try{
+        try {
             Transaction transaction = new TransferTransactionBuilder()
                     .setSource(new UserAccount("1.2.138632"))
                     .setDestination(new UserAccount("1.2.129848"))
@@ -384,46 +388,47 @@ public class Test {
                 mWebSocket.addListener(new TransactionBroadcastSequence(transaction, listener));
                 mWebSocket.connect();
             } catch (IOException e) {
-                System.out.println("IOException. Msg: "+e.getMessage());
+                System.out.println("IOException. Msg: " + e.getMessage());
             } catch (WebSocketException e) {
-                System.out.println("WebSocketException. Msg: "+e.getMessage());
+                System.out.println("WebSocketException. Msg: " + e.getMessage());
             }
-        }catch(MalformedTransactionException e){
-            System.out.println("MalformedTransactionException. Msg: "+e.getMessage());
+        } catch (MalformedTransactionException e) {
+            System.out.println("MalformedTransactionException. Msg: " + e.getMessage());
         }
     }
 
-    public void testAccountLookupDeserialization(){
+    public void testAccountLookupDeserialization() {
         String response = "{\"id\":1,\"result\":[[\"ken\",\"1.2.3111\"],[\"ken-1\",\"1.2.101491\"],[\"ken-k\",\"1.2.108646\"]]}";
-        Type AccountLookupResponse = new TypeToken<WitnessResponse<List<List<String>>>>() {}.getType();
+        Type AccountLookupResponse = new TypeToken<WitnessResponse<List<List<String>>>>() {
+        }.getType();
         Gson gson = new Gson();
         WitnessResponse<List<List<String>>> witnessResponse = gson.fromJson(response, AccountLookupResponse);
-        for(int i = 0; i < witnessResponse.result.size(); i++){
-            System.out.println("suggested name: "+witnessResponse.result.get(i).get(0));
+        for (int i = 0; i < witnessResponse.result.size(); i++) {
+            System.out.println("suggested name: " + witnessResponse.result.get(i).get(0));
         }
     }
 
-    public void testPrivateKeyManipulations(){
+    public void testPrivateKeyManipulations() {
         ECKey privateKey = DumpedPrivateKey.fromBase58(null, Main.WIF).getKey();
-        System.out.println("private key..............: "+Util.bytesToHex(privateKey.getSecretBytes()));
-        System.out.println("public key uncompressed..: "+Util.bytesToHex(privateKey.getPubKey()));
-        System.out.println("public key compressed....: "+Util.bytesToHex(privateKey.getPubKeyPoint().getEncoded(true)));
-        System.out.println("base58...................: "+Base58.encode(privateKey.getPubKeyPoint().getEncoded(true)));
-        System.out.println("base58...................: "+Base58.encode(privateKey.getPubKey()));
+        System.out.println("private key..............: " + Util.bytesToHex(privateKey.getSecretBytes()));
+        System.out.println("public key uncompressed..: " + Util.bytesToHex(privateKey.getPubKey()));
+        System.out.println("public key compressed....: " + Util.bytesToHex(privateKey.getPubKeyPoint().getEncoded(true)));
+        System.out.println("base58...................: " + Base58.encode(privateKey.getPubKeyPoint().getEncoded(true)));
+        System.out.println("base58...................: " + Base58.encode(privateKey.getPubKey()));
         String brainKeyWords = "PUMPER ISOTOME SERE STAINER CLINGER MOONLIT CHAETA UPBRIM AEDILIC BERTHER NIT SHAP SAID SHADING JUNCOUS CHOUGH";
         BrainKey brainKey = new BrainKey(brainKeyWords, 0);
     }
 
-    public void testGetAccountByName(){
+    public void testGetAccountByName() {
         try {
             WebSocketFactory factory = new WebSocketFactory().setConnectionTimeout(5000);
             WebSocket mWebSocket = factory.createSocket(WITNESS_URL);
             mWebSocket.addListener(new GetAccountByName("bilthon-83", mListener));
             mWebSocket.connect();
         } catch (IOException e) {
-            System.out.println("IOException. Msg: "+e.getMessage());
+            System.out.println("IOException. Msg: " + e.getMessage());
         } catch (WebSocketException e) {
-            System.out.println("WebSocketException. Msg: "+e.getMessage());
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
         }
     }
 
@@ -447,14 +452,14 @@ public class Test {
             mWebSocket.addListener(new GetRequiredFees(operations, asset, mListener));
             mWebSocket.connect();
         } catch (IOException e) {
-            System.out.println("IOException. Msg: "+e.getMessage());
+            System.out.println("IOException. Msg: " + e.getMessage());
         } catch (WebSocketException e) {
-            System.out.println("WebSocketException. Msg: "+e.getMessage());
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
         }
     }
 
-    public void testRandomNumberGeneration(){
-        byte[] seed = new byte[] { new Long(System.nanoTime()).byteValue() };
+    public void testRandomNumberGeneration() {
+        byte[] seed = new byte[]{new Long(System.nanoTime()).byteValue()};
         doCountTest(new SHA512Digest(), seed);
     }
 
@@ -469,11 +474,9 @@ public class Test {
 
         generator.addSeedMaterial(seed);
 
-        for (int i = 0; i != 1000000; i++)
-        {
+        for (int i = 0; i != 1000000; i++) {
             generator.nextBytes(output);
-            for (int j = 0; j != output.length; j++)
-            {
+            for (int j = 0; j != output.length; j++) {
                 averages[j] += output[j] & 0xff;
                 ands[j] &= output[j];
                 xors[j] ^= output[j];
@@ -485,7 +488,7 @@ public class Test {
             if ((averages[i] / 1000000) != 127) {
                 System.out.println("average test failed for " + digest.getAlgorithmName());
             }
-            System.out.println("averages["+i+"] / 1000000: "+averages[i] / 1000000);
+            System.out.println("averages[" + i + "] / 1000000: " + averages[i] / 1000000);
             if (ands[i] != 0) {
                 System.out.println("and test failed for " + digest.getAlgorithmName());
             }
@@ -499,11 +502,15 @@ public class Test {
     }
 
     /**
-     * The final purpose of this test is to convert the plain brainkey at Main.BRAIN_KEY
-     * into the WIF at Main.WIF
+     * The final purpose of this test is to convert the plain brainkey at
+     * Main.BRAIN_KEY into the WIF at Main.WIF
      */
-    public void testBrainKeyOperations(){
+    public void testBrainKeyOperations() {
         BrainKey brainKey = new BrainKey(Main.BRAIN_KEY, 0);
+    }
+
+    public void testBip39Opertion() {
+        BIP39 bip39 = new BIP39(Main.BIP39_KEY, "");
     }
 
 }
