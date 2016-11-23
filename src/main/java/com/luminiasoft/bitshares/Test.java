@@ -1,5 +1,6 @@
 package com.luminiasoft.bitshares;
 
+import com.google.common.primitives.Bytes;
 import com.google.common.primitives.UnsignedLong;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -524,36 +525,30 @@ public class Test {
                 brainKey = new BrainKey(Main.BRAIN_KEY, 0);
             }
             ECKey key = brainKey.getPrivateKey();
-            System.out.println("Private key");
-            System.out.println(Util.bytesToHex(key.getSecretBytes()));
+            System.out.println("Private key            :"+Util.bytesToHex(key.getSecretBytes()));
             String wif = key.getPrivateKeyAsWiF(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
-            System.out.println("wif compressed: "+wif);
+            System.out.println("wif compressed         : "+wif);
             String wif2 = key.decompress().getPrivateKeyAsWiF(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
-            System.out.println("wif decompressed: "+wif2);
+            System.out.println("wif decompressed       : "+wif2);
 
             byte[] pubKey1 = key.decompress().getPubKey();
             System.out.println("decompressed public key: "+Base58.encode(pubKey1));
             byte[] pubKey2 = key.getPubKey();
-            System.out.println("compressed public key: "+Base58.encode(pubKey2));
+            System.out.println("compressed public key  : "+Base58.encode(pubKey2));
 
-            System.out.println("pub key compressed   : "+Util.bytesToHex(pubKey1));
-            System.out.println("pub key uncompressed : "+Util.bytesToHex(pubKey2));
+            System.out.println("pub key decompressed   : "+Util.bytesToHex(pubKey1));
+            System.out.println("pub key compressed     : "+Util.bytesToHex(pubKey2));
 
-            byte[] pubKey3 = key.getPubKeyPoint().getEncoded(true);
-            System.out.println("pub key compressed  : "+Base58.encode(pubKey3));
-
-            // Address generation test
+            // Generating address
+            byte[] checksum = new byte[160 / 8];
             RIPEMD160Digest ripemd160Digest = new RIPEMD160Digest();
-            SHA512Digest sha512Digest = new SHA512Digest();
-            sha512Digest.update(pubKey1, 0, pubKey1.length);
-            byte[] intermediate = new byte[512 / 8];
-            sha512Digest.doFinal(intermediate, 0);
-            ripemd160Digest.update(intermediate, 0, intermediate.length);
-            byte[] output = new byte[160 / 8];
-            ripemd160Digest.doFinal(output, 0);
-            System.out.println("output after : "+Util.bytesToHex(output));
-            String encoded = Base58.encode(output);
-            System.out.println("base 58: "+encoded);
+            ripemd160Digest.reset();
+            ripemd160Digest.update(pubKey2, 0, pubKey2.length);
+            ripemd160Digest.doFinal(checksum, 0);
+            byte[] pubKeyChecksummed = Bytes.concat(pubKey2, Arrays.copyOfRange(checksum, 0, 4));
+            String address = "BTS" + Base58.encode(pubKeyChecksummed);
+            System.out.println("Address                : "+address);
+
         } catch (FileNotFoundException e) {
             System.out.println("FileNotFoundException. Msg: "+e.getMessage());
         } catch (IOException e) {
