@@ -7,6 +7,7 @@ import java.io.IOException;
 public class Main {
     // Brain key from Nelson's app referencing the bilthon-83 account
     public static final String BRAIN_KEY = "PUMPER ISOTOME SERE STAINER CLINGER MOONLIT CHAETA UPBRIM AEDILIC BERTHER NIT SHAP SAID SHADING JUNCOUS CHOUGH";
+    //public static final String BRAIN_KEY = "TWIXT SERMO TRILLI AUDIO PARDED PLUMET BIWA REHUNG MAUDLE VALVULA OUTBURN FEWNESS ALIENER UNTRACE PRICH TROKER";
 
     public static final String BIP39_KEY = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 
