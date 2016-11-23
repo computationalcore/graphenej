@@ -508,11 +508,11 @@ public class Test {
      * The final purpose of this test is to convert the plain brainkey at
      * Main.BRAIN_KEY into the WIF at Main.WIF
      */
-    public void testBrainKeyOperations(boolean random){
+    public void testBrainKeyOperations(boolean random) {
         try {
             BrainKey brainKey;
-            if(random){
-                String current = new java.io.File( "." ).getCanonicalPath();
+            if (random) {
+                String current = new java.io.File(".").getCanonicalPath();
                 File file = new File(current + "/src/main/java/com/luminiasoft/bitshares/brainkeydict.txt");
 
                 BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
@@ -520,45 +520,67 @@ public class Test {
                 String words = bufferedReader.readLine();
                 String suggestion = BrainKey.suggest(words);
                 brainKey = new BrainKey(suggestion, 0);
-            }else{
+            } else {
                 brainKey = new BrainKey(Main.BRAIN_KEY, 0);
             }
             ECKey key = brainKey.getPrivateKey();
             System.out.println("Private key");
             System.out.println(Util.bytesToHex(key.getSecretBytes()));
             String wif = key.getPrivateKeyAsWiF(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
-            System.out.println("wif compressed: "+wif);
+            System.out.println("wif compressed: " + wif);
             String wif2 = key.decompress().getPrivateKeyAsWiF(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
-            System.out.println("wif decompressed: "+wif2);
+            System.out.println("wif decompressed: " + wif2);
 
             byte[] pubKey1 = key.decompress().getPubKey();
-            System.out.println("decompressed public key: "+Base58.encode(pubKey1));
+            System.out.println("decompressed public key: " + Base58.encode(pubKey1));
             byte[] pubKey2 = key.getPubKey();
-            System.out.println("compressed public key: "+Base58.encode(pubKey2));
+            System.out.println("compressed public key: " + Base58.encode(pubKey2));
 
-            System.out.println("pub key compressed   : "+Util.bytesToHex(pubKey1));
-            System.out.println("pub key uncompressed : "+Util.bytesToHex(pubKey2));
+            System.out.println("pub key compressed   : " + Util.bytesToHex(pubKey1));
+            System.out.println("pub key uncompressed : " + Util.bytesToHex(pubKey2));
 
             byte[] pubKey3 = key.getPubKeyPoint().getEncoded(true);
-            System.out.println("pub key compressed  : "+Base58.encode(pubKey3));
+            System.out.println("pub key compressed  : " + Base58.encode(pubKey3));
 
             // Address generation test
             RIPEMD160Digest ripemd160Digest = new RIPEMD160Digest();
             SHA512Digest sha512Digest = new SHA512Digest();
-            sha512Digest.update(pubKey1, 0, pubKey1.length);
+            sha512Digest.update(pubKey2, 0, pubKey2.length);
             byte[] intermediate = new byte[512 / 8];
             sha512Digest.doFinal(intermediate, 0);
             ripemd160Digest.update(intermediate, 0, intermediate.length);
             byte[] output = new byte[160 / 8];
             ripemd160Digest.doFinal(output, 0);
-            System.out.println("output after : "+Util.bytesToHex(output));
+            System.out.println("output after : " + Util.bytesToHex(output));
             String encoded = Base58.encode(output);
-            System.out.println("base 58: "+encoded);
+            System.out.println("base 58: " + encoded);
+
+            byte[] checksum = new byte[(160 / 8) + 4];
+
+            System.arraycopy(calculateChecksum(output), 0, checksum, checksum.length - 4, 4);
+
+            System.arraycopy(output, 0, checksum, 0, output.length);
+
+            System.out.println("BTS" + Base58.encode(checksum));
+
+            System.out.println("Compress Adress : " + brainKey.getAddress());
+            System.out.println("Uncompress Adress : " + brainKey.getUncompressedAddress());
+
         } catch (FileNotFoundException e) {
-            System.out.println("FileNotFoundException. Msg: "+e.getMessage());
+            System.out.println("FileNotFoundException. Msg: " + e.getMessage());
         } catch (IOException e) {
-            System.out.println("IOException. Msg: "+e.getMessage());
+            System.out.println("IOException. Msg: " + e.getMessage());
         }
+    }
+
+    public byte[] calculateChecksum(byte[] input) {
+        byte[] answer = new byte[4];
+        RIPEMD160Digest ripemd160Digest = new RIPEMD160Digest();
+        ripemd160Digest.update(input, 0, input.length);
+        byte[] output = new byte[160 / 8];
+        ripemd160Digest.doFinal(output, 0);
+        System.arraycopy(output, 0, answer, 0, 4);
+        return answer;
     }
 
     public void testBip39Opertion() {
