@@ -13,6 +13,8 @@ import com.luminiasoft.bitshares.ws.TransactionBroadcastSequence;
 import com.neovisionaries.ws.client.*;
 import org.bitcoinj.core.*;
 import org.spongycastle.crypto.Digest;
+import org.spongycastle.crypto.digests.RIPEMD128Digest;
+import org.spongycastle.crypto.digests.RIPEMD160Digest;
 import org.spongycastle.crypto.digests.SHA512Digest;
 import org.spongycastle.crypto.prng.DigestRandomGenerator;
 
@@ -506,17 +508,24 @@ public class Test {
      * The final purpose of this test is to convert the plain brainkey at
      * Main.BRAIN_KEY into the WIF at Main.WIF
      */
-    public void testBrainKeyOperations(){
+    public void testBrainKeyOperations(boolean random){
         try {
-            String current = new java.io.File( "." ).getCanonicalPath();
-            File file = new File(current + "/src/main/java/com/luminiasoft/bitshares/brainkeydict.txt");
+            BrainKey brainKey;
+            if(random){
+                String current = new java.io.File( "." ).getCanonicalPath();
+                File file = new File(current + "/src/main/java/com/luminiasoft/bitshares/brainkeydict.txt");
 
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-            StringBuffer buffer = new StringBuffer();
-            String words = bufferedReader.readLine();
-            String suggestion = BrainKey.suggest(words);
-            BrainKey brainKey = new BrainKey(Main.BRAIN_KEY, 0);
+                BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+                StringBuffer buffer = new StringBuffer();
+                String words = bufferedReader.readLine();
+                String suggestion = BrainKey.suggest(words);
+                brainKey = new BrainKey(suggestion, 0);
+            }else{
+                brainKey = new BrainKey(Main.BRAIN_KEY, 0);
+            }
             ECKey key = brainKey.getPrivateKey();
+            System.out.println("Private key");
+            System.out.println(Util.bytesToHex(key.getSecretBytes()));
             String wif = key.getPrivateKeyAsWiF(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
             System.out.println("wif compressed: "+wif);
             String wif2 = key.decompress().getPrivateKeyAsWiF(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
@@ -533,6 +542,18 @@ public class Test {
             byte[] pubKey3 = key.getPubKeyPoint().getEncoded(true);
             System.out.println("pub key compressed  : "+Base58.encode(pubKey3));
 
+            // Address generation test
+            RIPEMD160Digest ripemd160Digest = new RIPEMD160Digest();
+            SHA512Digest sha512Digest = new SHA512Digest();
+            sha512Digest.update(pubKey1, 0, pubKey1.length);
+            byte[] intermediate = new byte[512 / 8];
+            sha512Digest.doFinal(intermediate, 0);
+            ripemd160Digest.update(intermediate, 0, intermediate.length);
+            byte[] output = new byte[160 / 8];
+            ripemd160Digest.doFinal(output, 0);
+            System.out.println("output after : "+Util.bytesToHex(output));
+            String encoded = Base58.encode(output);
+            System.out.println("base 58: "+encoded);
         } catch (FileNotFoundException e) {
             System.out.println("FileNotFoundException. Msg: "+e.getMessage());
         } catch (IOException e) {

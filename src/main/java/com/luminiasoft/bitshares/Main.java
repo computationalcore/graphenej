@@ -65,8 +65,8 @@ public class Main {
 
 //        test.testRandomNumberGeneration();
 
-        test.testBrainKeyOperations();
+        test.testBrainKeyOperations(false);
 
-        test.testBip39Opertion();
+//        test.testBip39Opertion();
     }
 }
