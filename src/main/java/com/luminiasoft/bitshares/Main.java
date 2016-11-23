@@ -7,6 +7,7 @@ import java.io.IOException;
 public class Main {
     // Brain key from Nelson's app referencing the bilthon-83 account
     public static final String BRAIN_KEY = "PUMPER ISOTOME SERE STAINER CLINGER MOONLIT CHAETA UPBRIM AEDILIC BERTHER NIT SHAP SAID SHADING JUNCOUS CHOUGH";
+    public static final String BIP39_KEY = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 
     // WIF from Nelson's app referencing the bilthon-83 account
     public static final String WIF = "5J96pne45qWM1WpektoeazN6k9Mt93jQ7LyueRxFfEMTiy6yxjM";
@@ -60,5 +61,6 @@ public class Main {
 //        test.testRandomNumberGeneration();
 
         test.testBrainKeyOperations();
+        test.testBip39Opertion();
     }
 }

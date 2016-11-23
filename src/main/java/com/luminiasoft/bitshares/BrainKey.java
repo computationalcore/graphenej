@@ -5,6 +5,7 @@ import org.bitcoinj.core.ECKey;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
 /**
  * Created by nelson on 11/19/16.
@@ -26,5 +27,9 @@ public class BrainKey {
         } catch (UnsupportedEncodingException e) {
             System.out.println("UnsupportedEncodingException. Msg: " + e.getMessage());
         }
+    }
+
+    public String getPublicKey() {
+        return Base64.getEncoder().encodeToString(mPrivateKey.getPubKey());
     }
 }
