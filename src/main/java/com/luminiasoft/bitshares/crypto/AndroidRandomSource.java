@@ -38,9 +38,10 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 
-public class AndroidRandomSource implements RandomSource {
+public class AndroidRandomSource implements RandomSource, EntropySource {
 
     @Override
     public synchronized void nextBytes(byte[] bytes) {
@@ -57,5 +58,14 @@ public class AndroidRandomSource implements RandomSource {
         } catch (IOException e) {
             throw new RuntimeException("Unable to generate random bytes on this Android device", e);
         }
+    }
+
+    @Override
+    public ByteBuffer provideEntropy() {
+        byte[] buffer = new byte[ 256 / 8];
+        nextBytes(buffer);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(buffer.length);
+        byteBuffer.put(buffer, 0, buffer.length);
+        return byteBuffer;
     }
 }

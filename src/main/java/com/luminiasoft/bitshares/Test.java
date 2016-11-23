@@ -16,9 +16,10 @@ import org.spongycastle.crypto.Digest;
 import org.spongycastle.crypto.digests.SHA512Digest;
 import org.spongycastle.crypto.prng.DigestRandomGenerator;
 
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.lang.reflect.Type;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -503,23 +504,37 @@ public class Test {
      * into the WIF at Main.WIF
      */
     public void testBrainKeyOperations(){
-        BrainKey brainKey = new BrainKey(Main.BRAIN_KEY, 0);
-        ECKey key = brainKey.getPrivateKey();
-        String wif = key.getPrivateKeyAsWiF(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
-        System.out.println("wif compressed: "+wif);
-        String wif2 = key.decompress().getPrivateKeyAsWiF(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
-        System.out.println("wif decompressed: "+wif2);
+        try {
+            String current = new java.io.File( "." ).getCanonicalPath();
+            File file = new File(current + "/src/main/java/com/luminiasoft/bitshares/brainkeydict.txt");
 
-        byte[] pubKey1 = key.decompress().getPubKey();
-        System.out.println("decompressed public key: "+Base58.encode(pubKey1));
-        byte[] pubKey2 = key.getPubKey();
-        System.out.println("compressed public key: "+Base58.encode(pubKey2));
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+            StringBuffer buffer = new StringBuffer();
+            String words = bufferedReader.readLine();
+            String suggestion = BrainKey.suggest(words);
+            BrainKey brainKey = new BrainKey(Main.BRAIN_KEY, 0);
+            ECKey key = brainKey.getPrivateKey();
+            String wif = key.getPrivateKeyAsWiF(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
+            System.out.println("wif compressed: "+wif);
+            String wif2 = key.decompress().getPrivateKeyAsWiF(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
+            System.out.println("wif decompressed: "+wif2);
 
-        System.out.println("pub key compressed   : "+Util.bytesToHex(pubKey1));
-        System.out.println("pub key uncompressed : "+Util.bytesToHex(pubKey2));
+            byte[] pubKey1 = key.decompress().getPubKey();
+            System.out.println("decompressed public key: "+Base58.encode(pubKey1));
+            byte[] pubKey2 = key.getPubKey();
+            System.out.println("compressed public key: "+Base58.encode(pubKey2));
 
-        byte[] pubKey3 = key.getPubKeyPoint().getEncoded(true);
-        System.out.println("pub key compressed  : "+Base58.encode(pubKey3));
+            System.out.println("pub key compressed   : "+Util.bytesToHex(pubKey1));
+            System.out.println("pub key uncompressed : "+Util.bytesToHex(pubKey2));
+
+            byte[] pubKey3 = key.getPubKeyPoint().getEncoded(true);
+            System.out.println("pub key compressed  : "+Base58.encode(pubKey3));
+
+        } catch (FileNotFoundException e) {
+            System.out.println("FileNotFoundException. Msg: "+e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: "+e.getMessage());
+        }
     }
 
 }
