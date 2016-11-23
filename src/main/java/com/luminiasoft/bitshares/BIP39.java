@@ -1,6 +1,7 @@
 package com.luminiasoft.bitshares;
 
 import java.util.Arrays;
+import java.util.Base64;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.crypto.HDKeyDerivation;
 import org.bitcoinj.crypto.MnemonicCode;
@@ -18,6 +19,10 @@ public class BIP39 {
         byte[] seed = MnemonicCode.toSeed(Arrays.asList(words.split(" ")), passphrase);
         mPrivateKey = HDKeyDerivation.createMasterPrivateKey(seed);
 
+    }
+
+    public String getPublicKey() {
+        return Base64.getEncoder().encodeToString(mPrivateKey.getPubKey());
     }
 
 }
