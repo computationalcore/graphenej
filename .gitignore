@@ -75,3 +75,5 @@ atlassian-ide-plugin.xml
 # Logs
 # ----
 /*.log
+
+src/main/java/com/luminiasoft/bitshares/mycelium/*
