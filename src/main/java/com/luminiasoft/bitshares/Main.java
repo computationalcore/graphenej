@@ -6,13 +6,17 @@ import java.io.IOException;
 
 public class Main {
     // Brain key from Nelson's app referencing the bilthon-83 account
-    public static final String BRAIN_KEY = "PUMPER ISOTOME SERE STAINER CLINGER MOONLIT CHAETA UPBRIM AEDILIC BERTHER NIT SHAP SAID SHADING JUNCOUS CHOUGH";
+//    public static final String BRAIN_KEY = "PUMPER ISOTOME SERE STAINER CLINGER MOONLIT CHAETA UPBRIM AEDILIC BERTHER NIT SHAP SAID SHADING JUNCOUS CHOUGH";
 
     // WIF from Nelson's app referencing the bilthon-83 account
-    public static final String WIF = "5J96pne45qWM1WpektoeazN6k9Mt93jQ7LyueRxFfEMTiy6yxjM";
+//    public static final String WIF = "5J96pne45qWM1WpektoeazN6k9Mt93jQ7LyueRxFfEMTiy6yxjM";
 
-    // WIF from the cli_wallet instance
-//    public static final String WIF = "5KMzB2GqGhnh7ufhgddmz1eKPHS72uTLeL9hHjSvPb1UywWknF5";
+    // Brain key from an empty account created by the cli_wallet
+    public static final String BRAIN_KEY = "TWIXT SERMO TRILLI AUDIO PARDED PLUMET BIWA REHUNG MAUDLE VALVULA OUTBURN FEWNESS ALIENER UNTRACE PRICH TROKER";
+
+    // WIF from an emty account created by the cli_wallet
+    public static final String WIF = "5KMzB2GqGhnh7ufhgddmz1eKPHS72uTLeL9hHjSvPb1UywWknF5";
+
     public static final String EXTERNAL_SIGNATURE = "1f36c41acb774fcbc9c231b5895ec9701d6872729098d8ea56d78dda72a6b54252694db85d7591de5751b7aea06871da15d63a1028758421607ffc143e53ef3306";
 
     // Static block information used for transaction serialization tests

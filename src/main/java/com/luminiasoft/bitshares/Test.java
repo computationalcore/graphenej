@@ -504,6 +504,22 @@ public class Test {
      */
     public void testBrainKeyOperations(){
         BrainKey brainKey = new BrainKey(Main.BRAIN_KEY, 0);
+        ECKey key = brainKey.getPrivateKey();
+        String wif = key.getPrivateKeyAsWiF(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
+        System.out.println("wif compressed: "+wif);
+        String wif2 = key.decompress().getPrivateKeyAsWiF(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
+        System.out.println("wif decompressed: "+wif2);
+
+        byte[] pubKey1 = key.decompress().getPubKey();
+        System.out.println("decompressed public key: "+Base58.encode(pubKey1));
+        byte[] pubKey2 = key.getPubKey();
+        System.out.println("compressed public key: "+Base58.encode(pubKey2));
+
+        System.out.println("pub key compressed   : "+Util.bytesToHex(pubKey1));
+        System.out.println("pub key uncompressed : "+Util.bytesToHex(pubKey2));
+
+        byte[] pubKey3 = key.getPubKeyPoint().getEncoded(true);
+        System.out.println("pub key compressed  : "+Base58.encode(pubKey3));
     }
 
 }
