@@ -9,19 +9,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Base64;
-import org.bitcoinj.core.Base58;
-import org.bitcoinj.core.BitcoinSerializer;
-import org.bitcoinj.core.Block;
-import org.bitcoinj.core.Coin;
-import org.bitcoinj.core.NetworkParameters;
-import org.bitcoinj.core.StoredBlock;
-import org.bitcoinj.core.VerificationException;
-import org.bitcoinj.store.BlockStore;
-import org.bitcoinj.store.BlockStoreException;
-import org.bitcoinj.utils.MonetaryFormat;
-import org.spongycastle.crypto.digests.RIPEMD160Digest;
-import org.spongycastle.crypto.digests.SHA512Digest;
 
 /**
  * Class used to encapsulate all BrainKey-related operations.
@@ -55,11 +42,14 @@ public class BrainKey {
             index = secureRandom.nextInt(DICT_WORD_COUNT - 1);
             suggestedBrainKey.add(wordArray[index].toUpperCase());
         }
-        String result = String.join(" ", suggestedBrainKey.toArray(new String[suggestedBrainKey.size()]));
-        System.out.println("result: '" + result + "'");
-        return result;
+        StringBuilder stringBuilder = new StringBuilder();
+        for(String word : suggestedBrainKey){
+            stringBuilder.append(word);
+            stringBuilder.append(" ");
+        }
+        System.out.println("Suggestion: '"+stringBuilder.toString().trim()+"'");
+        return stringBuilder.toString().trim();
     }
-
     /**
      * BrainKey constructor that takes as argument a specific brain key word
      * sequence and generates the private key and address from that.

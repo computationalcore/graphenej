@@ -543,29 +543,6 @@ public class Test {
             System.out.println("pub key compressed  : " + Base58.encode(pubKey3));
 
             // Address generation test
-            RIPEMD160Digest ripemd160Digest = new RIPEMD160Digest();
-            SHA512Digest sha512Digest = new SHA512Digest();
-            sha512Digest.update(pubKey2, 0, pubKey2.length);
-            byte[] intermediate = new byte[512 / 8];
-            sha512Digest.doFinal(intermediate, 0);
-            ripemd160Digest.update(intermediate, 0, intermediate.length);
-            byte[] output = new byte[160 / 8];
-            ripemd160Digest.doFinal(output, 0);
-            System.out.println("output after : " + Util.bytesToHex(output));
-            String encoded = Base58.encode(output);
-            System.out.println("base 58: " + encoded);
-
-            byte[] checksum = new byte[(160 / 8) + 4];
-
-            System.arraycopy(calculateChecksum(output), 0, checksum, checksum.length - 4, 4);
-
-            System.arraycopy(output, 0, checksum, 0, output.length);
-
-            System.out.println("BTS" + Base58.encode(checksum));
-
-            System.out.println("Compress Adress : " + brainKey.getAddress());
-            System.out.println("Uncompress Adress : " + brainKey.getUncompressedAddress());
-
             Address address = new Address(key);
             System.out.println("Block explorer's address: "+address);
 
