@@ -546,6 +546,7 @@ public class Test {
             Address address = new Address(key);
             System.out.println("Block explorer's address: "+address);
 
+            System.out.println("Wif:                : "+brainKey.getWalletImportFormat());
         } catch (FileNotFoundException e) {
             System.out.println("FileNotFoundException. Msg: " + e.getMessage());
         } catch (IOException e) {

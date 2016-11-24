@@ -2,12 +2,16 @@ package com.luminiasoft.bitshares;
 
 import com.luminiasoft.bitshares.crypto.AndroidRandomSource;
 import com.luminiasoft.bitshares.crypto.SecureRandomStrengthener;
+import org.bitcoinj.core.Base58;
+import org.bitcoinj.core.DumpedPrivateKey;
 import org.bitcoinj.core.ECKey;
+import org.bitcoinj.core.NetworkParameters;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.spec.ECPoint;
 import java.util.ArrayList;
 
 /**
@@ -72,11 +76,30 @@ public class BrainKey {
             System.out.println("UnsupportedEncodingException. Msg: " + e.getMessage());
         }
     }
+
+    /**
+     * Gets the array of bytes representing the public key.
+     * @return
+     */
     public byte[] getPublicKey() {
         return mPrivateKey.getPubKey();
     }
 
+    /**
+     * Returns the private key as an instance of the ECKey class.
+     * @return
+     */
     public ECKey getPrivateKey() {
         return mPrivateKey;
+    }
+
+    /**
+     * Returns the private key in the Wallet Import Format for the uncompressed private key.
+     * @see <a href="https://en.bitcoin.it/wiki/Wallet_import_format">WIF</a>
+     * @return
+     */
+    public String getWalletImportFormat(){
+        DumpedPrivateKey wif = this.mPrivateKey.decompress().getPrivateKeyEncoded(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
+        return wif.toString();
     }
 }
