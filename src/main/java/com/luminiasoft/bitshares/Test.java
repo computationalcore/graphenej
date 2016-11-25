@@ -7,10 +7,8 @@ import com.google.gson.reflect.TypeToken;
 import com.luminiasoft.bitshares.errors.MalformedTransactionException;
 import com.luminiasoft.bitshares.interfaces.WitnessResponseListener;
 import com.luminiasoft.bitshares.models.*;
-import com.luminiasoft.bitshares.ws.GetAccountByName;
-import com.luminiasoft.bitshares.ws.GetAccountsByAddress;
-import com.luminiasoft.bitshares.ws.GetRequiredFees;
-import com.luminiasoft.bitshares.ws.TransactionBroadcastSequence;
+import com.luminiasoft.bitshares.test.NaiveSSLContext;
+import com.luminiasoft.bitshares.ws.*;
 import com.neovisionaries.ws.client.*;
 import org.bitcoinj.core.*;
 import org.spongycastle.crypto.Digest;
@@ -19,10 +17,14 @@ import org.spongycastle.crypto.digests.RIPEMD160Digest;
 import org.spongycastle.crypto.digests.SHA512Digest;
 import org.spongycastle.crypto.prng.DigestRandomGenerator;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -32,6 +34,9 @@ import java.util.*;
 public class Test {
 
     public static final String WITNESS_URL = "ws://api.devling.xyz:8088";
+    public static final String OPENLEDGER_WITNESS_URL = "wss://bitshares.openledger.info/ws";
+//    public static final String WITNESS_URL = "wss://fr.blockpay.ch:8089";
+
     private Transaction transaction;
 
     public Transaction getTransaction() {
@@ -573,15 +578,38 @@ public class Test {
         BrainKey brainKey = new BrainKey(Main.BRAIN_KEY, 0);
         Address address = new Address(brainKey.getPrivateKey());
         try {
-            WebSocketFactory factory = new WebSocketFactory().setConnectionTimeout(5000);
-            WebSocket mWebSocket = factory.createSocket(WITNESS_URL);
+            WebSocket mWebSocket = new WebSocketFactory().createSocket(WITNESS_URL);
             byte[] key = brainKey.getPrivateKey().getPubKey();
             mWebSocket.addListener(new GetAccountsByAddress(key, mListener));
+            System.out.println("Before connecting");
             mWebSocket.connect();
         } catch (IOException e) {
             System.out.println("IOException. Msg: " + e.getMessage());
         } catch (WebSocketException e) {
             System.out.println("WebSocketException. Msg: " + e.getMessage());
+        }
+    }
+
+    public void testRelativeAccountHistory(){
+        GetRelativeAccountHistory relativeAccountHistory = new GetRelativeAccountHistory(new UserAccount("1.2.138632"), mListener);
+        try {
+            // Create a custom SSL context.
+            SSLContext context = null;
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
+            mWebSocket.addListener(relativeAccountHistory);
+            mWebSocket.connect();
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: "+e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: "+e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: "+e.getMessage());
         }
     }
 }

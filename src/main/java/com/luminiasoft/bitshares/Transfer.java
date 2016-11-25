@@ -1,17 +1,14 @@
 package com.luminiasoft.bitshares;
 
 import com.google.common.primitives.Bytes;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
+import com.google.common.primitives.UnsignedLong;
+import com.google.gson.*;
 
 import java.lang.reflect.Type;
 
 /**
  * Class used to encapsulate the Transfer operation related functionalities.
+ * TODO: Add extensions support
  */
 public class Transfer extends BaseOperation {
     public static final String KEY_FEE = "fee";
@@ -100,14 +97,72 @@ public class Transfer extends BaseOperation {
         return array;
     }
 
-    class TransferSerializer implements JsonSerializer<Transfer> {
+    public static class TransferSerializer implements JsonSerializer<Transfer> {
 
         @Override
         public JsonElement serialize(Transfer transfer, Type type, JsonSerializationContext jsonSerializationContext) {
             JsonArray arrayRep = new JsonArray();
             arrayRep.add(transfer.getId());
-            arrayRep.add(toJsonObject());
+            arrayRep.add(transfer.toJsonObject());
             return arrayRep;
+        }
+    }
+
+    /**
+     * This deserializer will work on any transfer operation serialized in the 'array form' used a lot in
+     * the Graphene Blockchain API.
+     *
+     * An example of this serialized form is the following:
+     *
+     *    [
+     *       0,
+     *       {
+     *           "fee": {
+     *               "amount": 264174,
+     *               "asset_id": "1.3.0"
+     *           },
+     *           "from": "1.2.138632",
+     *           "to": "1.2.129848",
+     *           "amount": {
+     *               "amount": 100,
+     *               "asset_id": "1.3.0"
+     *           },
+     *           "extensions": []
+     *       }
+     *    ]
+     *
+     * It will convert this data into a nice Transfer object.
+     */
+    public static class TransferDeserializer implements JsonDeserializer<Transfer> {
+
+        @Override
+        public Transfer deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            if(json.isJsonArray()){
+                // This block is used just to check if we are in the first step of the deserialization
+                // when we are dealing with an array.
+                JsonArray serializedTransfer = json.getAsJsonArray();
+                if(serializedTransfer.get(0).getAsInt() != OperationType.transfer_operation.ordinal()){
+                    // If the operation type does not correspond to a transfer operation, we return null
+                    return null;
+                }else{
+                    // Calling itself recursively, this is only done once, so there will be no problems.
+                    return context.deserialize(serializedTransfer.get(1), Transfer.class);
+                }
+            }else{
+                // This block is called in the second recursion and takes care of deserializing the
+                // transfer data itself.
+                JsonObject jsonObject = json.getAsJsonObject();
+
+                // Deserializing AssetAmount objects
+                AssetAmount amount = context.deserialize(jsonObject.get("amount"), AssetAmount.class);
+                AssetAmount fee = context.deserialize(jsonObject.get("fee"), AssetAmount.class);
+
+                // Deserializing UserAccount objects
+                UserAccount from = new UserAccount(jsonObject.get("from").getAsString());
+                UserAccount to = new UserAccount(jsonObject.get("to").getAsString());
+                Transfer transfer = new Transfer(from, to, amount, fee);
+                return transfer;
+            }
         }
     }
 }

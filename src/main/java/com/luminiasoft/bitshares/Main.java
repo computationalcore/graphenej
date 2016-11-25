@@ -71,6 +71,9 @@ public class Main {
 //        test.testBrainKeyOperations(false);
 
 //        test.testBip39Opertion();
-            test.testAccountNamebyAddress();
+
+//        test.testAccountNamebyAddress();
+
+        test.testRelativeAccountHistory();
     }
 }
