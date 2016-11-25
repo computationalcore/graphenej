@@ -68,8 +68,9 @@ public class Main {
 
 //        test.testRandomNumberGeneration();
 
-        test.testBrainKeyOperations(false);
+//        test.testBrainKeyOperations(false);
 
 //        test.testBip39Opertion();
+            test.testAccountNamebyAddress();
     }
 }

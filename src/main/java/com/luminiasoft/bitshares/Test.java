@@ -8,6 +8,7 @@ import com.luminiasoft.bitshares.errors.MalformedTransactionException;
 import com.luminiasoft.bitshares.interfaces.WitnessResponseListener;
 import com.luminiasoft.bitshares.models.*;
 import com.luminiasoft.bitshares.ws.GetAccountByName;
+import com.luminiasoft.bitshares.ws.GetAccountsByAddress;
 import com.luminiasoft.bitshares.ws.GetRequiredFees;
 import com.luminiasoft.bitshares.ws.TransactionBroadcastSequence;
 import com.neovisionaries.ws.client.*;
@@ -544,9 +545,9 @@ public class Test {
 
             // Address generation test
             Address address = new Address(key);
-            System.out.println("Block explorer's address: "+address);
+            System.out.println("Block explorer's address: " + address);
 
-            System.out.println("Wif:                : "+brainKey.getWalletImportFormat());
+            System.out.println("Wif:                : " + brainKey.getWalletImportFormat());
         } catch (FileNotFoundException e) {
             System.out.println("FileNotFoundException. Msg: " + e.getMessage());
         } catch (IOException e) {
@@ -566,5 +567,21 @@ public class Test {
 
     public void testBip39Opertion() {
         BIP39 bip39 = new BIP39(Main.BIP39_KEY, "");
+    }
+
+    public void testAccountNamebyAddress() {
+        BrainKey brainKey = new BrainKey(Main.BRAIN_KEY, 0);
+        Address address = new Address(brainKey.getPrivateKey());
+        try {
+            WebSocketFactory factory = new WebSocketFactory().setConnectionTimeout(5000);
+            WebSocket mWebSocket = factory.createSocket(WITNESS_URL);
+            byte[] key = brainKey.getPrivateKey().getPubKey();
+            mWebSocket.addListener(new GetAccountsByAddress(key, mListener));
+            mWebSocket.connect();
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: " + e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
+        }
     }
 }
