@@ -6,10 +6,10 @@ import java.io.IOException;
 
 public class Main {
     // Brain key from Nelson's app referencing the bilthon-83 account
-//    public static final String BRAIN_KEY = "PUMPER ISOTOME SERE STAINER CLINGER MOONLIT CHAETA UPBRIM AEDILIC BERTHER NIT SHAP SAID SHADING JUNCOUS CHOUGH";
+    public static final String BRAIN_KEY = "PUMPER ISOTOME SERE STAINER CLINGER MOONLIT CHAETA UPBRIM AEDILIC BERTHER NIT SHAP SAID SHADING JUNCOUS CHOUGH";
 
     //public static final String BRAIN_KEY = "TWIXT SERMO TRILLI AUDIO PARDED PLUMET BIWA REHUNG MAUDLE VALVULA OUTBURN FEWNESS ALIENER UNTRACE PRICH TROKER";
-    public static final String BRAIN_KEY = "SIVER TIKKER FOGO HOMINAL PRAYER LUTEIN SMALLY ACARID MEROPIA TRANCE BOGONG IDDAT HICKORY SOUTANE MOOD DOWSER";
+    //public static final String BRAIN_KEY = "SIVER TIKKER FOGO HOMINAL PRAYER LUTEIN SMALLY ACARID MEROPIA TRANCE BOGONG IDDAT HICKORY SOUTANE MOOD DOWSER";
 
     public static final String BIP39_KEY = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 
@@ -72,8 +72,8 @@ public class Main {
 
 //        test.testBip39Opertion();
 
-//        test.testAccountNamebyAddress();
+        test.testAccountNamebyAddress();
 
-        test.testRelativeAccountHistory();
+//        test.testRelativeAccountHistory();
     }
 }

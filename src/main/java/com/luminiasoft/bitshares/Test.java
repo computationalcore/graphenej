@@ -27,6 +27,8 @@ import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by nelson on 11/9/16.
@@ -47,6 +49,7 @@ public class Test {
 
         @Override
         public void onSuccess(WitnessResponse response) {
+
             if (response.result.getClass() == AccountProperties.class) {
                 AccountProperties accountProperties = (AccountProperties) response.result;
                 System.out.println("Got account properties");
@@ -54,10 +57,37 @@ public class Test {
             } else if (response.result.getClass() == ArrayList.class) {
                 List l = (List) response.result;
                 if (l.size() > 0) {
+
                     if (l.get(0).getClass() == AssetAmount.class) {
                         AssetAmount assetAmount = (AssetAmount) l.get(0);
                         System.out.println("Got fee");
                         System.out.println("amount: " + assetAmount.getAmount() + ", asset id: " + assetAmount.getAsset().getObjectId());
+                    } else if (l.get(0).getClass() == ArrayList.class) {
+                        List sl = (List) l.get(0);
+                        if (sl.size() > 0) {
+                            String accountId = (String) sl.get(0);
+                            System.out.println("account id : " + accountId);
+                            try {
+
+                                // Create a custom SSL context.
+                                SSLContext context = null;
+                                context = NaiveSSLContext.getInstance("TLS");
+                                WebSocketFactory factory = new WebSocketFactory();
+
+                                // Set the custom SSL context.
+                                factory.setSSLContext(context);
+
+                                WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
+                                mWebSocket.addListener(new GetAccountNameById(accountId, null));
+                                mWebSocket.connect();
+                            } catch (IOException e) {
+                                System.out.println("IOException. Msg: " + e.getMessage());
+                            } catch (WebSocketException e) {
+                                System.out.println("WebSocketException. Msg: " + e.getMessage());
+                            } catch (NoSuchAlgorithmException ex) {
+                                Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
                     }
                 } else {
                     System.out.println("Got empty list!");
@@ -576,21 +606,33 @@ public class Test {
 
     public void testAccountNamebyAddress() {
         BrainKey brainKey = new BrainKey(Main.BRAIN_KEY, 0);
-        Address address = new Address(brainKey.getPrivateKey());
-        try {
-            WebSocket mWebSocket = new WebSocketFactory().createSocket(WITNESS_URL);
-            byte[] key = brainKey.getPrivateKey().getPubKey();
-            mWebSocket.addListener(new GetAccountsByAddress(key, mListener));
+            Address address = new Address(brainKey.getPrivateKey());
+            address.getAccountName();
+        /*try {
+            BrainKey brainKey = new BrainKey(Main.BRAIN_KEY, 0);
+            Address address = new Address(brainKey.getPrivateKey());
+            // Create a custom SSL context.
+            SSLContext context = null;
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
+            mWebSocket.addListener(new GetAccountsByAddress(address.toString(), mListener));
             System.out.println("Before connecting");
             mWebSocket.connect();
         } catch (IOException e) {
             System.out.println("IOException. Msg: " + e.getMessage());
         } catch (WebSocketException e) {
             System.out.println("WebSocketException. Msg: " + e.getMessage());
-        }
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
+        }*/
     }
 
-    public void testRelativeAccountHistory(){
+    public void testRelativeAccountHistory() {
         GetRelativeAccountHistory relativeAccountHistory = new GetRelativeAccountHistory(new UserAccount("1.2.138632"), mListener);
         try {
             // Create a custom SSL context.
@@ -605,11 +647,11 @@ public class Test {
             mWebSocket.addListener(relativeAccountHistory);
             mWebSocket.connect();
         } catch (IOException e) {
-            System.out.println("IOException. Msg: "+e.getMessage());
+            System.out.println("IOException. Msg: " + e.getMessage());
         } catch (WebSocketException e) {
-            System.out.println("WebSocketException. Msg: "+e.getMessage());
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
         } catch (NoSuchAlgorithmException e) {
-            System.out.println("NoSuchAlgorithmException. Msg: "+e.getMessage());
+            System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
         }
     }
 }
