@@ -606,8 +606,9 @@ public class Test {
 
     public void testAccountNamebyAddress() {
         BrainKey brainKey = new BrainKey(Main.BRAIN_KEY, 0);
-            Address address = new Address(brainKey.getPrivateKey());
-            address.getAccountName();
+        Address address = new Address(brainKey.getPrivateKey());
+        address.getAccountDetail();
+        System.out.println(address.getAccountName());
         /*try {
             BrainKey brainKey = new BrainKey(Main.BRAIN_KEY, 0);
             Address address = new Address(brainKey.getPrivateKey());

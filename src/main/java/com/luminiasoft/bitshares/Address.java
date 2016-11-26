@@ -64,7 +64,6 @@ public class Address {
             factory.setSSLContext(context);
             WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
             mWebSocket.addListener(new GetAccountsByAddress(this.toString(), accountIdListener));
-            System.out.println("Before connecting");
             mWebSocket.connect();
         } catch (IOException e) {
             System.out.println("IOException. Msg: " + e.getMessage());
@@ -95,11 +94,9 @@ public class Address {
                         if (sl.size() > 0) {
                             accountId = (String) sl.get(0);
                             try {
-                                // Create a custom SSL context.
                                 SSLContext context = NaiveSSLContext.getInstance("TLS");
                                 WebSocketFactory factory = new WebSocketFactory();
                                 factory.setSSLContext(context);
-
                                 WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
                                 mWebSocket.addListener(new GetAccountNameById(accountId, accountListener));
                                 mWebSocket.connect();
@@ -139,7 +136,6 @@ public class Address {
             if (response.result.getClass() == ArrayList.class) {
                 List l = (List) response.result;
                 if (l.size() > 0) {
-                    System.out.println("list class " + l.get(0).getClass());
                     if (l.get(0).getClass() == LinkedTreeMap.class) {
                         LinkedTreeMap ltm = (LinkedTreeMap) l.get(0);
                         accountName = (String) ltm.get("name");

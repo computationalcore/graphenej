@@ -77,7 +77,6 @@ public class ApiCall implements JsonSerializable {
                 methodParams.add((String) this.params.get(i));
             }else if(this.params.get(i) instanceof ArrayList){
                 // Other times it might be an array
-                System.out.println("es un arreglo");
                 JsonArray array = new JsonArray();
                 ArrayList<JsonSerializable> listArgument = (ArrayList<JsonSerializable>) this.params.get(i);
                 for(int l = 0; l < listArgument.size(); l++){
@@ -90,7 +89,6 @@ public class ApiCall implements JsonSerializable {
         paramsArray.add(methodParams);
         obj.add(KEY_PARAMS, paramsArray);
         obj.addProperty(KEY_JSON_RPC, this.jsonrpc);
-        System.out.println("JSON Object: " + obj.toString());
         return obj;
     }
 
