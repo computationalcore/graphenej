@@ -25,6 +25,7 @@ import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
@@ -174,7 +175,7 @@ public class Test {
 //        return new String(Base64.encode(sigData), Charset.forName("UTF-8"));
     }
 
-    public byte[] testTransactionSerialization(long head_block_number, String head_block_id, long relative_expiration) {
+    public void testTransactionSerialization(long head_block_number, String head_block_id, long relative_expiration) {
         BlockData blockData = new BlockData(head_block_number, head_block_id, relative_expiration);
 
         ArrayList<BaseOperation> operations = new ArrayList<BaseOperation>();
@@ -187,7 +188,6 @@ public class Test {
         byte[] serializedTransaction = this.transaction.toBytes();
         System.out.println("Serialized transaction");
         System.out.println(Util.bytesToHex(serializedTransaction));
-        return serializedTransaction;
     }
 
     public void testWebSocketTransfer() throws IOException {
@@ -335,12 +335,15 @@ public class Test {
                     .setDestination(new UserAccount("1.2.129848"))
                     .setAmount(new AssetAmount(UnsignedLong.valueOf(100), new Asset("1.3.120")))
                     .setFee(new AssetAmount(UnsignedLong.valueOf(264174), new Asset("1.3.0")))
-                    .setBlockData(new BlockData(43408, 1430521623, 1479231969))
+                    .setBlockData(new BlockData(Main.REF_BLOCK_NUM, Main.REF_BLOCK_PREFIX, Main.RELATIVE_EXPIRATION))
                     .setPrivateKey(DumpedPrivateKey.fromBase58(null, Main.WIF).getKey())
                     .build();
 
             ArrayList<Serializable> transactionList = new ArrayList<>();
             transactionList.add(transaction);
+
+            byte[] signature = transaction.getGrapheneSignature();
+            System.out.println(Util.bytesToHex(signature));
             ApiCall call = new ApiCall(4, "call", "broadcast_transaction", transactionList, "2.0", 1);
             String jsonCall = call.toJsonString();
             System.out.println("json call");
@@ -397,7 +400,7 @@ public class Test {
     }
 
     public void testTransactionBroadcastSequence() {
-        String url = "ws://api.devling.xyz:8088";
+        String url = Test.OPENLEDGER_WITNESS_URL;
         WitnessResponseListener listener = new WitnessResponseListener() {
             @Override
             public void onSuccess(WitnessResponse response) {
@@ -423,20 +426,29 @@ public class Test {
 
             ArrayList<Serializable> transactionList = new ArrayList<>();
             transactionList.add(transaction);
-            ApiCall call = new ApiCall(4, "call", "broadcast_transaction", transactionList, "2.0", 1);
 
-            WebSocketFactory factory = new WebSocketFactory().setConnectionTimeout(5000);
-            try {
-                WebSocket mWebSocket = factory.createSocket(url);
-                mWebSocket.addListener(new TransactionBroadcastSequence(transaction, listener));
-                mWebSocket.connect();
-            } catch (IOException e) {
-                System.out.println("IOException. Msg: " + e.getMessage());
-            } catch (WebSocketException e) {
-                System.out.println("WebSocketException. Msg: " + e.getMessage());
-            }
+            transactionList.add(transaction);
+
+            SSLContext context = null;
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
+
+            mWebSocket.addListener(new TransactionBroadcastSequence(transaction, listener));
+            mWebSocket.connect();
+
         } catch (MalformedTransactionException e) {
             System.out.println("MalformedTransactionException. Msg: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: " + e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgoritmException. Msg: "+e.getMessage());
         }
     }
 
@@ -609,6 +621,18 @@ public class Test {
     }
 
     public void testAccountNamebyAddress() {
+        WitnessResponseListener listener = new WitnessResponseListener() {
+            @Override
+            public void onSuccess(WitnessResponse response) {
+                System.out.println("onSuccess");
+            }
+
+            @Override
+            public void onError(BaseResponse.Error error) {
+                System.out.println("onError");
+            }
+        };
+
         BrainKey brainKey = new BrainKey(Main.BRAIN_KEY, 0);
         Address address = new Address(brainKey.getPrivateKey());
         try {
@@ -621,7 +645,7 @@ public class Test {
             factory.setSSLContext(context);
 
             WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
-            mWebSocket.addListener(new GetAccountsByAddress(address, mListener));
+            mWebSocket.addListener(new GetAccountsByAddress(address, listener));
             mWebSocket.connect();
         } catch (IOException e) {
             System.out.println("IOException. Msg: " + e.getMessage());
