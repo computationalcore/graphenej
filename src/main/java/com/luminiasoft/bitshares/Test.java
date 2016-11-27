@@ -55,15 +55,19 @@ public class Test {
                 System.out.println("Got account properties");
                 System.out.println("id: " + accountProperties.id);
             } else if (response.result.getClass() == ArrayList.class) {
-                List l = (List) response.result;
-                if (l.size() > 0) {
-
-                    if (l.get(0).getClass() == AssetAmount.class) {
-                        AssetAmount assetAmount = (AssetAmount) l.get(0);
+                List list = (List) response.result;
+                if (list.size() > 0) {
+                    if(list.get(0) instanceof AccountProperties){
+                        List<AccountProperties> accountPropertiesList = list;
+                        for(AccountProperties accountProperties : accountPropertiesList){
+                            System.out.println("Account id: "+accountProperties.id);
+                        }
+                    }else if (list.get(0) instanceof AssetAmount) {
+                        AssetAmount assetAmount = (AssetAmount) list.get(0);
                         System.out.println("Got fee");
                         System.out.println("amount: " + assetAmount.getAmount() + ", asset id: " + assetAmount.getAsset().getObjectId());
-                    } else if (l.get(0).getClass() == ArrayList.class) {
-                        List sl = (List) l.get(0);
+                    } else if (list.get(0).getClass() == ArrayList.class) {
+                        List sl = (List) list.get(0);
                         if (sl.size() > 0) {
                             String accountId = (String) sl.get(0);
                             System.out.println("account id : " + accountId);
@@ -606,11 +610,8 @@ public class Test {
 
     public void testAccountNamebyAddress() {
         BrainKey brainKey = new BrainKey(Main.BRAIN_KEY, 0);
-            Address address = new Address(brainKey.getPrivateKey());
-            address.getAccountName();
-        /*try {
-            BrainKey brainKey = new BrainKey(Main.BRAIN_KEY, 0);
-            Address address = new Address(brainKey.getPrivateKey());
+        Address address = new Address(brainKey.getPrivateKey());
+        try {
             // Create a custom SSL context.
             SSLContext context = null;
             context = NaiveSSLContext.getInstance("TLS");
@@ -620,8 +621,7 @@ public class Test {
             factory.setSSLContext(context);
 
             WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
-            mWebSocket.addListener(new GetAccountsByAddress(address.toString(), mListener));
-            System.out.println("Before connecting");
+            mWebSocket.addListener(new GetAccountsByAddress(address, mListener));
             mWebSocket.connect();
         } catch (IOException e) {
             System.out.println("IOException. Msg: " + e.getMessage());
@@ -629,7 +629,29 @@ public class Test {
             System.out.println("WebSocketException. Msg: " + e.getMessage());
         } catch (NoSuchAlgorithmException e) {
             System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
-        }*/
+        }
+    }
+
+    public void testAccountNameById(){
+        try {
+            // Create a custom SSL context.
+            SSLContext context = null;
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
+            mWebSocket.addListener(new GetAccountNameById("1.2.138632", mListener));
+            mWebSocket.connect();
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: " + e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
+        }
     }
 
     public void testRelativeAccountHistory() {

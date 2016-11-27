@@ -33,8 +33,6 @@ public class Address {
 
     private ECKey key;
     private String prefix;
-    private String accountName = null;
-    private String accountId = null;
 
     public Address(ECKey key) {
         this.key = key;
@@ -56,110 +54,4 @@ public class Address {
         byte[] pubKeyChecksummed = Bytes.concat(pubKey, Arrays.copyOfRange(checksum, 0, 4));
         return this.prefix + Base58.encode(pubKeyChecksummed);
     }
-
-    public void getAccountDetail() {
-        try {
-            SSLContext context = NaiveSSLContext.getInstance("TLS");
-            WebSocketFactory factory = new WebSocketFactory();
-            factory.setSSLContext(context);
-            WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
-            mWebSocket.addListener(new GetAccountsByAddress(this.toString(), accountIdListener));
-            System.out.println("Before connecting");
-            mWebSocket.connect();
-        } catch (IOException e) {
-            System.out.println("IOException. Msg: " + e.getMessage());
-        } catch (WebSocketException e) {
-            System.out.println("WebSocketException. Msg: " + e.getMessage());
-        } catch (NoSuchAlgorithmException e) {
-            System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
-        }
-    }
-
-    public String getAccountName() {
-        return accountName;
-    }
-
-    public String getAccountId() {
-        return accountId;
-    }
-
-    WitnessResponseListener accountIdListener = new WitnessResponseListener() {
-
-        @Override
-        public void onSuccess(WitnessResponse response) {
-            if (response.result.getClass() == ArrayList.class) {
-                List l = (List) response.result;
-                if (l.size() > 0) {
-                    if (l.get(0).getClass() == ArrayList.class) {
-                        List sl = (List) l.get(0);
-                        if (sl.size() > 0) {
-                            accountId = (String) sl.get(0);
-                            try {
-                                // Create a custom SSL context.
-                                SSLContext context = NaiveSSLContext.getInstance("TLS");
-                                WebSocketFactory factory = new WebSocketFactory();
-                                factory.setSSLContext(context);
-
-                                WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
-                                mWebSocket.addListener(new GetAccountNameById(accountId, accountListener));
-                                mWebSocket.connect();
-                            } catch (IOException e) {
-                                System.out.println("IOException. Msg: " + e.getMessage());
-                            } catch (WebSocketException e) {
-                                System.out.println("WebSocketException. Msg: " + e.getMessage());
-                            } catch (NoSuchAlgorithmException ex) {
-                            }
-                        } else {
-                            //TODO Error empty answer
-                        }
-                    } else {
-                        //TODO Error bad type of answer   
-                        System.out.println("Got empty list!");
-                    }
-                } else {
-                    //TODO Error bad type of answer
-                    System.out.println("Got empty list!");
-                }
-            } else {
-                //TODO Error in response
-                System.out.println("accountIdListener Got other: " + response.result.getClass());
-            }
-        }
-
-        @Override
-        public void onError(BaseResponse.Error error) {
-            System.out.println("onError. message: " + error.message);
-        }
-    };
-
-    WitnessResponseListener accountListener = new WitnessResponseListener() {
-
-        @Override
-        public void onSuccess(WitnessResponse response) {
-            if (response.result.getClass() == ArrayList.class) {
-                List l = (List) response.result;
-                if (l.size() > 0) {
-                    System.out.println("list class " + l.get(0).getClass());
-                    if (l.get(0).getClass() == LinkedTreeMap.class) {
-                        LinkedTreeMap ltm = (LinkedTreeMap) l.get(0);
-                        accountName = (String) ltm.get("name");
-                    } else {
-                        //TODO Error bad type of answer   
-                        System.out.println("Got bad type!");
-                    }
-                } else {
-                    //TODO Error bad type of answer
-                    System.out.println("Got empty list!");
-                }
-            } else {
-                //TODO Error in response
-                System.out.println("accountIdListener Got other: " + response.result.getClass());
-            }
-        }
-
-        @Override
-        public void onError(BaseResponse.Error error) {
-            System.out.println("onError. message: " + error.message);
-        }
-    };
 }

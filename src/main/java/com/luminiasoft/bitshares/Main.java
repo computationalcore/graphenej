@@ -72,7 +72,9 @@ public class Main {
 
 //        test.testBip39Opertion();
 
-        test.testAccountNamebyAddress();
+//        test.testAccountNamebyAddress();
+
+        test.testAccountNameById();
 
 //        test.testRelativeAccountHistory();
     }

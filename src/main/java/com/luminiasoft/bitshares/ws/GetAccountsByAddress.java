@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
+import com.luminiasoft.bitshares.Address;
 import com.luminiasoft.bitshares.RPC;
 import com.luminiasoft.bitshares.interfaces.JsonSerializable;
 import com.luminiasoft.bitshares.interfaces.WitnessResponseListener;
@@ -27,51 +28,38 @@ import java.util.Map;
  */
 public class GetAccountsByAddress extends WebSocketAdapter {
 
-    private String publicKey;
+    private Address address;
     private WitnessResponseListener mListener;
 
-    public GetAccountsByAddress(String publicKey, WitnessResponseListener listener) {
-        this.publicKey = publicKey;
+    public GetAccountsByAddress(Address address, WitnessResponseListener listener) {
+        this.address = address;
         this.mListener = listener;
     }
 
     @Override
     public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
         ArrayList<Serializable> accountParams = new ArrayList();
-        ArrayList<JsonSerializable> paramAddress = new ArrayList();
-        paramAddress.add(new JsonSerializable() {
-            @Override
-            public String toJsonString() {
-                return publicKey;
-            }
-
-            @Override
-            public JsonElement toJsonObject() {
-                return new JsonParser().parse(publicKey);
-            }
-        });
+        ArrayList<Serializable> paramAddress = new ArrayList();
+        paramAddress.add(address.toString());
         accountParams.add(paramAddress);
-        ApiCall getAccountByAddress = new ApiCall(0, RPC.CALL_GET_KEY_REFERENCES, accountParams, "2.0", 1);
+        ApiCall getAccountByAddress = new ApiCall(0, RPC.CALL_GET_KEY_REFERENCES, accountParams, RPC.VERSION, 1);
         websocket.sendText(getAccountByAddress.toJsonString());
     }
 
     @Override
     public void onTextFrame(WebSocket websocket, WebSocketFrame frame) throws Exception {
-        System.out.println(frame.toString());
+        System.out.println("<<< "+frame.getPayloadText());
         String response = frame.getPayloadText();
         Gson gson = new Gson();
 
-        Type GetAccountByAddressResponse = new TypeToken<WitnessResponse<List<Object>>>() {
-        }.getType();
-        
-        WitnessResponse<WitnessResponse<List<Object>>> witnessResponse = gson.fromJson(response, GetAccountByAddressResponse);
+        Type GetAccountByAddressResponse = new TypeToken<WitnessResponse<List<String>>>(){}.getType();
+        WitnessResponse<WitnessResponse<List<String>>> witnessResponse = gson.fromJson(response, GetAccountByAddressResponse);
 
         if (witnessResponse.error != null) {
             this.mListener.onError(witnessResponse.error);
         } else {
             this.mListener.onSuccess(witnessResponse);
         }
-
         websocket.disconnect();
     }
 
