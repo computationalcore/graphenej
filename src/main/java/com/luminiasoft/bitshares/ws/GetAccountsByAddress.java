@@ -51,16 +51,20 @@ public class GetAccountsByAddress extends WebSocketAdapter {
         System.out.println("<<< "+frame.getPayloadText());
         String response = frame.getPayloadText();
         Gson gson = new Gson();
-
-        Type GetAccountByAddressResponse = new TypeToken<WitnessResponse<List<String>>>(){}.getType();
-        WitnessResponse<WitnessResponse<List<String>>> witnessResponse = gson.fromJson(response, GetAccountByAddressResponse);
-
+        Type GetAccountByAddressResponse = new TypeToken<WitnessResponse<List<List<String>>>>(){}.getType();
+        WitnessResponse<WitnessResponse<List<List<String>>>> witnessResponse = gson.fromJson(response, GetAccountByAddressResponse);
         if (witnessResponse.error != null) {
             this.mListener.onError(witnessResponse.error);
         } else {
             this.mListener.onSuccess(witnessResponse);
         }
         websocket.disconnect();
+    }
+
+    @Override
+    public void onFrameSent(WebSocket websocket, WebSocketFrame frame) throws Exception {
+        if(frame.isTextFrame())
+            System.out.println(">>> "+frame.getPayloadText());
     }
 
     @Override
