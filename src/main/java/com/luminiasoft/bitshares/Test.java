@@ -58,39 +58,44 @@ public class Test {
             } else if (response.result.getClass() == ArrayList.class) {
                 List list = (List) response.result;
                 if (list.size() > 0) {
-                    if(list.get(0) instanceof AccountProperties){
+                    if (list.get(0) instanceof AccountProperties) {
                         List<AccountProperties> accountPropertiesList = list;
-                        for(AccountProperties accountProperties : accountPropertiesList){
-                            System.out.println("Account id: "+accountProperties.id);
+                        for (AccountProperties accountProperties : accountPropertiesList) {
+                            System.out.println("Account id: " + accountProperties.id);
                         }
-                    }else if (list.get(0) instanceof AssetAmount) {
+                    } else if (list.get(0) instanceof AssetAmount) {
                         AssetAmount assetAmount = (AssetAmount) list.get(0);
                         System.out.println("Got fee");
                         System.out.println("amount: " + assetAmount.getAmount() + ", asset id: " + assetAmount.getAsset().getObjectId());
                     } else if (list.get(0).getClass() == ArrayList.class) {
                         List sl = (List) list.get(0);
                         if (sl.size() > 0) {
-                            String accountId = (String) sl.get(0);
-                            System.out.println("account id : " + accountId);
-                            try {
+                            if (response.result.getClass() == AccountProperties.class) {
+                                AccountProperties accountProperties = (AccountProperties) response.result;
+                                System.out.println("Got account properties " + accountProperties);
+                            } else {
+                                String accountId = (String) sl.get(0);
+                                System.out.println("account id : " + accountId);
+                                try {
 
-                                // Create a custom SSL context.
-                                SSLContext context = null;
-                                context = NaiveSSLContext.getInstance("TLS");
-                                WebSocketFactory factory = new WebSocketFactory();
+                                    // Create a custom SSL context.
+                                    SSLContext context = null;
+                                    context = NaiveSSLContext.getInstance("TLS");
+                                    WebSocketFactory factory = new WebSocketFactory();
 
-                                // Set the custom SSL context.
-                                factory.setSSLContext(context);
+                                    // Set the custom SSL context.
+                                    factory.setSSLContext(context);
 
-                                WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
-                                mWebSocket.addListener(new GetAccountNameById(accountId, null));
-                                mWebSocket.connect();
-                            } catch (IOException e) {
-                                System.out.println("IOException. Msg: " + e.getMessage());
-                            } catch (WebSocketException e) {
-                                System.out.println("WebSocketException. Msg: " + e.getMessage());
-                            } catch (NoSuchAlgorithmException ex) {
-                                Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
+                                    WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
+                                    mWebSocket.addListener(new GetAccountNameById(accountId, null));
+                                    mWebSocket.connect();
+                                } catch (IOException e) {
+                                    System.out.println("IOException. Msg: " + e.getMessage());
+                                } catch (WebSocketException e) {
+                                    System.out.println("WebSocketException. Msg: " + e.getMessage());
+                                } catch (NoSuchAlgorithmException ex) {
+                                    Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
+                                }
                             }
                         }
                     }
@@ -656,7 +661,7 @@ public class Test {
         }
     }
 
-    public void testAccountNameById(){
+    public void testAccountNameById() {
         try {
             // Create a custom SSL context.
             SSLContext context = null;
