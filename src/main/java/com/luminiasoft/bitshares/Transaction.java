@@ -73,24 +73,24 @@ public class Transaction implements ByteSerializable, JsonSerializable {
     public List<BaseOperation> getOperations(){ return this.operations; }
 
     /**
-     * Obtains a signature of this transaction.
+     * Obtains a signature of this transaction. Please note that due to the current reliance on
+     * bitcoinj to generate the signatures, and due to the fact that it uses deterministic
+     * ecdsa signatures, we are slightly modifying the expiration time of the transaction while
+     * we look for a signature that will be accepted by the graphene network.
+     *
+     * This should then be called before any other serialization method.
      * @return: A valid signature of the current transaction.
      */
-    public byte[] getSignature(){
-        byte[] serializedTransaction = this.toBytes();
-        Sha256Hash hash = Sha256Hash.wrap(Sha256Hash.hash(serializedTransaction));
-        boolean isCanonical = false;
-        int recId = -1;
-        ECKey.ECDSASignature sig = null;
-        while(!isCanonical) {
-            sig = privateKey.sign(hash);
-            if(!sig.isCanonical()){
-                // Signature was not canonical, retrying
-                continue;
-            }else{
-                // Signature is canonical
-                isCanonical = true;
-            }
+    public byte[] getGrapheneSignature(){
+        boolean isGrapheneCanonical = false;
+        byte[] sigData = null;
+
+        while(!isGrapheneCanonical) {
+            byte[] serializedTransaction = this.toBytes();
+            Sha256Hash hash = Sha256Hash.wrap(Sha256Hash.hash(serializedTransaction));
+            int recId = -1;
+            ECKey.ECDSASignature sig = privateKey.sign(hash);
+
             // Now we have to work backwards to figure out the recId needed to recover the signature.
             for (int i = 0; i < 4; i++) {
                 ECKey k = ECKey.recoverFromSignature(i, sig, hash, privateKey.isCompressed());
@@ -99,15 +99,24 @@ public class Transaction implements ByteSerializable, JsonSerializable {
                     break;
                 }
             }
+
+            sigData = new byte[65];  // 1 header + 32 bytes for R + 32 bytes for S
+            int headerByte = recId + 27 + (privateKey.isCompressed() ? 4 : 0);
+            sigData[0] = (byte) headerByte;
+            System.arraycopy(Utils.bigIntegerToBytes(sig.r, 32), 0, sigData, 1, 32);
+            System.arraycopy(Utils.bigIntegerToBytes(sig.s, 32), 0, sigData, 33, 32);
+
+            // Further "canonicality" tests
+            if(((sigData[0] & 0x80) != 0) || (sigData[0] == 0) ||
+                    ((sigData[1] & 0x80) != 0) || ((sigData[32] & 0x80) != 0) ||
+                    (sigData[32] == 0) || ((sigData[33] & 0x80)  != 0)){
+                this.blockData.setRelativeExpiration(this.blockData.getRelativeExpiration() + 1);
+            }else{
+                isGrapheneCanonical = true;
+            }
         }
-        int headerByte = recId + 27 + (privateKey.isCompressed() ? 4 : 0);
-        byte[] sigData = new byte[65];  // 1 header + 32 bytes for R + 32 bytes for S
-        sigData[0] = (byte)headerByte;
-        System.arraycopy(Utils.bigIntegerToBytes(sig.r, 32), 0, sigData, 1, 32);
-        System.arraycopy(Utils.bigIntegerToBytes(sig.s, 32), 0, sigData, 33, 32);
         return sigData;
     }
-
     /**
      * Method that creates a serialized byte array with compact information about this transaction
      * that is needed for the creation of a signature.
@@ -156,6 +165,10 @@ public class Transaction implements ByteSerializable, JsonSerializable {
     public JsonObject toJsonObject() {
         JsonObject obj = new JsonObject();
 
+        // Getting the signature before anything else,
+        // since this might change the transaction expiration data slightly
+        byte[] signature = getGrapheneSignature();
+
         // Formatting expiration time
         Date expirationTime = new Date(blockData.getRelativeExpiration() * 1000);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -166,7 +179,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
 
         // Adding signatures
         JsonArray signatureArray = new JsonArray();
-        signatureArray.add(Util.bytesToHex(getSignature()));
+        signatureArray.add(Util.bytesToHex(signature));
         obj.add(KEY_SIGNATURES, signatureArray);
 
         JsonArray operationsArray = new JsonArray();
