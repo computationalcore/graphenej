@@ -40,7 +40,17 @@ public class GetAccountsByAddress extends WebSocketAdapter {
     public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
         ArrayList<Serializable> accountParams = new ArrayList();
         ArrayList<Serializable> paramAddress = new ArrayList();
-        paramAddress.add(address.toString());
+        paramAddress.add(new JsonSerializable() {
+            @Override
+            public String toJsonString() {
+                return address.toString();
+            }
+
+            @Override
+            public JsonElement toJsonObject() {
+                return new JsonParser().parse(address.toString());
+            }
+        });
         accountParams.add(paramAddress);
         ApiCall getAccountByAddress = new ApiCall(0, RPC.CALL_GET_KEY_REFERENCES, accountParams, RPC.VERSION, 1);
         websocket.sendText(getAccountByAddress.toJsonString());
@@ -52,8 +62,8 @@ public class GetAccountsByAddress extends WebSocketAdapter {
         String response = frame.getPayloadText();
         Gson gson = new Gson();
 
-        Type GetAccountByAddressResponse = new TypeToken<WitnessResponse<List<String>>>(){}.getType();
-        WitnessResponse<WitnessResponse<List<String>>> witnessResponse = gson.fromJson(response, GetAccountByAddressResponse);
+        Type GetAccountByAddressResponse = new TypeToken<WitnessResponse<List<List<String>>>>(){}.getType();
+        WitnessResponse<WitnessResponse<List<List<String>>>> witnessResponse = gson.fromJson(response, GetAccountByAddressResponse);
 
         if (witnessResponse.error != null) {
             this.mListener.onError(witnessResponse.error);
