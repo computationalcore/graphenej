@@ -57,12 +57,12 @@ public class Util {
             out.finish();
             return output.toByteArray();
         } catch (IOException ex) {
-            Logger.getLogger(FileBin.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 out.close();
             } catch (IOException ex) {
-                Logger.getLogger(FileBin.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return null;
@@ -88,12 +88,12 @@ public class Util {
             in.close();
             return output.toByteArray();
         } catch (IOException ex) {
-            Logger.getLogger(FileBin.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 in.close();
             } catch (IOException ex) {
-                Logger.getLogger(FileBin.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return null;
