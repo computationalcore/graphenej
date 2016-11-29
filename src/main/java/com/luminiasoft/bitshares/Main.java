@@ -5,20 +5,18 @@ import org.bitcoinj.core.ECKey;
 import java.io.IOException;
 
 public class Main {
+
     // Brain key from Nelson's app referencing the bilthon-83 account
     public static final String BRAIN_KEY = "PUMPER ISOTOME SERE STAINER CLINGER MOONLIT CHAETA UPBRIM AEDILIC BERTHER NIT SHAP SAID SHADING JUNCOUS CHOUGH";
 
     //public static final String BRAIN_KEY = "TWIXT SERMO TRILLI AUDIO PARDED PLUMET BIWA REHUNG MAUDLE VALVULA OUTBURN FEWNESS ALIENER UNTRACE PRICH TROKER";
     //public static final String BRAIN_KEY = "SIVER TIKKER FOGO HOMINAL PRAYER LUTEIN SMALLY ACARID MEROPIA TRANCE BOGONG IDDAT HICKORY SOUTANE MOOD DOWSER";
-
     public static final String BIP39_KEY = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 
     // WIF from Nelson's app referencing the bilthon-83 account
 //    public static final String WIF = "5J96pne45qWM1WpektoeazN6k9Mt93jQ7LyueRxFfEMTiy6yxjM";
-
     // Brain key from an empty account created by the cli_wallet
 //    public static final String BRAIN_KEY = "TWIXT SERMO TRILLI AUDIO PARDED PLUMET BIWA REHUNG MAUDLE VALVULA OUTBURN FEWNESS ALIENER UNTRACE PRICH TROKER";
-
     // WIF from an emty account created by the cli_wallet
     public static final String WIF = "5KMzB2GqGhnh7ufhgddmz1eKPHS72uTLeL9hHjSvPb1UywWknF5";
 
@@ -39,47 +37,27 @@ public class Main {
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
-
 //        test.testCustomSerializer();
-
 //        test.testTransactionSerialization();
-
 //        test.testLoginSerialization();
-
 //        test.testNetworkBroadcastSerialization();
-
 //        test.testNetworkBroadcastDeserialization();
-
 //        test.testGetDynamicParams();
-
 //        test.testGetRequiredFeesSerialization();
-
 //        test.testRequiredFeesResponse();
-
 //        test.testTransactionBroadcastSequence();
-
 //        test.testAccountLookupDeserialization();
-
 //        test.testPrivateKeyManipulations();
-
 //        test.testGetAccountByName();
-
 //        test.testGetRequiredFees();
-
 //        test.testRandomNumberGeneration();
-
 //        test.testBrainKeyOperations(false);
-
 //        test.testBip39Opertion();
-
 //        test.testAccountNamebyAddress();
-
 //        test.testAccountNameById();
-
 //        test.testRelativeAccountHistory();
-
-        test.testingInvoiceGeneration();
-
+//        test.testingInvoiceGeneration();
 //        test.testCompression();
+        test.testCreateBinFile();
     }
 }

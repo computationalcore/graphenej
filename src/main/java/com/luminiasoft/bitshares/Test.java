@@ -705,7 +705,6 @@ public class Test {
             System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
         }
     }
-
     public void testingInvoiceGeneration(){
         Invoice.LineItem[] lineItem = new Invoice.LineItem[] { new Invoice.LineItem("Apples", 2, "20 CSD")};
         Invoice invoice = new Invoice("bilthon-83", "Bilthon's store", "Invoice #12", "BTS", lineItem, "Thank you", "");
@@ -716,12 +715,16 @@ public class Test {
         System.out.println("recovered invoice: "+recovered.toJsonString());
     }
 
-    public void testCompression(){
+    public void testCompression() {
         String test = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
         System.out.println("to compress");
         System.out.println(Util.bytesToHex(test.getBytes()));
         byte[] compressed = Util.compress(test.getBytes());
         System.out.println("compressed");
         System.out.println(Util.bytesToHex(compressed));
+    }
+
+    public void testCreateBinFile(){
+        FileBin.getBytesFromBrainKey(Main.BRAIN_KEY, "123456","bithon-83");
     }
 }
