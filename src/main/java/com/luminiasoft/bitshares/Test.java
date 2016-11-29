@@ -705,4 +705,8 @@ public class Test {
             System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
         }
     }
+    
+    public void testCreateBinFile(){
+        FileBin.getBytesFromBrainKey(Main.BRAIN_KEY, "123456","bithon-83");
+    }
 }
