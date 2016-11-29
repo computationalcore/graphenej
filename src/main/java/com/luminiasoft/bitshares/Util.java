@@ -1,7 +1,17 @@
 package com.luminiasoft.bitshares;
 
+import org.tukaani.xz.LZMA2Options;
+import org.tukaani.xz.LZMAInputStream;
+import org.tukaani.xz.LZMAOutputStream;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
- * Created by nelson on 11/8/16.
+ * Class used to encapsulate common utility methods
  */
 public class Util {
     final private static char[] hexArray = "0123456789abcdef".toCharArray();
@@ -24,5 +34,68 @@ public class Util {
             hexChars[j * 2 + 1] = hexArray[v & 0x0F];
         }
         return new String(hexChars);
+    }
+
+    /**
+     * Utility function that compresses data using the LZMA algorithm.
+     * @param inputBytes Input bytes of the data to be compressed.
+     * @return Compressed data
+     * @author Henry Varona
+     */
+    public static byte[] compress(byte[] inputBytes) {
+        LZMAOutputStream out = null;
+        try {
+            ByteArrayInputStream input = new ByteArrayInputStream(inputBytes);
+            ByteArrayOutputStream output = new ByteArrayOutputStream(2048);
+            LZMA2Options options = new LZMA2Options();
+            out = new LZMAOutputStream(output, options,-1);
+            byte[] buf = new byte[inputBytes.length];
+            int size;
+            while ((size = input.read(buf)) != -1) {
+                out.write(buf, 0, size);
+            }
+            out.finish();
+            return output.toByteArray();
+        } catch (IOException ex) {
+            Logger.getLogger(FileBin.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                out.close();
+            } catch (IOException ex) {
+                Logger.getLogger(FileBin.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Utility function that decompresses data that has been compressed using the LZMA algorithm
+     * by the {@link Util#compress(byte[])} method.
+     * @param inputBytes Compressed data
+     * @return Uncompressed data
+     * @author Henry Varona
+     */
+    public static byte[] decompress(byte[] inputBytes) {
+        LZMAInputStream in = null;
+        try {
+            ByteArrayInputStream input = new ByteArrayInputStream(inputBytes);
+            ByteArrayOutputStream output = new ByteArrayOutputStream(2048);
+            in = new LZMAInputStream(input);
+            int size;
+            while ((size = in.read()) != -1) {
+                output.write(size);
+            }
+            in.close();
+            return output.toByteArray();
+        } catch (IOException ex) {
+            Logger.getLogger(FileBin.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                in.close();
+            } catch (IOException ex) {
+                Logger.getLogger(FileBin.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return null;
     }
 }
