@@ -725,6 +725,7 @@ public class Test {
     }
 
     public void testCreateBinFile(){
-        FileBin.getBytesFromBrainKey(Main.BRAIN_KEY, "123456","bithon-83");
+        byte[] fileOutput = FileBin.getBytesFromBrainKey(Main.BRAIN_KEY, "123456","bithon-83");
+        System.out.println("fileOutput " + Arrays.toString(fileOutput));
     }
 }
