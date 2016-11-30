@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.tukaani.xz.XZOutputStream;
 
 /**
  * Class used to encapsulate common utility methods
@@ -43,12 +44,12 @@ public class Util {
      * @author Henry Varona
      */
     public static byte[] compress(byte[] inputBytes) {
-        LZMAOutputStream out = null;
+        XZOutputStream out = null;
         try {
             ByteArrayInputStream input = new ByteArrayInputStream(inputBytes);
             ByteArrayOutputStream output = new ByteArrayOutputStream(2048);
             LZMA2Options options = new LZMA2Options();
-            out = new LZMAOutputStream(output, options,-1);
+            out = new XZOutputStream(output, options);
             byte[] buf = new byte[inputBytes.length];
             int size;
             while ((size = input.read(buf)) != -1) {
