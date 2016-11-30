@@ -333,6 +333,11 @@ public class Test {
         System.out.println(jsonAmount);
     }
 
+    public void testUserAccountSerialization(){
+        UserAccount account = new UserAccount("1.2.138632");
+        System.out.println(Util.bytesToHex(account.toBytes()));
+    }
+
     public void testTransactionSerialization() {
         try {
             Transaction transaction = new TransferTransactionBuilder()
