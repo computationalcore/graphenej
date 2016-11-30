@@ -53,7 +53,8 @@ public abstract class FileBin {
      *
      * @param BrainKey The input brainkey
      * @param password The pin code
-     * @return The array byte of the file, or null if an error ocurred
+     * @param accountName The Account Name
+     * @return The array byte of the file, or null if an error happens
      */
     public static byte[] getBytesFromBrainKey(String BrainKey, String password, String accountName) {
 
@@ -66,6 +67,9 @@ public abstract class FileBin {
             byte[] encKey_enc = encryptAES(encKey, password.getBytes("UTF-8"));
             byte[] encBrain = encryptAES(BrainKey.getBytes("ASCII"), encKey);
 
+            /**
+             * Data to Store
+             */
             JsonObject wallet = new JsonObject();
             wallet.add("encryption_key", new JsonParser().parse(byteToString(encKey_enc)));
             wallet.add("encrypted_brainkey", new JsonParser().parse(byteToString(encBrain)));
@@ -76,7 +80,6 @@ public abstract class FileBin {
             jsonAccountName.add("name", new JsonParser().parse(accountName));
             accountNames.add(jsonAccountName);
             wallet_object.add("linked_accounts", accountNames);
-
             byte[] compressedData = Util.compress(wallet_object.toString().getBytes("UTF-8"));
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] checksum = md.digest(compressedData);
@@ -87,21 +90,19 @@ public abstract class FileBin {
             secureRandom.nextBytes(randomKey);
             ECKey randomECKey = ECKey.fromPrivate(md.digest(randomKey));
             byte[] randPubKey = randomECKey.getPubKey();
-
             byte[] finalKey = randomECKey.getPubKeyPoint().multiply(ECKey.fromPrivate(md.digest(password.getBytes("UTF-8"))).getPrivKey()).normalize().getXCoord().getEncoded();
-
             MessageDigest md1 = MessageDigest.getInstance("SHA-512");
             finalKey = md1.digest(finalKey);
-            rawData = encryptAES(rawData, finalKey);
-
+            rawData = encryptAES(rawData, byteToString(finalKey).getBytes());
             byte[] result = new byte[rawData.length + randPubKey.length];
             System.arraycopy(randPubKey, 0, result, 0, randPubKey.length);
             System.arraycopy(rawData, 0, result, randPubKey.length, rawData.length);
 
+            System.out.println("result : " + byteToString(result));
             return result;
 
         } catch (UnsupportedEncodingException | NoSuchAlgorithmException ex) {
-            ex.printStackTrace();
+
         }
         return null;
     }
@@ -140,7 +141,6 @@ public abstract class FileBin {
             System.arraycopy(result, 32, ivBytes, 0, 16);
             byte[] sksBytes = new byte[32];
             System.arraycopy(result, 0, sksBytes, 0, 32);
-
             PaddedBufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESFastEngine()));
             cipher.init(true, new ParametersWithIV(new KeyParameter(sksBytes), ivBytes));
             byte[] temp = new byte[input.length + (16 - (input.length % 16))];
@@ -152,14 +152,7 @@ public abstract class FileBin {
             temp = new byte[out.length - 16];
             System.arraycopy(out, 0, temp, 0, temp.length);
             return temp;
-        } catch (NoSuchAlgorithmException ex) {
-            ex.printStackTrace();
-        } catch (DataLengthException ex) {
-            ex.printStackTrace();
-        } catch (IllegalStateException ex) {
-            ex.printStackTrace();
-        } catch (InvalidCipherTextException ex) {
-            ex.printStackTrace();
+        } catch (NoSuchAlgorithmException | DataLengthException | IllegalStateException | InvalidCipherTextException ex) {
         }
         return null;
     }
@@ -177,12 +170,10 @@ public abstract class FileBin {
             in.close();
             return output.toByteArray();
         } catch (IOException ex) {
-            Logger.getLogger(FileBin.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 in.close();
             } catch (IOException ex) {
-                Logger.getLogger(FileBin.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return null;
