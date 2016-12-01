@@ -43,7 +43,32 @@ public abstract class FileBin {
      * incorrect
      */
     public static String getBrainkeyFromByte(byte[] input, String password) {
+        try {
+            byte[] publicKey = new byte[34];
+            byte[] rawData = new byte[input.length-34];
 
+            System.arraycopy(input, 0, publicKey, 0, publicKey.length);
+            System.arraycopy(input, 34, rawData, 0, rawData.length);
+
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+
+            ECKey randomECKey = ECKey.fromPublicOnly(publicKey);
+            byte[] finalKey = randomECKey.getPubKeyPoint().multiply(ECKey.fromPrivate(md.digest(password.getBytes("UTF-8"))).getPrivKey()).normalize().getXCoord().getEncoded();
+
+            rawData = decryptAES(rawData, byteToString(finalKey).getBytes());
+            byte[] checksum = new byte[4];
+            System.arraycopy(rawData, 0, checksum, 0, 4);
+            byte[] compressedData = new byte[rawData.length-4];
+            System.arraycopy(rawData, 4, compressedData, 0, compressedData.length);
+            byte[] wallet_object_bytes = Util.decompress(compressedData);
+            String wallet_string = byteToString(wallet_object_bytes);
+            
+            return wallet_string;
+            //JsonObject wallet = new JsonParser().parse(wallet_string).getAsJsonObject();           
+            
+        } catch (UnsupportedEncodingException | NoSuchAlgorithmException ex){
+            
+        }
         //Creates cypher AES with password
         //Uncrypt 
         return null;
@@ -133,7 +158,7 @@ public abstract class FileBin {
         return null;
     }
 
-    private static byte[] encryptAES(byte[] input, byte[] key) {
+	private static byte[] encryptAES(byte[] input, byte[] key) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-512");
             byte[] result = md.digest(key);
@@ -172,12 +197,18 @@ public abstract class FileBin {
             cipher.doFinal(out, proc);
             
             //Unpadding
-            byte[] temp = new byte[input.length + (16 - (input.length % 16))];
-            System.arraycopy(input, 0, temp, 0, input.length);
-            Arrays.fill(temp, input.length, temp.length, (byte) (16 - (input.length % 16)));
-            temp = new byte[out.length - 16];
-            System.arraycopy(out, 0, temp, 0, temp.length);
-            return temp;
+            int count = out[out.length-1];
+            byte[] temp = new byte[count];
+            System.arraycopy(out, out.length-count, temp, 0, temp.length);
+            byte[] temp2 = new byte[count];
+            Arrays.fill(temp2, (byte)count);
+            if (Arrays.equals(temp, temp2)){
+                temp = new byte[out.length-count];
+                System.arraycopy(out, 0, temp, 0, out.length-count);
+                return temp;
+            } else {
+                return out;
+            }			
         } catch (NoSuchAlgorithmException | DataLengthException | IllegalStateException | InvalidCipherTextException ex) {
         }
         return null;
