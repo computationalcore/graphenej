@@ -54,8 +54,10 @@ public abstract class FileBin {
 
             ECKey randomECKey = ECKey.fromPublicOnly(publicKey);
             byte[] finalKey = randomECKey.getPubKeyPoint().multiply(ECKey.fromPrivate(md.digest(password.getBytes("UTF-8"))).getPrivKey()).normalize().getXCoord().getEncoded();
-
+            MessageDigest md1 = MessageDigest.getInstance("SHA-512");
+            finalKey = md1.digest(finalKey);
             rawData = decryptAES(rawData, byteToString(finalKey).getBytes());
+            
             byte[] checksum = new byte[4];
             System.arraycopy(rawData, 0, checksum, 0, 4);
             byte[] compressedData = new byte[rawData.length-4];
