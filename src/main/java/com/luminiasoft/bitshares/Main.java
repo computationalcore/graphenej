@@ -38,6 +38,7 @@ public class Main {
 //            e.printStackTrace();
 //        }
 //        test.testCustomSerializer();
+        test.testUserAccountSerialization();
 //        test.testTransactionSerialization();
 //        test.testLoginSerialization();
 //        test.testNetworkBroadcastSerialization();
@@ -58,6 +59,6 @@ public class Main {
 //        test.testRelativeAccountHistory();
 //        test.testingInvoiceGeneration();
 //        test.testCompression();
-        test.testCreateBinFile();
+//        test.testCreateBinFile();
     }
 }
