@@ -3,6 +3,7 @@ package com.luminiasoft.bitshares;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.luminiasoft.bitshares.crypto.AndroidRandomSource;
 import com.luminiasoft.bitshares.crypto.SecureRandomStrengthener;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -61,7 +62,7 @@ public abstract class FileBin {
         try {
             byte[] encKey = new byte[32];
             SecureRandomStrengthener randomStrengthener = SecureRandomStrengthener.getInstance();
-            //randomStrengthener.addEntropySource(new AndroidRandomSource());
+            randomStrengthener.addEntropySource(new AndroidRandomSource());
             SecureRandom secureRandom = randomStrengthener.generateAndSeedRandomNumberGenerator();
             secureRandom.nextBytes(encKey);
             byte[] encKey_enc = encryptAES(encKey, password.getBytes("UTF-8"));
@@ -98,7 +99,6 @@ public abstract class FileBin {
             System.arraycopy(randPubKey, 0, result, 0, randPubKey.length);
             System.arraycopy(rawData, 0, result, randPubKey.length, rawData.length);
 
-            System.out.println("result : " + byteToString(result));
             return result;
 
         } catch (UnsupportedEncodingException | NoSuchAlgorithmException ex) {
@@ -156,28 +156,33 @@ public abstract class FileBin {
         }
         return null;
     }
-
-    public static byte[] decompressDataLZMA(byte[] inputBytes) {
-        LZMAInputStream in = null;
+    
+    private static byte[] decryptAES(byte[] input, byte[] key) {
         try {
-            ByteArrayInputStream input = new ByteArrayInputStream(inputBytes);
-            ByteArrayOutputStream output = new ByteArrayOutputStream(2048);
-            in = new LZMAInputStream(input);
-            int size;
-            while ((size = in.read()) != -1) {
-                output.write(size);
-            }
-            in.close();
-            return output.toByteArray();
-        } catch (IOException ex) {
-        } finally {
-            try {
-                in.close();
-            } catch (IOException ex) {
-            }
+            MessageDigest md = MessageDigest.getInstance("SHA-512");
+            byte[] result = md.digest(key);
+            byte[] ivBytes = new byte[16];
+            System.arraycopy(result, 32, ivBytes, 0, 16);
+            byte[] sksBytes = new byte[32];
+            System.arraycopy(result, 0, sksBytes, 0, 32);
+            PaddedBufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESFastEngine()));
+            cipher.init(false, new ParametersWithIV(new KeyParameter(sksBytes), ivBytes));
+            byte[] out = new byte[cipher.getOutputSize(input.length)];
+            int proc = cipher.processBytes(input, 0, input.length, out, 0);
+            cipher.doFinal(out, proc);
+            
+            //Unpadding
+            byte[] temp = new byte[input.length + (16 - (input.length % 16))];
+            System.arraycopy(input, 0, temp, 0, input.length);
+            Arrays.fill(temp, input.length, temp.length, (byte) (16 - (input.length % 16)));
+            temp = new byte[out.length - 16];
+            System.arraycopy(out, 0, temp, 0, temp.length);
+            return temp;
+        } catch (NoSuchAlgorithmException | DataLengthException | IllegalStateException | InvalidCipherTextException ex) {
         }
         return null;
     }
+    
 
     public static String byteToString(byte[] input) {
         StringBuilder result = new StringBuilder();
