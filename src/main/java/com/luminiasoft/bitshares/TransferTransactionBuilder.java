@@ -46,7 +46,7 @@ public class TransferTransactionBuilder extends TransactionBuilder {
         return this;
     }
 
-    public TransferTransactionBuilder addOperation(Transfer transferOperation){
+    public TransferTransactionBuilder addOperation(TransferOperation transferOperation){
         if(operations == null){
             operations = new ArrayList<BaseOperation>();
         }
@@ -54,7 +54,7 @@ public class TransferTransactionBuilder extends TransactionBuilder {
     }
 
     @Override
-    public TransferOperation build() throws MalformedTransactionException {
+    public Transaction build() throws MalformedTransactionException {
         if(privateKey == null){
             throw new MalformedTransactionException("Missing private key information");
         }else if(blockData == null){
@@ -73,14 +73,14 @@ public class TransferTransactionBuilder extends TransactionBuilder {
             if(transferAmount == null){
                 throw new MalformedTransactionException("Missing transfer amount information");
             }
-            Transfer transferOperation;
+            TransferOperation transferOperation;
             if(feeAmount == null){
-                transferOperation = new Transfer(sourceAccount, destinationAccount, transferAmount);
+                transferOperation = new TransferOperation(sourceAccount, destinationAccount, transferAmount);
             }else{
-                transferOperation = new Transfer(sourceAccount, destinationAccount, transferAmount, feeAmount);
+                transferOperation = new TransferOperation(sourceAccount, destinationAccount, transferAmount, feeAmount);
             }
             operations.add(transferOperation);
         }
-        return new TransferOperation(privateKey, blockData, operations);
+        return new Transaction(privateKey, blockData, operations);
     }
 }

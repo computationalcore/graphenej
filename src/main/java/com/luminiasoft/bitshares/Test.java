@@ -35,10 +35,10 @@ public class Test {
     public static final String OPENLEDGER_WITNESS_URL = "wss://bitshares.openledger.info/ws";
 //    public static final String WITNESS_URL = "wss://fr.blockpay.ch:8089";
 
-    private TransferOperation transferOperation;
+    private Transaction transaction;
 
-    public TransferOperation getTransferOperation() {
-        return transferOperation;
+    public Transaction getTransaction() {
+        return transaction;
     }
 
     private WitnessResponseListener mListener = new WitnessResponseListener() {
@@ -109,27 +109,27 @@ public class Test {
     };
 
     public ECKey.ECDSASignature testSigning() {
-        byte[] serializedTransaction = this.transferOperation.toBytes();
+        byte[] serializedTransaction = this.transaction.toBytes();
         Sha256Hash hash = Sha256Hash.wrap(Sha256Hash.hash(serializedTransaction));
         byte[] bytesDigest = hash.getBytes();
-        ECKey sk = transferOperation.getPrivateKey();
+        ECKey sk = transaction.getPrivateKey();
         ECKey.ECDSASignature signature = sk.sign(hash);
         return signature;
     }
 
     public String testSigningMessage() {
-        byte[] serializedTransaction = this.transferOperation.toBytes();
+        byte[] serializedTransaction = this.transaction.toBytes();
         Sha256Hash hash = Sha256Hash.wrap(Sha256Hash.hash(serializedTransaction));
-        ECKey sk = transferOperation.getPrivateKey();
+        ECKey sk = transaction.getPrivateKey();
         return sk.signMessage(hash.toString());
     }
 
     public byte[] signMessage() {
-        byte[] serializedTransaction = this.transferOperation.toBytes();
+        byte[] serializedTransaction = this.transaction.toBytes();
         Sha256Hash hash = Sha256Hash.wrap(Sha256Hash.hash(serializedTransaction));
         System.out.println(">> digest <<");
         System.out.println(Util.bytesToHex(hash.getBytes()));
-        ECKey sk = transferOperation.getPrivateKey();
+        ECKey sk = transaction.getPrivateKey();
         System.out.println("Private key bytes");
         System.out.println(Util.bytesToHex(sk.getPrivKeyBytes()));
         boolean isCanonical = false;
@@ -183,10 +183,10 @@ public class Test {
         UserAccount to = new UserAccount("1.2.129848");
         AssetAmount amount = new AssetAmount(UnsignedLong.valueOf(100), new Asset("1.3.120"));
         AssetAmount fee = new AssetAmount(UnsignedLong.valueOf(264174), new Asset("1.3.0"));
-        operations.add(new Transfer(from, to, amount, fee));
-        this.transferOperation = new TransferOperation(Main.WIF, blockData, operations);
-        byte[] serializedTransaction = this.transferOperation.toBytes();
-        System.out.println("Serialized transferOperation");
+        operations.add(new TransferOperation(from, to, amount, fee));
+        this.transaction = new Transaction(Main.WIF, blockData, operations);
+        byte[] serializedTransaction = this.transaction.toBytes();
+        System.out.println("Serialized transaction");
         System.out.println(Util.bytesToHex(serializedTransaction));
     }
 
@@ -335,7 +335,7 @@ public class Test {
 
     public void testTransactionSerialization() {
         try {
-            TransferOperation transferOperation = new TransferTransactionBuilder()
+            Transaction transaction = new TransferTransactionBuilder()
                     .setSource(new UserAccount("1.2.138632"))
                     .setDestination(new UserAccount("1.2.129848"))
                     .setAmount(new AssetAmount(UnsignedLong.valueOf(100), new Asset("1.3.120")))
@@ -345,9 +345,9 @@ public class Test {
                     .build();
 
             ArrayList<Serializable> transactionList = new ArrayList<>();
-            transactionList.add(transferOperation);
+            transactionList.add(transaction);
 
-            byte[] signature = transferOperation.getGrapheneSignature();
+            byte[] signature = transaction.getGrapheneSignature();
             System.out.println(Util.bytesToHex(signature));
             ApiCall call = new ApiCall(4, "call", "broadcast_transaction", transactionList, "2.0", 1);
             String jsonCall = call.toJsonString();
@@ -420,7 +420,7 @@ public class Test {
         };
 
         try {
-            TransferOperation transferOperation = new TransferTransactionBuilder()
+            Transaction transaction = new TransferTransactionBuilder()
                     .setSource(new UserAccount("1.2.138632"))
                     .setDestination(new UserAccount("1.2.129848"))
                     .setAmount(new AssetAmount(UnsignedLong.valueOf(100), new Asset("1.3.120")))
@@ -430,9 +430,9 @@ public class Test {
                     .build();
 
             ArrayList<Serializable> transactionList = new ArrayList<>();
-            transactionList.add(transferOperation);
+            transactionList.add(transaction);
 
-            transactionList.add(transferOperation);
+            transactionList.add(transaction);
 
             SSLContext context = null;
             context = NaiveSSLContext.getInstance("TLS");
@@ -443,7 +443,7 @@ public class Test {
 
             WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
 
-            mWebSocket.addListener(new TransactionBroadcastSequence(transferOperation, listener));
+            mWebSocket.addListener(new TransactionBroadcastSequence(transaction, listener));
             mWebSocket.connect();
 
         } catch (MalformedTransactionException e) {
@@ -514,7 +514,7 @@ public class Test {
         UserAccount to = new UserAccount("1.2.129848");
         AssetAmount amount = new AssetAmount(UnsignedLong.valueOf(100), new Asset("1.3.120"));
         AssetAmount fee = new AssetAmount(UnsignedLong.valueOf(264174), new Asset("1.3.0"));
-        Transfer transfer = new Transfer(from, to, amount, fee);
+        TransferOperation transfer = new TransferOperation(from, to, amount, fee);
         ArrayList<BaseOperation> operations = new ArrayList<>();
         operations.add(transfer);
 

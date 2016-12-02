@@ -2,6 +2,7 @@ package com.luminiasoft.bitshares;
 
 import com.google.gson.JsonElement;
 import com.luminiasoft.bitshares.errors.MalformedAddressException;
+import com.luminiasoft.bitshares.interfaces.ByteSerializable;
 import com.luminiasoft.bitshares.interfaces.JsonSerializable;
 
 import java.util.HashMap;

@@ -1,218 +1,167 @@
 package com.luminiasoft.bitshares;
 
 import com.google.common.primitives.Bytes;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
-import com.luminiasoft.bitshares.interfaces.ByteSerializable;
-import com.luminiasoft.bitshares.interfaces.JsonSerializable;
-
-import org.bitcoinj.core.DumpedPrivateKey;
-import org.bitcoinj.core.ECKey;
-import org.bitcoinj.core.Sha256Hash;
-import org.bitcoinj.core.Utils;
+import com.google.gson.*;
 
 import java.lang.reflect.Type;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
 
 /**
- * Class used to represent a generic graphene transaction.
+ * Class used to encapsulate the TransferOperation operation related functionalities.
+ * TODO: Add extensions support
  */
-public class TransferOperation extends BaseOperation implements ByteSerializable, JsonSerializable {
-    private final String TAG = this.getClass().getName();
-
-    public static final String KEY_EXPIRATION = "expiration";
-    public static final String KEY_SIGNATURES = "signatures";
-    public static final String KEY_OPERATIONS = "operations";
+public class TransferOperation extends BaseOperation {
+    public static final String KEY_FEE = "fee";
+    public static final String KEY_AMOUNT = "amount";
     public static final String KEY_EXTENSIONS = "extensions";
-    public static final String KEY_REF_BLOCK_NUM = "ref_block_num";
-    public static final String KEY_REF_BLOCK_PREFIX = "ref_block_prefix";
+    public static final String KEY_FROM = "from";
+    public static final String KEY_TO = "to";
 
-    private ECKey privateKey;
-    private BlockData blockData;
-    private List<BaseOperation> operations;
-    private List<Extension> extensions;
+    private AssetAmount fee;
+    private AssetAmount amount;
+    private UserAccount from;
+    private UserAccount to;
+    private Memo memo;
+    private String[] extensions;
 
-    /**
-     * TransferOperation constructor.
-     * @param wif: The user's private key in the base58 format.
-     * @param block_data: Block data containing important information used to sign a transaction.
-     * @param operation_list: List of operations to include in the transaction.
-     */
-    public TransferOperation(String wif, BlockData block_data, List<BaseOperation> operation_list){
+    public TransferOperation(UserAccount from, UserAccount to, AssetAmount transferAmount, AssetAmount fee){
         super(OperationType.transfer_operation);
-        this.privateKey = DumpedPrivateKey.fromBase58(null, wif).getKey();
-        this.blockData = block_data;
-        this.operations = operation_list;
-        this.extensions = new ArrayList<Extension>();
+        this.from = from;
+        this.to = to;
+        this.amount = transferAmount;
+        this.fee = fee;
+        this.memo = new Memo();
     }
 
-    /**
-     * TransferOperation constructor.
-     * @param privateKey : Instance of a ECKey containing the private key that will be used to sign this transaction.
-     * @param blockData : Block data containing important information used to sign a transaction.
-     * @param operationList : List of operations to include in the transaction.
-     */
-    public TransferOperation(ECKey privateKey, BlockData blockData, List<BaseOperation> operationList){
+    public TransferOperation(UserAccount from, UserAccount to, AssetAmount transferAmount){
         super(OperationType.transfer_operation);
-        this.privateKey = privateKey;
-        this.blockData = blockData;
-        this.operations = operationList;
-        this.extensions = new ArrayList<Extension>();
+        this.from = from;
+        this.to = to;
+        this.amount = transferAmount;
+        this.memo = new Memo();
     }
 
-    public ECKey getPrivateKey(){
-        return this.privateKey;
-    }
-
-    public List<BaseOperation> getOperations(){ return this.operations; }
-
-    /**
-     * Obtains a signature of this transaction. Please note that due to the current reliance on
-     * bitcoinj to generate the signatures, and due to the fact that it uses deterministic
-     * ecdsa signatures, we are slightly modifying the expiration time of the transaction while
-     * we look for a signature that will be accepted by the graphene network.
-     *
-     * This should then be called before any other serialization method.
-     * @return: A valid signature of the current transaction.
-     */
-    public byte[] getGrapheneSignature(){
-        boolean isGrapheneCanonical = false;
-        byte[] sigData = null;
-
-        while(!isGrapheneCanonical) {
-            byte[] serializedTransaction = this.toBytes();
-            Sha256Hash hash = Sha256Hash.wrap(Sha256Hash.hash(serializedTransaction));
-            int recId = -1;
-            ECKey.ECDSASignature sig = privateKey.sign(hash);
-
-            // Now we have to work backwards to figure out the recId needed to recover the signature.
-            for (int i = 0; i < 4; i++) {
-                ECKey k = ECKey.recoverFromSignature(i, sig, hash, privateKey.isCompressed());
-                if (k != null && k.getPubKeyPoint().equals(privateKey.getPubKeyPoint())) {
-                    recId = i;
-                    break;
-                }
-            }
-
-            sigData = new byte[65];  // 1 header + 32 bytes for R + 32 bytes for S
-            int headerByte = recId + 27 + (privateKey.isCompressed() ? 4 : 0);
-            sigData[0] = (byte) headerByte;
-            System.arraycopy(Utils.bigIntegerToBytes(sig.r, 32), 0, sigData, 1, 32);
-            System.arraycopy(Utils.bigIntegerToBytes(sig.s, 32), 0, sigData, 33, 32);
-
-            // Further "canonicality" tests
-            if(((sigData[0] & 0x80) != 0) || (sigData[0] == 0) ||
-                    ((sigData[1] & 0x80) != 0) || ((sigData[32] & 0x80) != 0) ||
-                    (sigData[32] == 0) || ((sigData[33] & 0x80)  != 0)){
-                this.blockData.setRelativeExpiration(this.blockData.getRelativeExpiration() + 1);
-            }else{
-                isGrapheneCanonical = true;
-            }
-        }
-        return sigData;
+    public void setFee(AssetAmount newFee){
+        this.fee = newFee;
     }
 
     @Override
     public byte getId() {
-        return 0;
+        return (byte) this.type.ordinal();
     }
 
-    /**
-     * Method that creates a serialized byte array with compact information about this transaction
-     * that is needed for the creation of a signature.
-     * @return: byte array with serialized information about this transaction.
-     */
-    public byte[] toBytes(){
-        // Creating a List of Bytes and adding the first bytes from the chain apiId
-        List<Byte> byteArray = new ArrayList<Byte>();
-        byteArray.addAll(Bytes.asList(Util.hexToBytes(Chains.BITSHARES.CHAIN_ID)));
+    public UserAccount getFrom(){
+        return this.from;
+    }
 
-        // Adding the block data
-        byteArray.addAll(Bytes.asList(this.blockData.toBytes()));
+    public UserAccount getTo(){
+        return this.to;
+    }
 
-        // Adding the number of operations
-        byteArray.add((byte) this.operations.size());
+    public AssetAmount getAmount(){
+        return this.amount;
+    }
 
-        // Adding all the operations
-        for(BaseOperation operation : operations){
-            byteArray.add(operation.getId());
-            byteArray.addAll(Bytes.asList(operation.toBytes()));
-        }
+    public AssetAmount getFee(){
+        return this.fee;
+    }
 
-        //Adding the number of extensions
-        byteArray.add((byte) this.extensions.size());
-
-        for(Extension extension : extensions){
-            //TODO: Implement the extension serialization
-        }
-        // Adding a last zero byte to match the result obtained by the python-graphenelib code
-        // I'm not exactly sure what's the meaning of this last zero byte, but for now I'll just
-        // leave it here and work on signing the transaction.
-        //TODO: Investigate the origin and meaning of this last byte.
-        byteArray.add((byte) 0 );
-
-        return Bytes.toArray(byteArray);
+    @Override
+    public byte[] toBytes() {
+        byte[] feeBytes = fee.toBytes();
+        byte[] fromBytes = from.toBytes();
+        byte[] toBytes = to.toBytes();
+        byte[] amountBytes = amount.toBytes();
+        byte[] memoBytes = memo.toBytes();
+        return Bytes.concat(feeBytes, fromBytes, toBytes, amountBytes, memoBytes);
     }
 
     @Override
     public String toJsonString() {
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(TransferOperation.class, new TransactionSerializer());
+        gsonBuilder.registerTypeAdapter(TransferOperation.class, new TransferSerializer());
         return gsonBuilder.create().toJson(this);
     }
 
     @Override
-    public JsonObject toJsonObject() {
-        JsonObject obj = new JsonObject();
-
-        // Getting the signature before anything else,
-        // since this might change the transaction expiration data slightly
-        byte[] signature = getGrapheneSignature();
-
-        // Formatting expiration time
-        Date expirationTime = new Date(blockData.getRelativeExpiration() * 1000);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-
-        // Adding expiration
-        obj.addProperty(KEY_EXPIRATION, dateFormat.format(expirationTime));
-
-        // Adding signatures
-        JsonArray signatureArray = new JsonArray();
-        signatureArray.add(Util.bytesToHex(signature));
-        obj.add(KEY_SIGNATURES, signatureArray);
-
-        JsonArray operationsArray = new JsonArray();
-        for(BaseOperation operation : operations){
-            operationsArray.add(operation.toJsonObject());
-        }
-        // Adding operations
-        obj.add(KEY_OPERATIONS, operationsArray);
-
-        // Adding extensions
-        obj.add(KEY_EXTENSIONS, new JsonArray());
-
-        // Adding block data
-        obj.addProperty(KEY_REF_BLOCK_NUM, blockData.getRefBlockNum());
-        obj.addProperty(KEY_REF_BLOCK_PREFIX, blockData.getRefBlockPrefix());
-
-        return obj;
-
+    public JsonElement toJsonObject() {
+        JsonArray array = new JsonArray();
+        array.add(this.getId());
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add(KEY_FEE, fee.toJsonObject());
+        jsonObject.add(KEY_AMOUNT, amount.toJsonObject());
+        jsonObject.add(KEY_EXTENSIONS, new JsonArray());
+        jsonObject.addProperty(KEY_FROM, from.toJsonString());
+        jsonObject.addProperty(KEY_TO, to.toJsonString());
+        array.add(jsonObject);
+        return array;
     }
 
-    class TransactionSerializer implements JsonSerializer<TransferOperation> {
+    public static class TransferSerializer implements JsonSerializer<TransferOperation> {
 
         @Override
-        public JsonElement serialize(TransferOperation transferOperation, Type type, JsonSerializationContext jsonSerializationContext) {
-            return transferOperation.toJsonObject();
+        public JsonElement serialize(TransferOperation transfer, Type type, JsonSerializationContext jsonSerializationContext) {
+            JsonArray arrayRep = new JsonArray();
+            arrayRep.add(transfer.getId());
+            arrayRep.add(transfer.toJsonObject());
+            return arrayRep;
+        }
+    }
+
+    /**
+     * This deserializer will work on any transfer operation serialized in the 'array form' used a lot in
+     * the Graphene Blockchain API.
+     *
+     * An example of this serialized form is the following:
+     *
+     *    [
+     *       0,
+     *       {
+     *           "fee": {
+     *               "amount": 264174,
+     *               "asset_id": "1.3.0"
+     *           },
+     *           "from": "1.2.138632",
+     *           "to": "1.2.129848",
+     *           "amount": {
+     *               "amount": 100,
+     *               "asset_id": "1.3.0"
+     *           },
+     *           "extensions": []
+     *       }
+     *    ]
+     *
+     * It will convert this data into a nice TransferOperation object.
+     */
+    public static class TransferDeserializer implements JsonDeserializer<TransferOperation> {
+
+        @Override
+        public TransferOperation deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            if(json.isJsonArray()){
+                // This block is used just to check if we are in the first step of the deserialization
+                // when we are dealing with an array.
+                JsonArray serializedTransfer = json.getAsJsonArray();
+                if(serializedTransfer.get(0).getAsInt() != OperationType.transfer_operation.ordinal()){
+                    // If the operation type does not correspond to a transfer operation, we return null
+                    return null;
+                }else{
+                    // Calling itself recursively, this is only done once, so there will be no problems.
+                    return context.deserialize(serializedTransfer.get(1), TransferOperation.class);
+                }
+            }else{
+                // This block is called in the second recursion and takes care of deserializing the
+                // transfer data itself.
+                JsonObject jsonObject = json.getAsJsonObject();
+
+                // Deserializing AssetAmount objects
+                AssetAmount amount = context.deserialize(jsonObject.get("amount"), AssetAmount.class);
+                AssetAmount fee = context.deserialize(jsonObject.get("fee"), AssetAmount.class);
+
+                // Deserializing UserAccount objects
+                UserAccount from = new UserAccount(jsonObject.get("from").getAsString());
+                UserAccount to = new UserAccount(jsonObject.get("to").getAsString());
+                TransferOperation transfer = new TransferOperation(from, to, amount, fee);
+                return transfer;
+            }
         }
     }
 }
