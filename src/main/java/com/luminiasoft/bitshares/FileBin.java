@@ -45,22 +45,24 @@ public abstract class FileBin {
     public static String getBrainkeyFromByte(byte[] input, String password) {
         try {
             byte[] publicKey = new byte[33];
-            byte[] rawData = new byte[input.length-33];
+            byte[] rawDataEncripted = new byte[input.length-33];
 
             System.arraycopy(input, 0, publicKey, 0, publicKey.length);
-            System.arraycopy(input, 33, rawData, 0, rawData.length);
+            System.arraycopy(input, 33, rawDataEncripted, 0, rawDataEncripted.length);
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             
             ECKey randomECKey = ECKey.fromPublicOnly(publicKey);
             byte[] finalKey = randomECKey.getPubKeyPoint().multiply(ECKey.fromPrivate(md.digest(password.getBytes("UTF-8"))).getPrivKey()).normalize().getXCoord().getEncoded();
             MessageDigest md1 = MessageDigest.getInstance("SHA-512");
             finalKey = md1.digest(finalKey);
-            rawData = decryptAES(rawData, byteToString(finalKey).getBytes());
+            byte[] rawData = decryptAES(rawDataEncripted, byteToString(finalKey).getBytes());
             
             byte[] checksum = new byte[4];
             System.arraycopy(rawData, 0, checksum, 0, 4);
             byte[] compressedData = new byte[rawData.length-4];
             System.arraycopy(rawData, 4, compressedData, 0, compressedData.length);
+            
+            System.out.println("Despues:"+byteToString(compressedData));                        
             byte[] wallet_object_bytes = Util.decompress(compressedData);
             String wallet_string = byteToString(wallet_object_bytes);
             JsonObject wallet = new JsonParser().parse(wallet_string).getAsJsonObject();
@@ -93,7 +95,7 @@ public abstract class FileBin {
         try {
             byte[] encKey = new byte[32];
             SecureRandomStrengthener randomStrengthener = SecureRandomStrengthener.getInstance();
-            randomStrengthener.addEntropySource(new AndroidRandomSource());
+            //randomStrengthener.addEntropySource(new AndroidRandomSource());
             SecureRandom secureRandom = randomStrengthener.generateAndSeedRandomNumberGenerator();
             secureRandom.nextBytes(encKey);
             byte[] encKey_enc = encryptAES(encKey, password.getBytes("UTF-8"));
@@ -113,6 +115,7 @@ public abstract class FileBin {
             accountNames.add(jsonAccountName);
             wallet_object.add("linked_accounts", accountNames);
             byte[] compressedData = Util.compress(wallet_object.toString().getBytes("UTF-8"));
+            System.out.println("Antes:"+byteToString(compressedData));
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] checksum = md.digest(compressedData);
             byte[] rawData = new byte[compressedData.length + 4];
@@ -126,6 +129,7 @@ public abstract class FileBin {
             MessageDigest md1 = MessageDigest.getInstance("SHA-512");
             finalKey = md1.digest(finalKey);
             rawData = encryptAES(rawData, byteToString(finalKey).getBytes());
+            
             byte[] result = new byte[rawData.length + randPubKey.length];
             System.arraycopy(randPubKey, 0, result, 0, randPubKey.length);
             System.arraycopy(rawData, 0, result, randPubKey.length, rawData.length);
@@ -198,12 +202,14 @@ public abstract class FileBin {
             System.arraycopy(result, 0, sksBytes, 0, 32);
             PaddedBufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESFastEngine()));
             cipher.init(false, new ParametersWithIV(new KeyParameter(sksBytes), ivBytes));
-            byte[] out = new byte[cipher.getOutputSize(input.length)];
-            int proc = cipher.processBytes(input, 0, input.length, out, 0);
-            cipher.doFinal(out, proc);
+            byte[] pre_out = new byte[cipher.getOutputSize(input.length)];
+            int proc = cipher.processBytes(input, 0, input.length, pre_out, 0);
+            int proc2 = cipher.doFinal(pre_out, proc);
+            byte[] out = new byte[proc+proc2]; 
+            System.arraycopy(pre_out, 0, out, 0, proc+proc2);
             
             //Unpadding
-            int count = out[out.length-1];
+            int count = out[out.length-1];            
             byte[] temp = new byte[count];
             System.arraycopy(out, out.length-count, temp, 0, temp.length);
             byte[] temp2 = new byte[count];
