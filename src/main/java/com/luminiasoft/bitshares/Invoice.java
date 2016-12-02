@@ -53,11 +53,11 @@ public class Invoice implements JsonSerializable {
 
     public static String toQrCode(Invoice invoice){
         String json = invoice.toJsonString();
-        return Base58.encode(Util.compress(json.getBytes()));
+        return Base58.encode(Util.compress(json.getBytes(), Util.LZMA));
     }
 
     public static Invoice fromQrCode(String encoded){
-        String json = new String(Util.decompress(Base58.decode(encoded)));
+        String json = new String(Util.decompress(Base58.decode(encoded), Util.LZMA));
         Gson gson = new Gson();
         return gson.fromJson(json, Invoice.class);
     }
