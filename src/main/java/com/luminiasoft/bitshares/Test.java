@@ -12,20 +12,15 @@ import com.luminiasoft.bitshares.ws.*;
 import com.neovisionaries.ws.client.*;
 import org.bitcoinj.core.*;
 import org.spongycastle.crypto.Digest;
-import org.spongycastle.crypto.digests.RIPEMD128Digest;
 import org.spongycastle.crypto.digests.RIPEMD160Digest;
 import org.spongycastle.crypto.digests.SHA512Digest;
 import org.spongycastle.crypto.prng.DigestRandomGenerator;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLServerSocketFactory;
-import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.lang.reflect.Type;
-import java.net.URL;
-import java.nio.file.Paths;
+import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
@@ -333,7 +328,7 @@ public class Test {
         System.out.println(jsonAmount);
     }
 
-    public void testUserAccountSerialization(){
+    public void testUserAccountSerialization() {
         UserAccount account = new UserAccount("1.2.138632");
         System.out.println(Util.bytesToHex(account.toBytes()));
     }
@@ -458,7 +453,7 @@ public class Test {
         } catch (WebSocketException e) {
             System.out.println("WebSocketException. Msg: " + e.getMessage());
         } catch (NoSuchAlgorithmException e) {
-            System.out.println("NoSuchAlgoritmException. Msg: "+e.getMessage());
+            System.out.println("NoSuchAlgoritmException. Msg: " + e.getMessage());
         }
     }
 
@@ -710,14 +705,15 @@ public class Test {
             System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
         }
     }
-    public void testingInvoiceGeneration(){
-        Invoice.LineItem[] lineItem = new Invoice.LineItem[] { new Invoice.LineItem("Apples", 2, "20 CSD")};
+
+    public void testingInvoiceGeneration() {
+        Invoice.LineItem[] lineItem = new Invoice.LineItem[]{new Invoice.LineItem("Apples", 2, "20 CSD")};
         Invoice invoice = new Invoice("bilthon-83", "Bilthon's store", "Invoice #12", "BTS", lineItem, "Thank you", "");
         String qrCodeData = Invoice.toQrCode(invoice);
         System.out.println("qrCodeData");
         System.out.println(qrCodeData);
         Invoice recovered = Invoice.fromQrCode(qrCodeData);
-        System.out.println("recovered invoice: "+recovered.toJsonString());
+        System.out.println("recovered invoice: " + recovered.toJsonString());
     }
 
     public void testCompression() {
@@ -729,8 +725,10 @@ public class Test {
         System.out.println(Util.bytesToHex(compressed));
     }
 
-    public void testCreateBinFile(){
-        byte[] fileOutput = FileBin.getBytesFromBrainKey(Main.BRAIN_KEY, "123456","bithon-83");
+    public void testCreateBinFile() {
+        byte[] fileOutput = FileBin.getBytesFromBrainKey(Main.BRAIN_KEY, "123456", "bithon-83");
+        String stringFile = "02f9f3eb0f61a0a96134975d86048bf92e114d6a1ce286140cad3a96c33e697282bc0a8a24d1ad0c7bc084a79816ce38e36bd2d624aa8bf686f53fb4c7e25e3974da9b40e0b17e9d0b5b82793a04b19646169c49c58cd67f4950aee7d275141dd24f52baaaee772995a9bd6a6562a7a38aae08951236d3f612aecef7aedd720a91eacbab3a792ca3ebe0105838fe11f6e9d0e83e5d77eb82f17c7ba85c670e69294a8bcf8365cfeca487a60093498496bbec394c729e3fda9f32fdccdea56288b36fb14a26aa309b548a6dd9c1d616d22167348f8d580f9dc7361b4457d2dc6d75ec985d8e2d3dcdff89cd425d9f14037ac961eb10ac5f92bab356ccecd8cf018ec05ab40d915b628a75ae32cfa4005634f08b24c0dc8c5a7636ed70cbd86a7f0c4f6236d74310470fafe3af8b5346c8cb61957f7292b468d276498f9e806399588b0afd5777e6ee5fe7cd3a6691d9b5486cb5c7adbd5ad0b17588dd32d82b01d49ecf0f2bf24ee54a490ee620e8ab049047ffa416b5efa8f1f0155d8f1be866a10d0d62ae44a3a8ecc0121c08837c2ee1a25f8b6dd7266273c41f4b9a5e3d600e3fb4de870f99ab1a7196d93f222595f92e97a2480f58b61b62639154a374b987664fd317622aaad156f831b03f2d9606537b65b3b1fcfb1fb6be39560ad2c301dd1fc25cee755e61b49ebfe42ca7e64b4b0fc4aa347b48a85c0b585a3499fe278e25cb2141f8009b9afc875fa2a2c439bf6cdec4b5190a6deb7f9390f072beb24749a8a2114cc1870c07be079abb3ee0ebc827f9b53e158a529bc6552eba280f05edf5f7ae1911de7acb4888150a509d029ec7c9da6de8adabbca6773a0a293a0a42de8278c82e88b9390b42b56f58bd8633fb97130e799a47a744e2e8958fd5";
+        fileOutput = new BigInteger(stringFile, 16).toByteArray();
         System.out.println(FileBin.getBrainkeyFromByte(fileOutput, "123456"));
     }
 }

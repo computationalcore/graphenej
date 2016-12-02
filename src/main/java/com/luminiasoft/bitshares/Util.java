@@ -1,14 +1,12 @@
 package com.luminiasoft.bitshares;
 
-import org.tukaani.xz.LZMA2Options;
-import org.tukaani.xz.LZMAInputStream;
-import org.tukaani.xz.LZMAOutputStream;
-
 import java.io.ByteArrayInputStream;
+import org.tukaani.xz.LZMA2Options;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.tukaani.xz.XZInputStream;
 import org.tukaani.xz.XZOutputStream;
 
 /**
@@ -77,11 +75,11 @@ public class Util {
      * @author Henry Varona
      */
     public static byte[] decompress(byte[] inputBytes) {
-        LZMAInputStream in = null;
+        XZInputStream in = null;
         try {
             ByteArrayInputStream input = new ByteArrayInputStream(inputBytes);
             ByteArrayOutputStream output = new ByteArrayOutputStream(2048);
-            in = new LZMAInputStream(input);
+            in = new XZInputStream(input);
             int size;
             while ((size = in.read()) != -1) {
                 output.write(size);
