@@ -11,5 +11,5 @@ public abstract class TransactionBuilder {
     protected ECKey privateKey;
     protected BlockData blockData;
 
-    public abstract Transaction build() throws MalformedTransactionException;
+    public abstract TransferOperation build() throws MalformedTransactionException;
 }

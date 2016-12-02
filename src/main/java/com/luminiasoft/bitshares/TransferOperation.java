@@ -25,7 +25,7 @@ import java.util.TimeZone;
 /**
  * Class used to represent a generic graphene transaction.
  */
-public class Transaction implements ByteSerializable, JsonSerializable {
+public class TransferOperation extends BaseOperation implements ByteSerializable, JsonSerializable {
     private final String TAG = this.getClass().getName();
 
     public static final String KEY_EXPIRATION = "expiration";
@@ -41,12 +41,13 @@ public class Transaction implements ByteSerializable, JsonSerializable {
     private List<Extension> extensions;
 
     /**
-     * Transaction constructor.
+     * TransferOperation constructor.
      * @param wif: The user's private key in the base58 format.
      * @param block_data: Block data containing important information used to sign a transaction.
      * @param operation_list: List of operations to include in the transaction.
      */
-    public Transaction(String wif, BlockData block_data, List<BaseOperation> operation_list){
+    public TransferOperation(String wif, BlockData block_data, List<BaseOperation> operation_list){
+        super(OperationType.transfer_operation);
         this.privateKey = DumpedPrivateKey.fromBase58(null, wif).getKey();
         this.blockData = block_data;
         this.operations = operation_list;
@@ -54,12 +55,13 @@ public class Transaction implements ByteSerializable, JsonSerializable {
     }
 
     /**
-     * Transaction constructor.
+     * TransferOperation constructor.
      * @param privateKey : Instance of a ECKey containing the private key that will be used to sign this transaction.
      * @param blockData : Block data containing important information used to sign a transaction.
      * @param operationList : List of operations to include in the transaction.
      */
-    public Transaction(ECKey privateKey, BlockData blockData, List<BaseOperation> operationList){
+    public TransferOperation(ECKey privateKey, BlockData blockData, List<BaseOperation> operationList){
+        super(OperationType.transfer_operation);
         this.privateKey = privateKey;
         this.blockData = blockData;
         this.operations = operationList;
@@ -117,6 +119,12 @@ public class Transaction implements ByteSerializable, JsonSerializable {
         }
         return sigData;
     }
+
+    @Override
+    public byte getId() {
+        return 0;
+    }
+
     /**
      * Method that creates a serialized byte array with compact information about this transaction
      * that is needed for the creation of a signature.
@@ -157,7 +165,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
     @Override
     public String toJsonString() {
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(Transaction.class, new TransactionSerializer());
+        gsonBuilder.registerTypeAdapter(TransferOperation.class, new TransactionSerializer());
         return gsonBuilder.create().toJson(this);
     }
 
@@ -200,11 +208,11 @@ public class Transaction implements ByteSerializable, JsonSerializable {
 
     }
 
-    class TransactionSerializer implements JsonSerializer<Transaction> {
+    class TransactionSerializer implements JsonSerializer<TransferOperation> {
 
         @Override
-        public JsonElement serialize(Transaction transaction, Type type, JsonSerializationContext jsonSerializationContext) {
-            return transaction.toJsonObject();
+        public JsonElement serialize(TransferOperation transferOperation, Type type, JsonSerializationContext jsonSerializationContext) {
+            return transferOperation.toJsonObject();
         }
     }
 }

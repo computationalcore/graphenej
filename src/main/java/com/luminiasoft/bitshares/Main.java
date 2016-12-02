@@ -38,7 +38,7 @@ public class Main {
 //            e.printStackTrace();
 //        }
 //        test.testCustomSerializer();
-        test.testUserAccountSerialization();
+//        test.testUserAccountSerialization();
 //        test.testTransactionSerialization();
 //        test.testLoginSerialization();
 //        test.testNetworkBroadcastSerialization();
@@ -49,6 +49,7 @@ public class Main {
 //        test.testTransactionBroadcastSequence();
 //        test.testAccountLookupDeserialization();
 //        test.testPrivateKeyManipulations();
+        test.testPublicKeyManipulations();
 //        test.testGetAccountByName();
 //        test.testGetRequiredFees();
 //        test.testRandomNumberGeneration();

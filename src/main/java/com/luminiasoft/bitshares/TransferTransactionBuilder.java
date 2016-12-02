@@ -54,7 +54,7 @@ public class TransferTransactionBuilder extends TransactionBuilder {
     }
 
     @Override
-    public Transaction build() throws MalformedTransactionException {
+    public TransferOperation build() throws MalformedTransactionException {
         if(privateKey == null){
             throw new MalformedTransactionException("Missing private key information");
         }else if(blockData == null){
@@ -81,6 +81,6 @@ public class TransferTransactionBuilder extends TransactionBuilder {
             }
             operations.add(transferOperation);
         }
-        return new Transaction(privateKey, blockData, operations);
+        return new TransferOperation(privateKey, blockData, operations);
     }
 }

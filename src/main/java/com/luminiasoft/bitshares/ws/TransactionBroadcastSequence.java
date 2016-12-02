@@ -2,12 +2,8 @@ package com.luminiasoft.bitshares.ws;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.luminiasoft.bitshares.BaseOperation;
-import com.luminiasoft.bitshares.BlockData;
-import com.luminiasoft.bitshares.RPC;
-import com.luminiasoft.bitshares.Transaction;
-import com.luminiasoft.bitshares.Transfer;
-import com.luminiasoft.bitshares.TransferTransactionBuilder;
+import com.luminiasoft.bitshares.*;
+import com.luminiasoft.bitshares.TransferOperation;
 import com.luminiasoft.bitshares.interfaces.WitnessResponseListener;
 import com.luminiasoft.bitshares.models.ApiCall;
 import com.luminiasoft.bitshares.models.BaseResponse;
@@ -28,7 +24,7 @@ import java.util.Map;
 import java.util.TimeZone;
 
 /**
- * Class that will handle the transaction publication procedure.
+ * Class that will handle the transferOperation publication procedure.
  */
 public class TransactionBroadcastSequence extends WebSocketAdapter {
     private final String TAG = this.getClass().getName();
@@ -39,7 +35,7 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
     private final static int BROADCAST_TRANSACTION = 4;
     public final static int EXPIRATION_TIME = 30;
 
-    private Transaction transaction;
+    private TransferOperation transferOperation;
     private long expirationTime;
     private String headBlockId;
     private long headBlockNumber;
@@ -51,13 +47,13 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
 
     /**
      * Constructor of this class. The ids required
-     * @param transaction: The transaction to be broadcasted.
+     * @param transferOperation: The transferOperation to be broadcasted.
      * @param listener: A class implementing the WitnessResponseListener interface. This should
      *                be implemented by the party interested in being notified about the success/failure
-     *                of the transaction broadcast operation.
+     *                of the transferOperation broadcast operation.
      */
-    public TransactionBroadcastSequence(Transaction transaction, WitnessResponseListener listener){
-        this.transaction = transaction;
+    public TransactionBroadcastSequence(TransferOperation transferOperation, WitnessResponseListener listener){
+        this.transferOperation = transferOperation;
         this.mListener = listener;
     }
 
@@ -106,14 +102,14 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
                 headBlockNumber = dynamicProperties.head_block_number;
 
                 ArrayList<Serializable> transactionList = new ArrayList<>();
-                transactionList.add(transaction);
+                transactionList.add(transferOperation);
                 ApiCall call = new ApiCall(broadcastApiId,
                         RPC.CALL_BROADCAST_TRANSACTION,
                         transactionList,
                         "2.0",
                         currentId);
 
-                // Finally sending transaction
+                // Finally sending transferOperation
                 websocket.sendText(call.toJsonString());
             }else if(baseResponse.id >= BROADCAST_TRANSACTION){
                 Type WitnessResponseType = new TypeToken<WitnessResponse<String>>(){}.getType();
@@ -135,18 +131,18 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
                         * with ONE transfer operation.
                         */
                         retries++;
-                        List<BaseOperation> operations = this.transaction.getOperations();
+                        List<BaseOperation> operations = this.transferOperation.getOperations();
                         Transfer transfer = (Transfer) operations.get(0);
-                        transaction = new TransferTransactionBuilder()
+                        transferOperation = new TransferTransactionBuilder()
                                 .setSource(transfer.getFrom())
                                 .setDestination(transfer.getTo())
                                 .setAmount(transfer.getAmount())
                                 .setFee(transfer.getFee())
                                 .setBlockData(new BlockData(headBlockNumber, headBlockId, expirationTime + EXPIRATION_TIME))
-                                .setPrivateKey(transaction.getPrivateKey())
+                                .setPrivateKey(transferOperation.getPrivateKey())
                                 .build();
                         ArrayList<Serializable> transactionList = new ArrayList<>();
-                        transactionList.add(transaction);
+                        transactionList.add(transferOperation);
                         ApiCall call = new ApiCall(broadcastApiId,
                                 RPC.CALL_BROADCAST_TRANSACTION,
                                 transactionList,

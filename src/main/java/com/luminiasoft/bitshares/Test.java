@@ -4,6 +4,7 @@ import com.google.common.primitives.UnsignedLong;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.luminiasoft.bitshares.errors.MalformedAddressException;
 import com.luminiasoft.bitshares.errors.MalformedTransactionException;
 import com.luminiasoft.bitshares.interfaces.WitnessResponseListener;
 import com.luminiasoft.bitshares.models.*;
@@ -12,20 +13,14 @@ import com.luminiasoft.bitshares.ws.*;
 import com.neovisionaries.ws.client.*;
 import org.bitcoinj.core.*;
 import org.spongycastle.crypto.Digest;
-import org.spongycastle.crypto.digests.RIPEMD128Digest;
 import org.spongycastle.crypto.digests.RIPEMD160Digest;
 import org.spongycastle.crypto.digests.SHA512Digest;
 import org.spongycastle.crypto.prng.DigestRandomGenerator;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLServerSocketFactory;
-import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.lang.reflect.Type;
-import java.net.URL;
-import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
@@ -40,10 +35,10 @@ public class Test {
     public static final String OPENLEDGER_WITNESS_URL = "wss://bitshares.openledger.info/ws";
 //    public static final String WITNESS_URL = "wss://fr.blockpay.ch:8089";
 
-    private Transaction transaction;
+    private TransferOperation transferOperation;
 
-    public Transaction getTransaction() {
-        return transaction;
+    public TransferOperation getTransferOperation() {
+        return transferOperation;
     }
 
     private WitnessResponseListener mListener = new WitnessResponseListener() {
@@ -114,27 +109,27 @@ public class Test {
     };
 
     public ECKey.ECDSASignature testSigning() {
-        byte[] serializedTransaction = this.transaction.toBytes();
+        byte[] serializedTransaction = this.transferOperation.toBytes();
         Sha256Hash hash = Sha256Hash.wrap(Sha256Hash.hash(serializedTransaction));
         byte[] bytesDigest = hash.getBytes();
-        ECKey sk = transaction.getPrivateKey();
+        ECKey sk = transferOperation.getPrivateKey();
         ECKey.ECDSASignature signature = sk.sign(hash);
         return signature;
     }
 
     public String testSigningMessage() {
-        byte[] serializedTransaction = this.transaction.toBytes();
+        byte[] serializedTransaction = this.transferOperation.toBytes();
         Sha256Hash hash = Sha256Hash.wrap(Sha256Hash.hash(serializedTransaction));
-        ECKey sk = transaction.getPrivateKey();
+        ECKey sk = transferOperation.getPrivateKey();
         return sk.signMessage(hash.toString());
     }
 
     public byte[] signMessage() {
-        byte[] serializedTransaction = this.transaction.toBytes();
+        byte[] serializedTransaction = this.transferOperation.toBytes();
         Sha256Hash hash = Sha256Hash.wrap(Sha256Hash.hash(serializedTransaction));
         System.out.println(">> digest <<");
         System.out.println(Util.bytesToHex(hash.getBytes()));
-        ECKey sk = transaction.getPrivateKey();
+        ECKey sk = transferOperation.getPrivateKey();
         System.out.println("Private key bytes");
         System.out.println(Util.bytesToHex(sk.getPrivKeyBytes()));
         boolean isCanonical = false;
@@ -189,9 +184,9 @@ public class Test {
         AssetAmount amount = new AssetAmount(UnsignedLong.valueOf(100), new Asset("1.3.120"));
         AssetAmount fee = new AssetAmount(UnsignedLong.valueOf(264174), new Asset("1.3.0"));
         operations.add(new Transfer(from, to, amount, fee));
-        this.transaction = new Transaction(Main.WIF, blockData, operations);
-        byte[] serializedTransaction = this.transaction.toBytes();
-        System.out.println("Serialized transaction");
+        this.transferOperation = new TransferOperation(Main.WIF, blockData, operations);
+        byte[] serializedTransaction = this.transferOperation.toBytes();
+        System.out.println("Serialized transferOperation");
         System.out.println(Util.bytesToHex(serializedTransaction));
     }
 
@@ -340,7 +335,7 @@ public class Test {
 
     public void testTransactionSerialization() {
         try {
-            Transaction transaction = new TransferTransactionBuilder()
+            TransferOperation transferOperation = new TransferTransactionBuilder()
                     .setSource(new UserAccount("1.2.138632"))
                     .setDestination(new UserAccount("1.2.129848"))
                     .setAmount(new AssetAmount(UnsignedLong.valueOf(100), new Asset("1.3.120")))
@@ -350,9 +345,9 @@ public class Test {
                     .build();
 
             ArrayList<Serializable> transactionList = new ArrayList<>();
-            transactionList.add(transaction);
+            transactionList.add(transferOperation);
 
-            byte[] signature = transaction.getGrapheneSignature();
+            byte[] signature = transferOperation.getGrapheneSignature();
             System.out.println(Util.bytesToHex(signature));
             ApiCall call = new ApiCall(4, "call", "broadcast_transaction", transactionList, "2.0", 1);
             String jsonCall = call.toJsonString();
@@ -425,7 +420,7 @@ public class Test {
         };
 
         try {
-            Transaction transaction = new TransferTransactionBuilder()
+            TransferOperation transferOperation = new TransferTransactionBuilder()
                     .setSource(new UserAccount("1.2.138632"))
                     .setDestination(new UserAccount("1.2.129848"))
                     .setAmount(new AssetAmount(UnsignedLong.valueOf(100), new Asset("1.3.120")))
@@ -435,9 +430,9 @@ public class Test {
                     .build();
 
             ArrayList<Serializable> transactionList = new ArrayList<>();
-            transactionList.add(transaction);
+            transactionList.add(transferOperation);
 
-            transactionList.add(transaction);
+            transactionList.add(transferOperation);
 
             SSLContext context = null;
             context = NaiveSSLContext.getInstance("TLS");
@@ -448,7 +443,7 @@ public class Test {
 
             WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
 
-            mWebSocket.addListener(new TransactionBroadcastSequence(transaction, listener));
+            mWebSocket.addListener(new TransactionBroadcastSequence(transferOperation, listener));
             mWebSocket.connect();
 
         } catch (MalformedTransactionException e) {
@@ -474,14 +469,29 @@ public class Test {
     }
 
     public void testPrivateKeyManipulations() {
-        ECKey privateKey = DumpedPrivateKey.fromBase58(null, Main.WIF).getKey();
+        String brainKeyWords = "UNMATE AURIGAL NAVET WAVICLE REWOVE ABBOTCY COWHERB OUTKICK STOPPER JUSSORY BEAMLET WIRY";
+        BrainKey brainKey = new BrainKey(brainKeyWords, 0);
+
+        ECKey privateKey = DumpedPrivateKey.fromBase58(null, brainKey.getWalletImportFormat()).getKey();
         System.out.println("private key..............: " + Util.bytesToHex(privateKey.getSecretBytes()));
         System.out.println("public key uncompressed..: " + Util.bytesToHex(privateKey.getPubKey()));
         System.out.println("public key compressed....: " + Util.bytesToHex(privateKey.getPubKeyPoint().getEncoded(true)));
         System.out.println("base58...................: " + Base58.encode(privateKey.getPubKeyPoint().getEncoded(true)));
         System.out.println("base58...................: " + Base58.encode(privateKey.getPubKey()));
-        String brainKeyWords = "PUMPER ISOTOME SERE STAINER CLINGER MOONLIT CHAETA UPBRIM AEDILIC BERTHER NIT SHAP SAID SHADING JUNCOUS CHOUGH";
-        BrainKey brainKey = new BrainKey(brainKeyWords, 0);
+    }
+
+    public void testPublicKeyManipulations(){
+//            PublicKey publicKey = new PublicKey("BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY");
+//            System.out.println("Public key bytes");
+//            System.out.println(Util.bytesToHex(publicKey.toBytes()));
+        Address address = null;
+        try {
+            address = new Address("BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY");
+            System.out.println("Public key");
+            System.out.println(Util.bytesToHex(address.getPublicKey().toBytes()));
+        } catch (MalformedAddressException e) {
+            e.printStackTrace();
+        }
     }
 
     public void testGetAccountByName() {
