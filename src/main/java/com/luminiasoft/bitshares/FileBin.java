@@ -83,8 +83,6 @@ public abstract class FileBin {
         } catch (UnsupportedEncodingException | NoSuchAlgorithmException ex) {
 
         }
-        //Creates cypher AES with password
-        //Uncrypt 
         return null;
     }
 
