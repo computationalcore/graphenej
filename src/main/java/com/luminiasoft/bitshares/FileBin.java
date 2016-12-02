@@ -44,14 +44,13 @@ public abstract class FileBin {
      */
     public static String getBrainkeyFromByte(byte[] input, String password) {
         try {
-            byte[] publicKey = new byte[34];
-            byte[] rawData = new byte[input.length-34];
+            byte[] publicKey = new byte[33];
+            byte[] rawData = new byte[input.length-33];
 
             System.arraycopy(input, 0, publicKey, 0, publicKey.length);
-            System.arraycopy(input, 34, rawData, 0, rawData.length);
-
+            System.arraycopy(input, 33, rawData, 0, rawData.length);
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-
+            
             ECKey randomECKey = ECKey.fromPublicOnly(publicKey);
             byte[] finalKey = randomECKey.getPubKeyPoint().multiply(ECKey.fromPrivate(md.digest(password.getBytes("UTF-8"))).getPrivKey()).normalize().getXCoord().getEncoded();
             MessageDigest md1 = MessageDigest.getInstance("SHA-512");
@@ -64,9 +63,14 @@ public abstract class FileBin {
             System.arraycopy(rawData, 4, compressedData, 0, compressedData.length);
             byte[] wallet_object_bytes = Util.decompress(compressedData);
             String wallet_string = byteToString(wallet_object_bytes);
+            JsonObject wallet = new JsonParser().parse(wallet_string).getAsJsonObject();
+            byte[] encKey_enc = wallet.get("encryption_key").getAsString().getBytes();
+            byte[] encKey = decryptAES(encKey_enc, password.getBytes("UTF-8"));
+            byte[] encBrain = wallet.get("encrypted_brainkey").getAsString().getBytes();
+            String BrainKey = byteToString(decryptAES(encBrain, encKey));
             
-            return wallet_string;
-            //JsonObject wallet = new JsonParser().parse(wallet_string).getAsJsonObject();           
+            return BrainKey;
+            
             
         } catch (UnsupportedEncodingException | NoSuchAlgorithmException ex){
             
