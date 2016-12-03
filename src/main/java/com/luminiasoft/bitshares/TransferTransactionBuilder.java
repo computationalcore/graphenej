@@ -46,6 +46,7 @@ public class TransferTransactionBuilder extends TransactionBuilder {
         return this;
     }
 
+    //TODO: Add support for multiple transfer operations in a single transaction
     public TransferTransactionBuilder addOperation(TransferOperation transferOperation){
         if(operations == null){
             operations = new ArrayList<BaseOperation>();

@@ -49,7 +49,7 @@ public class Main {
 //        test.testTransactionBroadcastSequence();
 //        test.testAccountLookupDeserialization();
 //        test.testPrivateKeyManipulations();
-        test.testPublicKeyManipulations();
+//        test.testPublicKeyManipulations();
 //        test.testGetAccountByName();
 //        test.testGetRequiredFees();
 //        test.testRandomNumberGeneration();
@@ -61,5 +61,6 @@ public class Main {
 //        test.testingInvoiceGeneration();
 //        test.testCompression();
 //        test.testCreateBinFile();
+        test.testAccountUpdateOperationSerialization();
     }
 }

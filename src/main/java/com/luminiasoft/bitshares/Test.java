@@ -743,4 +743,21 @@ public class Test {
         byte[] fileOutput = FileBin.getBytesFromBrainKey(Main.BRAIN_KEY, "123456","bithon-83");
         System.out.println("fileOutput " + Arrays.toString(fileOutput));
     }
+
+    public void testAccountUpdateOperationSerialization(){
+        UserAccount account = new UserAccount("1.2.138632");
+        AssetAmount fee = new AssetAmount(UnsignedLong.valueOf("4294967295"), new Asset("1.3.0"));
+        HashMap<String, Integer> keyAuths = new HashMap<>();
+        keyAuths.put("BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY", 65535);
+        try {
+            Authority owner = new Authority(1, keyAuths);
+            Authority active = new Authority(1, keyAuths);
+            AccountUpdateOperation operation = new AccountUpdateOperation(account, owner, active, fee);
+            byte[] serializedOperation = operation.toBytes();
+            System.out.println("serialized operation");
+            System.out.println(Util.bytesToHex(serializedOperation));
+        } catch (MalformedAddressException e) {
+            System.out.println("MalformedAddressException. Msg: "+e.getMessage());
+        }
+    }
 }

@@ -44,11 +44,6 @@ public class TransferOperation extends BaseOperation {
         this.fee = newFee;
     }
 
-    @Override
-    public byte getId() {
-        return (byte) this.type.ordinal();
-    }
-
     public UserAccount getFrom(){
         return this.from;
     }
@@ -77,6 +72,7 @@ public class TransferOperation extends BaseOperation {
 
     @Override
     public String toJsonString() {
+        //TODO: Evaluate using simple Gson class to return a simple string representation and drop the TransferSerializer class
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(TransferOperation.class, new TransferSerializer());
         return gsonBuilder.create().toJson(this);

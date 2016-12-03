@@ -38,7 +38,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
     private ECKey privateKey;
     private BlockData blockData;
     private List<BaseOperation> operations;
-    private List<Extension> extensions;
+    private List<Extensions> extensions;
 
     /**
      * Transaction constructor.
@@ -50,7 +50,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
         this.privateKey = DumpedPrivateKey.fromBase58(null, wif).getKey();
         this.blockData = block_data;
         this.operations = operation_list;
-        this.extensions = new ArrayList<Extension>();
+        this.extensions = new ArrayList<Extensions>();
     }
 
     /**
@@ -63,7 +63,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
         this.privateKey = privateKey;
         this.blockData = blockData;
         this.operations = operationList;
-        this.extensions = new ArrayList<Extension>();
+        this.extensions = new ArrayList<Extensions>();
     }
 
     public ECKey getPrivateKey(){
@@ -143,8 +143,8 @@ public class Transaction implements ByteSerializable, JsonSerializable {
         //Adding the number of extensions
         byteArray.add((byte) this.extensions.size());
 
-        for(Extension extension : extensions){
-            //TODO: Implement the extension serialization
+        for(Extensions extensions : this.extensions){
+            //TODO: Implement the extensions serialization
         }
         // Adding a last zero byte to match the result obtained by the python-graphenelib code
         // I'm not exactly sure what's the meaning of this last zero byte, but for now I'll just
