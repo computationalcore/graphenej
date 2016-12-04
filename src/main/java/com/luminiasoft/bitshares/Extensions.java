@@ -32,7 +32,7 @@ public class Extensions implements JsonSerializable, ByteSerializable {
 
     @Override
     public byte[] toBytes() {
-        return new byte[0];
+        return new byte[1];
     }
 
     public int size(){
