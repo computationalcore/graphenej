@@ -56,7 +56,8 @@ public abstract class FileBin {
             byte[] compressedData = new byte[rawData.length - 4];
             System.arraycopy(rawData, 4, compressedData, 0, compressedData.length);
             
-            byte[] wallet_object_bytes = Util.decompress(compressedData);
+            System.out.println("Despues:"+byteToString(compressedData));                        
+            byte[] wallet_object_bytes = Util.decompress(compressedData, Util.XZ);
             String wallet_string = new String(wallet_object_bytes, "UTF-8");
             JsonObject wallet = new JsonParser().parse(wallet_string).getAsJsonObject();
             if (wallet.get("wallet").isJsonArray()) {
@@ -120,7 +121,8 @@ public abstract class FileBin {
             jsonAccountName.add("name", new JsonParser().parse(accountName));
             accountNames.add(jsonAccountName);
             wallet_object.add("linked_accounts", accountNames);
-            byte[] compressedData = Util.compress(wallet_object.toString().getBytes("UTF-8"));
+            byte[] compressedData = Util.compress(wallet_object.toString().getBytes("UTF-8"), Util.XZ);
+            System.out.println("Antes:"+byteToString(compressedData));
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] checksum = md.digest(compressedData);
             byte[] rawData = new byte[compressedData.length + 4];
