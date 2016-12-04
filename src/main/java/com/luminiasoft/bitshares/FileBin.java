@@ -56,7 +56,6 @@ public abstract class FileBin {
             byte[] compressedData = new byte[rawData.length - 4];
             System.arraycopy(rawData, 4, compressedData, 0, compressedData.length);
             
-            System.out.println("Despues:"+byteToString(compressedData));                        
             byte[] wallet_object_bytes = Util.decompress(compressedData);
             String wallet_string = new String(wallet_object_bytes, "UTF-8");
             JsonObject wallet = new JsonParser().parse(wallet_string).getAsJsonObject();
@@ -65,11 +64,12 @@ public abstract class FileBin {
             } else {
                 wallet = wallet.get("wallet").getAsJsonObject();
             }
+            
             byte[] encKey_enc = new BigInteger(wallet.get("encryption_key").getAsString(), 16).toByteArray();
             byte[] temp = new byte[encKey_enc.length - (encKey_enc[0] == 0 ? 1 : 0)];
             System.arraycopy(encKey_enc, (encKey_enc[0] == 0 ? 1 : 0), temp, 0, temp.length);
             byte[] encKey = decryptAES(temp, password.getBytes("UTF-8"));
-            temp = new byte[encKey.length - 16];
+            temp = new byte[encKey.length];
             System.arraycopy(encKey, 0, temp, 0, temp.length);
 
             byte[] encBrain = new BigInteger(wallet.get("encrypted_brainkey").getAsString(), 16).toByteArray();
@@ -121,7 +121,6 @@ public abstract class FileBin {
             accountNames.add(jsonAccountName);
             wallet_object.add("linked_accounts", accountNames);
             byte[] compressedData = Util.compress(wallet_object.toString().getBytes("UTF-8"));
-            System.out.println("Antes:"+byteToString(compressedData));
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] checksum = md.digest(compressedData);
             byte[] rawData = new byte[compressedData.length + 4];
@@ -190,7 +189,13 @@ public abstract class FileBin {
             System.arraycopy(pre_out, 0, out, 0, proc+proc2);
             
             //Unpadding
-            int count = out[out.length-1];            
+            byte countByte = (byte)((byte)out[out.length-1] % 16);
+            int count = countByte & 0xFF;
+                       
+            if ((count > 15) || (count <= 0)){
+                return out;
+            }
+            
             byte[] temp = new byte[count];
             System.arraycopy(out, out.length - count, temp, 0, temp.length);
             byte[] temp2 = new byte[count];
@@ -201,7 +206,7 @@ public abstract class FileBin {
                 return temp;
             } else {
                 return out;
-            }
+            }            
         } catch (NoSuchAlgorithmException | DataLengthException | IllegalStateException | InvalidCipherTextException ex) {
             ex.printStackTrace();
         }
