@@ -1,16 +1,15 @@
 package com.luminiasoft.bitshares;
 
 import com.google.common.primitives.Bytes;
-import com.google.common.primitives.UnsignedLong;
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
 
 /**
- * Class used to encapsulate the Transfer operation related functionalities.
+ * Class used to encapsulate the TransferOperation operation related functionalities.
  * TODO: Add extensions support
  */
-public class Transfer extends BaseOperation {
+public class TransferOperation extends BaseOperation {
     public static final String KEY_FEE = "fee";
     public static final String KEY_AMOUNT = "amount";
     public static final String KEY_EXTENSIONS = "extensions";
@@ -24,7 +23,7 @@ public class Transfer extends BaseOperation {
     private Memo memo;
     private String[] extensions;
 
-    public Transfer(UserAccount from, UserAccount to, AssetAmount transferAmount, AssetAmount fee){
+    public TransferOperation(UserAccount from, UserAccount to, AssetAmount transferAmount, AssetAmount fee){
         super(OperationType.transfer_operation);
         this.from = from;
         this.to = to;
@@ -33,7 +32,7 @@ public class Transfer extends BaseOperation {
         this.memo = new Memo();
     }
 
-    public Transfer(UserAccount from, UserAccount to, AssetAmount transferAmount){
+    public TransferOperation(UserAccount from, UserAccount to, AssetAmount transferAmount){
         super(OperationType.transfer_operation);
         this.from = from;
         this.to = to;
@@ -41,13 +40,9 @@ public class Transfer extends BaseOperation {
         this.memo = new Memo();
     }
 
+    @Override
     public void setFee(AssetAmount newFee){
         this.fee = newFee;
-    }
-
-    @Override
-    public byte getId() {
-        return (byte) this.type.ordinal();
     }
 
     public UserAccount getFrom(){
@@ -78,8 +73,9 @@ public class Transfer extends BaseOperation {
 
     @Override
     public String toJsonString() {
+        //TODO: Evaluate using simple Gson class to return a simple string representation and drop the TransferSerializer class
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(Transfer.class, new TransferSerializer());
+        gsonBuilder.registerTypeAdapter(TransferOperation.class, new TransferSerializer());
         return gsonBuilder.create().toJson(this);
     }
 
@@ -97,10 +93,10 @@ public class Transfer extends BaseOperation {
         return array;
     }
 
-    public static class TransferSerializer implements JsonSerializer<Transfer> {
+    public static class TransferSerializer implements JsonSerializer<TransferOperation> {
 
         @Override
-        public JsonElement serialize(Transfer transfer, Type type, JsonSerializationContext jsonSerializationContext) {
+        public JsonElement serialize(TransferOperation transfer, Type type, JsonSerializationContext jsonSerializationContext) {
             JsonArray arrayRep = new JsonArray();
             arrayRep.add(transfer.getId());
             arrayRep.add(transfer.toJsonObject());
@@ -131,12 +127,12 @@ public class Transfer extends BaseOperation {
      *       }
      *    ]
      *
-     * It will convert this data into a nice Transfer object.
+     * It will convert this data into a nice TransferOperation object.
      */
-    public static class TransferDeserializer implements JsonDeserializer<Transfer> {
+    public static class TransferDeserializer implements JsonDeserializer<TransferOperation> {
 
         @Override
-        public Transfer deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public TransferOperation deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             if(json.isJsonArray()){
                 // This block is used just to check if we are in the first step of the deserialization
                 // when we are dealing with an array.
@@ -146,7 +142,7 @@ public class Transfer extends BaseOperation {
                     return null;
                 }else{
                     // Calling itself recursively, this is only done once, so there will be no problems.
-                    return context.deserialize(serializedTransfer.get(1), Transfer.class);
+                    return context.deserialize(serializedTransfer.get(1), TransferOperation.class);
                 }
             }else{
                 // This block is called in the second recursion and takes care of deserializing the
@@ -160,7 +156,7 @@ public class Transfer extends BaseOperation {
                 // Deserializing UserAccount objects
                 UserAccount from = new UserAccount(jsonObject.get("from").getAsString());
                 UserAccount to = new UserAccount(jsonObject.get("to").getAsString());
-                Transfer transfer = new Transfer(from, to, amount, fee);
+                TransferOperation transfer = new TransferOperation(from, to, amount, fee);
                 return transfer;
             }
         }

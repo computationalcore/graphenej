@@ -9,6 +9,10 @@ public class Main {
     // Brain key from Nelson's app referencing the bilthon-83 account
     public static final String BRAIN_KEY = "PUMPER ISOTOME SERE STAINER CLINGER MOONLIT CHAETA UPBRIM AEDILIC BERTHER NIT SHAP SAID SHADING JUNCOUS CHOUGH";
 
+    public static final String BILTHON_5_BRAIN_KEY = "UNMATE AURIGAL NAVET WAVICLE REWOVE ABBOTCY COWHERB OUTKICK STOPPER JUSSORY BEAMLET WIRY";
+
+    public static final String BILTHON_7_BRAIN_KEY = "VENIN QUOTHA OBESELY TORIC OSMATIC SPOKEN DIACOPE CUBICA TABULA REDDING APONIA TARTAR";
+
     //public static final String BRAIN_KEY = "TWIXT SERMO TRILLI AUDIO PARDED PLUMET BIWA REHUNG MAUDLE VALVULA OUTBURN FEWNESS ALIENER UNTRACE PRICH TROKER";
     //public static final String BRAIN_KEY = "SIVER TIKKER FOGO HOMINAL PRAYER LUTEIN SMALLY ACARID MEROPIA TRANCE BOGONG IDDAT HICKORY SOUTANE MOOD DOWSER";
     public static final String BIP39_KEY = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
@@ -17,7 +21,7 @@ public class Main {
 //    public static final String WIF = "5J96pne45qWM1WpektoeazN6k9Mt93jQ7LyueRxFfEMTiy6yxjM";
     // Brain key from an empty account created by the cli_wallet
 //    public static final String BRAIN_KEY = "TWIXT SERMO TRILLI AUDIO PARDED PLUMET BIWA REHUNG MAUDLE VALVULA OUTBURN FEWNESS ALIENER UNTRACE PRICH TROKER";
-    // WIF from an emty account created by the cli_wallet
+    // WIF from an empty account created by the cli_wallet
     public static final String WIF = "5KMzB2GqGhnh7ufhgddmz1eKPHS72uTLeL9hHjSvPb1UywWknF5";
 
     public static final String EXTERNAL_SIGNATURE = "1f36c41acb774fcbc9c231b5895ec9701d6872729098d8ea56d78dda72a6b54252694db85d7591de5751b7aea06871da15d63a1028758421607ffc143e53ef3306";
@@ -38,7 +42,7 @@ public class Main {
 //            e.printStackTrace();
 //        }
 //        test.testCustomSerializer();
-        //test.testUserAccountSerialization();
+//        test.testUserAccountSerialization();
 //        test.testTransactionSerialization();
 //        test.testLoginSerialization();
 //        test.testNetworkBroadcastSerialization();
@@ -49,16 +53,19 @@ public class Main {
 //        test.testTransactionBroadcastSequence();
 //        test.testAccountLookupDeserialization();
 //        test.testPrivateKeyManipulations();
+//        test.testPublicKeyManipulations();
 //        test.testGetAccountByName();
 //        test.testGetRequiredFees();
 //        test.testRandomNumberGeneration();
-//        test.testBrainKeyOperations(false);
+//        test.testBrainKeyOperations(true);
 //        test.testBip39Opertion();
 //        test.testAccountNamebyAddress();
 //        test.testAccountNameById();
 //        test.testRelativeAccountHistory();
 //        test.testingInvoiceGeneration();
 //        test.testCompression();
-        test.testCreateBinFile();
+//        test.testCreateBinFile();
+        test.testAccountUpdateSerialization();
+//        test.testAccountUpdateOperationBroadcast();
     }
 }

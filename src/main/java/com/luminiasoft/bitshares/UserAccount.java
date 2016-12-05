@@ -15,6 +15,8 @@ import java.io.IOException;
  */
 public class UserAccount extends GrapheneObject implements ByteSerializable, JsonSerializable {
 
+    public static final String PROXY_TO_SELF = "1.2.5";
+
     /**
      * Constructor that expects a user account in the string representation.
      * That is in the 1.2.x format.
@@ -44,5 +46,10 @@ public class UserAccount extends GrapheneObject implements ByteSerializable, Jso
     @Override
     public JsonObject toJsonObject() {
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return this.toJsonString();
     }
 }

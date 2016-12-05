@@ -11,5 +11,16 @@ public abstract class TransactionBuilder {
     protected ECKey privateKey;
     protected BlockData blockData;
 
+    public TransactionBuilder(){}
+
+    public TransactionBuilder(ECKey privKey){
+        this.privateKey = privKey;
+    }
+
+    public TransactionBuilder setBlockData(BlockData blockData){
+        this.blockData = blockData;
+        return this;
+    }
+
     public abstract Transaction build() throws MalformedTransactionException;
 }

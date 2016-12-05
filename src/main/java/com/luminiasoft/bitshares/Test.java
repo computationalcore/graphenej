@@ -4,6 +4,7 @@ import com.google.common.primitives.UnsignedLong;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.luminiasoft.bitshares.errors.MalformedAddressException;
 import com.luminiasoft.bitshares.errors.MalformedTransactionException;
 import com.luminiasoft.bitshares.interfaces.WitnessResponseListener;
 import com.luminiasoft.bitshares.models.*;
@@ -11,17 +12,13 @@ import com.luminiasoft.bitshares.test.NaiveSSLContext;
 import com.luminiasoft.bitshares.ws.*;
 import com.neovisionaries.ws.client.*;
 import org.bitcoinj.core.*;
-import org.spongycastle.crypto.Digest;
 import org.spongycastle.crypto.digests.RIPEMD160Digest;
-import org.spongycastle.crypto.digests.SHA512Digest;
-import org.spongycastle.crypto.prng.DigestRandomGenerator;
 
 import javax.net.ssl.SSLContext;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -183,142 +180,12 @@ public class Test {
         UserAccount to = new UserAccount("1.2.129848");
         AssetAmount amount = new AssetAmount(UnsignedLong.valueOf(100), new Asset("1.3.120"));
         AssetAmount fee = new AssetAmount(UnsignedLong.valueOf(264174), new Asset("1.3.0"));
-        operations.add(new Transfer(from, to, amount, fee));
-        this.transaction = new Transaction(Main.WIF, blockData, operations);
+        operations.add(new TransferOperation(from, to, amount, fee));
+        BrainKey brainKey = new BrainKey(Main.BRAIN_KEY, 0);
+        this.transaction = new Transaction(brainKey.getWalletImportFormat(), blockData, operations);
         byte[] serializedTransaction = this.transaction.toBytes();
         System.out.println("Serialized transaction");
         System.out.println(Util.bytesToHex(serializedTransaction));
-    }
-
-    public void testWebSocketTransfer() throws IOException {
-        String login = "{\"id\":%d,\"method\":\"call\",\"params\":[1,\"login\",[\"\",\"\"]]}";
-        String getDatabaseId = "{\"method\": \"call\", \"params\": [1, \"database\", []], \"jsonrpc\": \"2.0\", \"id\": %d}";
-        String getHistoryId = "{\"method\": \"call\", \"params\": [1, \"history\", []], \"jsonrpc\": \"2.0\", \"id\": %d}";
-        String getNetworkBroadcastId = "{\"method\": \"call\", \"params\": [1, \"network_broadcast\", []], \"jsonrpc\": \"2.0\", \"id\": %d}";
-        String getDynamicParameters = "{\"method\": \"call\", \"params\": [0, \"get_dynamic_global_properties\", []], \"jsonrpc\": \"2.0\", \"id\": %d}";
-        String rawPayload = "{\"method\": \"call\", \"params\": [%d, \"broadcast_transaction\", [{\"expiration\": \"%s\", \"signatures\": [\"%s\"], \"operations\": [[0, {\"fee\": {\"amount\": 264174, \"asset_id\": \"1.3.0\"}, \"amount\": {\"amount\": 100, \"asset_id\": \"1.3.120\"}, \"to\": \"1.2.129848\", \"extensions\": [], \"from\": \"1.2.138632\"}]], \"ref_block_num\": %d, \"extensions\": [], \"ref_block_prefix\": %d}]], \"jsonrpc\": \"2.0\", \"id\": %d}";
-
-//        String url = "wss://bitshares.openledger.info/ws";
-        String url = "ws://api.devling.xyz:8088";
-        WebSocketFactory factory = new WebSocketFactory().setConnectionTimeout(5000);
-
-        // Create a WebSocket. The timeout value set above is used.
-        WebSocket ws = factory.createSocket(url);
-
-        ws.addListener(new WebSocketAdapter() {
-
-            private DynamicGlobalProperties dynProperties;
-            private int networkBroadcastApiId;
-
-            @Override
-            public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
-                System.out.println("onConnected");
-                String payload = String.format(login, 1);
-                System.out.println(">>");
-                System.out.println(payload);
-                websocket.sendText(payload);
-            }
-
-            @Override
-            public void onDisconnected(WebSocket websocket, WebSocketFrame serverCloseFrame, WebSocketFrame clientCloseFrame, boolean closedByServer) throws Exception {
-                System.out.println("onDisconnected");
-            }
-
-            @Override
-            public void onTextFrame(WebSocket websocket, WebSocketFrame frame) throws Exception {
-                System.out.println("<<");
-                String response = frame.getPayloadText();
-                System.out.println(response);
-                Gson gson = new Gson();
-                BaseResponse baseResponse = gson.fromJson(response, BaseResponse.class);
-//                if(baseResponse.id.equals("1")){
-//                    String payload = String.format(getDatabaseId, 2);
-//                    System.out.println(">>");
-//                    System.out.println(payload);
-//                    websocket.sendText(payload);
-//                }else if(baseResponse.id.equals("2")){
-//                    String payload = String.format(getHistoryId, 3);
-//                    System.out.println(">>");
-//                    System.out.println(payload);
-//                    websocket.sendText(payload);
-//                }else if(baseResponse.id.equals("3")){
-                if (baseResponse.id == 1) {
-                    String payload = String.format(getNetworkBroadcastId, 2);
-                    System.out.println(">>");
-                    System.out.println(payload);
-                    websocket.sendText(payload);
-//                }else if(baseResponse.id.equals("4")){
-                }
-                if (baseResponse.id == 2) {
-                    String payload = String.format(getDynamicParameters, 3);
-                    Type ApiIdResponse = new TypeToken<WitnessResponse<Integer>>() {
-                    }.getType();
-                    WitnessResponse<Integer> witnessResponse = gson.fromJson(response, ApiIdResponse);
-                    networkBroadcastApiId = witnessResponse.result.intValue();
-                    System.out.println(">>");
-                    System.out.println(payload);
-                    websocket.sendText(payload);
-                } else if (baseResponse.id == 3) {
-                    // Got dynamic properties
-                    Type DynamicGlobalPropertiesResponse = new TypeToken<WitnessResponse<DynamicGlobalProperties>>() {
-                    }.getType();
-                    WitnessResponse<DynamicGlobalProperties> witnessResponse = gson.fromJson(response, DynamicGlobalPropertiesResponse);
-                    dynProperties = witnessResponse.result;
-
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                    dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-                    Date date = dateFormat.parse(dynProperties.time);
-                    long expirationTime = (date.getTime() / 1000) + 30;
-                    testTransactionSerialization(dynProperties.head_block_number, dynProperties.head_block_id, expirationTime);
-
-                    BlockData blockData = new BlockData(dynProperties.head_block_number, dynProperties.head_block_id, expirationTime);
-                    byte[] signatureBytes = signMessage();
-
-                    String payload = String.format(
-                            rawPayload,
-                            networkBroadcastApiId,
-                            dateFormat.format(new Date(expirationTime * 1000)),
-                            Util.bytesToHex(signatureBytes),
-                            blockData.getRefBlockNum(),
-                            blockData.getRefBlockPrefix(),
-                            4);
-                    System.out.println(">>");
-                    System.out.println(payload);
-                    websocket.sendText(payload);
-                }
-            }
-
-            @Override
-            public void onError(WebSocket websocket, WebSocketException cause) throws Exception {
-                System.out.println("onError");
-            }
-
-            @Override
-            public void onUnexpectedError(WebSocket websocket, WebSocketException cause) throws Exception {
-                System.out.println("onUnexpectedError");
-            }
-
-            @Override
-            public void handleCallbackError(WebSocket websocket, Throwable cause) throws Exception {
-                System.out.println("handleCallbackError. Msg: " + cause.getMessage());
-                StackTraceElement[] stackTrace = cause.getStackTrace();
-                for (StackTraceElement line : stackTrace) {
-                    System.out.println(line.toString());
-                }
-            }
-        });
-        try {
-            // Connect to the server and perform an opening handshake.
-            // This method blocks until the opening handshake is finished.
-            ws.connect();
-        } catch (OpeningHandshakeException e) {
-            // A violation against the WebSocket protocol was detected
-            // during the opening handshake.
-            System.out.println("OpeningHandshakeException");
-        } catch (WebSocketException e) {
-            // Failed to establish a WebSocket connection.
-            System.out.println("WebSocketException. Msg: " + e.getMessage());
-        }
     }
 
     public void testCustomSerializer() {
@@ -340,8 +207,8 @@ public class Test {
                     .setDestination(new UserAccount("1.2.129848"))
                     .setAmount(new AssetAmount(UnsignedLong.valueOf(100), new Asset("1.3.120")))
                     .setFee(new AssetAmount(UnsignedLong.valueOf(264174), new Asset("1.3.0")))
-                    .setBlockData(new BlockData(Main.REF_BLOCK_NUM, Main.REF_BLOCK_PREFIX, Main.RELATIVE_EXPIRATION))
                     .setPrivateKey(DumpedPrivateKey.fromBase58(null, Main.WIF).getKey())
+                    .setBlockData(new BlockData(Main.REF_BLOCK_NUM, Main.REF_BLOCK_PREFIX, Main.RELATIVE_EXPIRATION))
                     .build();
 
             ArrayList<Serializable> transactionList = new ArrayList<>();
@@ -426,12 +293,10 @@ public class Test {
                     .setAmount(new AssetAmount(UnsignedLong.valueOf(100), new Asset("1.3.120")))
                     .setFee(new AssetAmount(UnsignedLong.valueOf(264174), new Asset("1.3.0")))
                     .setBlockData(new BlockData(43408, 1430521623, 1479231969))
-                    .setPrivateKey(DumpedPrivateKey.fromBase58(null, Main.WIF).getKey())
+                    .setPrivateKey(DumpedPrivateKey.fromBase58(null, Main.BILTHON_5_BRAIN_KEY).getKey())
                     .build();
 
             ArrayList<Serializable> transactionList = new ArrayList<>();
-            transactionList.add(transaction);
-
             transactionList.add(transaction);
 
             SSLContext context = null;
@@ -443,7 +308,7 @@ public class Test {
 
             WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
 
-            mWebSocket.addListener(new TransactionBroadcastSequence(transaction, listener));
+            mWebSocket.addListener(new TransactionBroadcastSequence(transaction, new Asset("1.3.0"), listener));
             mWebSocket.connect();
 
         } catch (MalformedTransactionException e) {
@@ -469,14 +334,29 @@ public class Test {
     }
 
     public void testPrivateKeyManipulations() {
-        ECKey privateKey = DumpedPrivateKey.fromBase58(null, Main.WIF).getKey();
+        String brainKeyWords = "UNMATE AURIGAL NAVET WAVICLE REWOVE ABBOTCY COWHERB OUTKICK STOPPER JUSSORY BEAMLET WIRY";
+        BrainKey brainKey = new BrainKey(brainKeyWords, 0);
+
+        ECKey privateKey = DumpedPrivateKey.fromBase58(null, brainKey.getWalletImportFormat()).getKey();
         System.out.println("private key..............: " + Util.bytesToHex(privateKey.getSecretBytes()));
         System.out.println("public key uncompressed..: " + Util.bytesToHex(privateKey.getPubKey()));
         System.out.println("public key compressed....: " + Util.bytesToHex(privateKey.getPubKeyPoint().getEncoded(true)));
         System.out.println("base58...................: " + Base58.encode(privateKey.getPubKeyPoint().getEncoded(true)));
         System.out.println("base58...................: " + Base58.encode(privateKey.getPubKey()));
-        String brainKeyWords = "PUMPER ISOTOME SERE STAINER CLINGER MOONLIT CHAETA UPBRIM AEDILIC BERTHER NIT SHAP SAID SHADING JUNCOUS CHOUGH";
-        BrainKey brainKey = new BrainKey(brainKeyWords, 0);
+    }
+
+    public void testPublicKeyManipulations(){
+//            PublicKey publicKey = new PublicKey("BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY");
+//            System.out.println("Public key bytes");
+//            System.out.println(Util.bytesToHex(publicKey.toBytes()));
+        Address address = null;
+        try {
+            address = new Address("BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY");
+            System.out.println("Public key");
+            System.out.println(Util.bytesToHex(address.getPublicKey().toBytes()));
+        } catch (MalformedAddressException e) {
+            e.printStackTrace();
+        }
     }
 
     public void testGetAccountByName() {
@@ -499,7 +379,7 @@ public class Test {
         UserAccount to = new UserAccount("1.2.129848");
         AssetAmount amount = new AssetAmount(UnsignedLong.valueOf(100), new Asset("1.3.120"));
         AssetAmount fee = new AssetAmount(UnsignedLong.valueOf(264174), new Asset("1.3.0"));
-        Transfer transfer = new Transfer(from, to, amount, fee);
+        TransferOperation transfer = new TransferOperation(from, to, amount, fee);
         ArrayList<BaseOperation> operations = new ArrayList<>();
         operations.add(transfer);
 
@@ -515,49 +395,6 @@ public class Test {
             System.out.println("IOException. Msg: " + e.getMessage());
         } catch (WebSocketException e) {
             System.out.println("WebSocketException. Msg: " + e.getMessage());
-        }
-    }
-
-    public void testRandomNumberGeneration() {
-        byte[] seed = new byte[]{new Long(System.nanoTime()).byteValue()};
-        doCountTest(new SHA512Digest(), seed);
-    }
-
-    private void doCountTest(Digest digest, byte[] seed)//, byte[] expectedXors)
-    {
-        DigestRandomGenerator generator = new DigestRandomGenerator(digest);
-        byte[] output = new byte[digest.getDigestSize()];
-        int[] averages = new int[digest.getDigestSize()];
-        byte[] ands = new byte[digest.getDigestSize()];
-        byte[] xors = new byte[digest.getDigestSize()];
-        byte[] ors = new byte[digest.getDigestSize()];
-
-        generator.addSeedMaterial(seed);
-
-        for (int i = 0; i != 1000000; i++) {
-            generator.nextBytes(output);
-            for (int j = 0; j != output.length; j++) {
-                averages[j] += output[j] & 0xff;
-                ands[j] &= output[j];
-                xors[j] ^= output[j];
-                ors[j] |= output[j];
-            }
-        }
-
-        for (int i = 0; i != output.length; i++) {
-            if ((averages[i] / 1000000) != 127) {
-                System.out.println("average test failed for " + digest.getAlgorithmName());
-            }
-            System.out.println("averages[" + i + "] / 1000000: " + averages[i] / 1000000);
-            if (ands[i] != 0) {
-                System.out.println("and test failed for " + digest.getAlgorithmName());
-            }
-            if ((ors[i] & 0xff) != 0xff) {
-                System.out.println("or test failed for " + digest.getAlgorithmName());
-            }
-//            if (xors[i] != expectedXors[i]) {
-//                System.out.println("xor test failed for " + digest.getAlgorithmName());
-//            }
         }
     }
 
@@ -578,32 +415,24 @@ public class Test {
                 String suggestion = BrainKey.suggest(words);
                 brainKey = new BrainKey(suggestion, 0);
             } else {
-                brainKey = new BrainKey(Main.BRAIN_KEY, 0);
+                brainKey = new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0);
             }
             ECKey key = brainKey.getPrivateKey();
-            System.out.println("Private key");
-            System.out.println(Util.bytesToHex(key.getSecretBytes()));
+            System.out.println("Private key..................: "+Util.bytesToHex(key.getSecretBytes()));
             String wif = key.getPrivateKeyAsWiF(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
-            System.out.println("wif compressed: " + wif);
+            System.out.println("Wif Compressed...............: " + wif);
             String wif2 = key.decompress().getPrivateKeyAsWiF(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
-            System.out.println("wif decompressed: " + wif2);
+            System.out.println("Wif Decompressed.............: " + wif2);
 
             byte[] pubKey1 = key.decompress().getPubKey();
-            System.out.println("decompressed public key: " + Base58.encode(pubKey1));
             byte[] pubKey2 = key.getPubKey();
-            System.out.println("compressed public key: " + Base58.encode(pubKey2));
 
-            System.out.println("pub key compressed   : " + Util.bytesToHex(pubKey1));
-            System.out.println("pub key uncompressed : " + Util.bytesToHex(pubKey2));
-
-            byte[] pubKey3 = key.getPubKeyPoint().getEncoded(true);
-            System.out.println("pub key compressed  : " + Base58.encode(pubKey3));
+            System.out.println("Public Key Decompressed........: " + Util.bytesToHex(pubKey1));
+            System.out.println("Public Key Compressed..........: " + Util.bytesToHex(pubKey2));
 
             // Address generation test
             Address address = new Address(key);
-            System.out.println("Block explorer's address: " + address);
-
-            System.out.println("Wif:                : " + brainKey.getWalletImportFormat());
+            System.out.println("Block explorer's address.....: " + address);
         } catch (FileNotFoundException e) {
             System.out.println("FileNotFoundException. Msg: " + e.getMessage());
         } catch (IOException e) {
@@ -730,5 +559,87 @@ public class Test {
         String stringFile = "02f9f3eb0f61a0a96134975d86048bf92e114d6a1ce286140cad3a96c33e697282bc0a8a24d1ad0c7bc084a79816ce38e36bd2d624aa8bf686f53fb4c7e25e3974da9b40e0b17e9d0b5b82793a04b19646169c49c58cd67f4950aee7d275141dd24f52baaaee772995a9bd6a6562a7a38aae08951236d3f612aecef7aedd720a91eacbab3a792ca3ebe0105838fe11f6e9d0e83e5d77eb82f17c7ba85c670e69294a8bcf8365cfeca487a60093498496bbec394c729e3fda9f32fdccdea56288b36fb14a26aa309b548a6dd9c1d616d22167348f8d580f9dc7361b4457d2dc6d75ec985d8e2d3dcdff89cd425d9f14037ac961eb10ac5f92bab356ccecd8cf018ec05ab40d915b628a75ae32cfa4005634f08b24c0dc8c5a7636ed70cbd86a7f0c4f6236d74310470fafe3af8b5346c8cb61957f7292b468d276498f9e806399588b0afd5777e6ee5fe7cd3a6691d9b5486cb5c7adbd5ad0b17588dd32d82b01d49ecf0f2bf24ee54a490ee620e8ab049047ffa416b5efa8f1f0155d8f1be866a10d0d62ae44a3a8ecc0121c08837c2ee1a25f8b6dd7266273c41f4b9a5e3d600e3fb4de870f99ab1a7196d93f222595f92e97a2480f58b61b62639154a374b987664fd317622aaad156f831b03f2d9606537b65b3b1fcfb1fb6be39560ad2c301dd1fc25cee755e61b49ebfe42ca7e64b4b0fc4aa347b48a85c0b585a3499fe278e25cb2141f8009b9afc875fa2a2c439bf6cdec4b5190a6deb7f9390f072beb24749a8a2114cc1870c07be079abb3ee0ebc827f9b53e158a529bc6552eba280f05edf5f7ae1911de7acb4888150a509d029ec7c9da6de8adabbca6773a0a293a0a42de8278c82e88b9390b42b56f58bd8633fb97130e799a47a744e2e8958fd5";
         fileOutput = new BigInteger(stringFile, 16).toByteArray();
         System.out.println(FileBin.getBrainkeyFromByte(fileOutput, "123456"));
+    }
+
+    public void testAccountUpdateSerialization() {
+        String newAddress = "BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY";
+        try {
+            Address address = new Address(newAddress);
+            HashMap<PublicKey, Integer> authMap = new HashMap<>();
+            authMap.put(address.getPublicKey(), 1);
+            Authority authority = new Authority(1, authMap, null);
+            AccountOptions options = new AccountOptions(address.getPublicKey());
+            BrainKey brainKey = new BrainKey(Main.BILTHON_7_BRAIN_KEY, 0);
+            Transaction transaction = new AccountUpdateTransactionBuilder(brainKey.getPrivateKey())
+                    .setAccont(new UserAccount("1.2.140994"))
+                    .setOwner(authority)
+                    .setActive(authority)
+                    .setOptions(options)
+                    .setBlockData(new BlockData(Main.REF_BLOCK_NUM, Main.REF_BLOCK_PREFIX, Main.RELATIVE_EXPIRATION))
+                    .build();
+
+            System.out.println("Json object");
+            System.out.println(transaction.toJsonString());
+            System.out.println("Serialized transaction");
+            System.out.println(Util.bytesToHex(transaction.toBytes()));
+        } catch(MalformedAddressException e){
+            System.out.println("MalformedAddressException. Msg: "+e.getMessage());
+        } catch (MalformedTransactionException e) {
+            System.out.println("MalformedTransactionException. Msg: "+e.getMessage());
+        }
+    }
+
+    public void testAccountUpdateOperationBroadcast(){
+
+        WitnessResponseListener listener = new WitnessResponseListener() {
+            @Override
+            public void onSuccess(WitnessResponse response) {
+                System.out.println("onSuccess");
+            }
+
+            @Override
+            public void onError(BaseResponse.Error error) {
+                System.out.println("onError");
+            }
+        };
+
+        String newAddress = "BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY";
+        try {
+            Address address = new Address(newAddress);
+            HashMap<PublicKey, Integer> authMap = new HashMap<>();
+            authMap.put(address.getPublicKey(), 1);
+            Authority authority = new Authority(1, authMap, null);
+            AccountOptions options = new AccountOptions(address.getPublicKey());
+            BrainKey brainKey = new BrainKey(Main.BILTHON_7_BRAIN_KEY, 0);
+            Transaction transaction = new AccountUpdateTransactionBuilder(brainKey.getPrivateKey())
+                    .setAccont(new UserAccount("1.2.140994"))
+                    .setOwner(authority)
+                    .setActive(authority)
+                    .setOptions(options)
+                    .build();
+
+            SSLContext context = null;
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
+
+            mWebSocket.addListener(new TransactionBroadcastSequence(transaction, new Asset("1.3.0"), listener));
+            mWebSocket.connect();
+
+        } catch (MalformedAddressException e) {
+            System.out.println("MalformedAddressException. Msg: "+e.getMessage());
+        } catch (MalformedTransactionException e) {
+            System.out.println("MalformedTransactionException. Msg: "+e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: "+e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: "+e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: "+e.getMessage());
+        }
     }
 }

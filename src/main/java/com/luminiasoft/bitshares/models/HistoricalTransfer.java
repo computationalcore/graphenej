@@ -1,8 +1,6 @@
 package com.luminiasoft.bitshares.models;
 
-import com.luminiasoft.bitshares.BaseOperation;
-import com.luminiasoft.bitshares.GrapheneObject;
-import com.luminiasoft.bitshares.Transfer;
+import com.luminiasoft.bitshares.TransferOperation;
 
 /**
  * This class offers support to deserialization of transfer operations received by the API
@@ -13,7 +11,7 @@ import com.luminiasoft.bitshares.Transfer;
  */
 public class HistoricalTransfer {
     public String id;
-    public Transfer op;
+    public TransferOperation op;
     public Object[] result;
     public long block_num;
     public long trx_in_block;
