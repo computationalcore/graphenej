@@ -1,10 +1,9 @@
 package com.luminiasoft.bitshares.ws;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import com.luminiasoft.bitshares.BlockData;
-import com.luminiasoft.bitshares.RPC;
-import com.luminiasoft.bitshares.Transaction;
+import com.luminiasoft.bitshares.*;
 import com.luminiasoft.bitshares.interfaces.WitnessResponseListener;
 import com.luminiasoft.bitshares.models.ApiCall;
 import com.luminiasoft.bitshares.models.BaseResponse;
@@ -18,11 +17,7 @@ import com.neovisionaries.ws.client.WebSocketFrame;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 
 /**
  * Class that will handle the transaction publication procedure.
@@ -33,8 +28,12 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
     private final static int LOGIN_ID = 1;
     private final static int GET_NETWORK_BROADCAST_ID = 2;
     private final static int GET_NETWORK_DYNAMIC_PARAMETERS = 3;
-    private final static int BROADCAST_TRANSACTION = 4;
+    private final static int GET_REQUIRED_FEES = 4;
+    private final static int BROADCAST_TRANSACTION = 5;
 
+//    private Transaction transaction;
+//    private ArrayList<Serializable> transactions;
+    private Asset feeAsset;
     private Transaction transaction;
     private WitnessResponseListener mListener;
 
@@ -48,8 +47,9 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
      *                be implemented by the party interested in being notified about the success/failure
      *                of the transaction broadcast operation.
      */
-    public TransactionBroadcastSequence(Transaction transaction, WitnessResponseListener listener){
+    public TransactionBroadcastSequence(Transaction transaction, Asset feeAsset, WitnessResponseListener listener){
         this.transaction = transaction;
+        this.feeAsset = feeAsset;
         this.mListener = listener;
     }
 
@@ -94,30 +94,36 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
                 dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
                 Date date = dateFormat.parse(dynamicProperties.time);
 
-                // Obtained block data
+                // Adjusting dynamic block data to every transaction
                 long expirationTime = (date.getTime() / 1000) + Transaction.DEFAULT_EXPIRATION_TIME;
                 String headBlockId = dynamicProperties.head_block_id;
                 long headBlockNumber = dynamicProperties.head_block_number;
                 transaction.setBlockData(new BlockData(headBlockNumber, headBlockId, expirationTime));
 
-                ArrayList<Serializable> transactionList = new ArrayList<>();
-                transactionList.add(transaction);
-                ApiCall call = new ApiCall(broadcastApiId,
-                        RPC.CALL_BROADCAST_TRANSACTION,
-                        transactionList,
-                        RPC.VERSION,
-                        currentId);
-
-                System.out.println("Json of transaction");
-                System.out.println(transaction.toJsonString());
-
-                //TODO: Remove this debug code
-                String jsonCall = call.toJsonString();
-                System.out.println("json call");
-                System.out.println(jsonCall);
+                ArrayList<Serializable> accountParams = new ArrayList<>();
+                accountParams.add((Serializable) transaction.getOperations());
+                accountParams.add(this.feeAsset.getObjectId());
+                ApiCall getRequiredFees = new ApiCall(0, RPC.CALL_GET_REQUIRED_FEES, accountParams, RPC.VERSION, currentId);
 
                 // Finally sending transaction
-//                websocket.sendText(call.toJsonString());
+                websocket.sendText(getRequiredFees.toJsonString());
+            }else if(baseResponse.id ==  GET_REQUIRED_FEES){
+                Type GetRequiredFeesResponse = new TypeToken<WitnessResponse<List<AssetAmount>>>(){}.getType();
+                GsonBuilder gsonBuilder = new GsonBuilder();
+                gsonBuilder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetDeserializer());
+                WitnessResponse<List<AssetAmount>> requiredFeesResponse = gsonBuilder.create().fromJson(response, GetRequiredFeesResponse);
+
+                transaction.setFees(requiredFeesResponse.result);
+                ArrayList<Serializable> transactions = new ArrayList<>();
+                transactions.add(transaction);
+
+                ApiCall call = new ApiCall(broadcastApiId,
+                        RPC.CALL_BROADCAST_TRANSACTION,
+                        transactions,
+                        RPC.VERSION,
+                        currentId);
+                websocket.sendText(call.toJsonString());
+//                websocket.disconnect();
             }else if(baseResponse.id >= BROADCAST_TRANSACTION){
                 Type WitnessResponseType = new TypeToken<WitnessResponse<String>>(){}.getType();
                 WitnessResponse<WitnessResponse<String>> witnessResponse = gson.fromJson(response, WitnessResponseType);

@@ -36,6 +36,7 @@ public class AccountUpdateOperation extends BaseOperation {
         this(account, owner, active, new AssetAmount(UnsignedLong.valueOf(0), new Asset("1.3.0")));
     }
 
+    @Override
     public void setFee(AssetAmount fee){
         this.fee = fee;
     }

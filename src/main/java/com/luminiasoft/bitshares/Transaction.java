@@ -69,6 +69,11 @@ public class Transaction implements ByteSerializable, JsonSerializable {
         this.blockData = blockData;
     }
 
+    public void setFees(List<AssetAmount> fees){
+        for(int i = 0; i < operations.size(); i++)
+            operations.get(i).setFee(fees.get(i));
+    }
+
     public ECKey getPrivateKey(){
         return this.privateKey;
     }
@@ -90,8 +95,6 @@ public class Transaction implements ByteSerializable, JsonSerializable {
 
         while(!isGrapheneCanonical) {
             byte[] serializedTransaction = this.toBytes();
-            System.out.println("Signing serialized transaction");
-            System.out.println(Util.bytesToHex(serializedTransaction));
             Sha256Hash hash = Sha256Hash.wrap(Sha256Hash.hash(serializedTransaction));
             int recId = -1;
             ECKey.ECDSASignature sig = privateKey.sign(hash);

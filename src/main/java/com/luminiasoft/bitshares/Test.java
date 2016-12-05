@@ -184,7 +184,8 @@ public class Test {
         AssetAmount amount = new AssetAmount(UnsignedLong.valueOf(100), new Asset("1.3.120"));
         AssetAmount fee = new AssetAmount(UnsignedLong.valueOf(264174), new Asset("1.3.0"));
         operations.add(new TransferOperation(from, to, amount, fee));
-        this.transaction = new Transaction(Main.WIF, blockData, operations);
+        BrainKey brainKey = new BrainKey(Main.BRAIN_KEY, 0);
+        this.transaction = new Transaction(brainKey.getWalletImportFormat(), blockData, operations);
         byte[] serializedTransaction = this.transaction.toBytes();
         System.out.println("Serialized transaction");
         System.out.println(Util.bytesToHex(serializedTransaction));
@@ -426,7 +427,7 @@ public class Test {
                     .setAmount(new AssetAmount(UnsignedLong.valueOf(100), new Asset("1.3.120")))
                     .setFee(new AssetAmount(UnsignedLong.valueOf(264174), new Asset("1.3.0")))
                     .setBlockData(new BlockData(43408, 1430521623, 1479231969))
-                    .setPrivateKey(DumpedPrivateKey.fromBase58(null, Main.WIF).getKey())
+                    .setPrivateKey(DumpedPrivateKey.fromBase58(null, Main.BILTHON_5_BRAIN_KEY).getKey())
                     .build();
 
             ArrayList<Serializable> transactionList = new ArrayList<>();
@@ -441,7 +442,7 @@ public class Test {
 
             WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
 
-            mWebSocket.addListener(new TransactionBroadcastSequence(transaction, listener));
+            mWebSocket.addListener(new TransactionBroadcastSequence(transaction, new Asset("1.3.0"), listener));
             mWebSocket.connect();
 
         } catch (MalformedTransactionException e) {
@@ -591,7 +592,7 @@ public class Test {
                 String suggestion = BrainKey.suggest(words);
                 brainKey = new BrainKey(suggestion, 0);
             } else {
-                brainKey = new BrainKey(Main.BRAIN_KEY, 0);
+                brainKey = new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0);
             }
             ECKey key = brainKey.getPrivateKey();
             System.out.println("Private key");
@@ -755,8 +756,6 @@ public class Test {
             ArrayList<BaseOperation> operations = new ArrayList<BaseOperation>();
             operations.add(operation);
             Transaction transaction = new Transaction(Main.WIF, blockData, operations);
-            System.out.println("Json format of transaction");
-            System.out.println(transaction.toJsonString());
         } catch(MalformedAddressException e){
             System.out.println("MalformedAddressException. Msg: "+e.getMessage());
         }
@@ -776,7 +775,7 @@ public class Test {
             }
         };
 
-        UserAccount account = new UserAccount("1.2.138632");
+        UserAccount account = new UserAccount("1.2.139313");
         AssetAmount fee = new AssetAmount(UnsignedLong.valueOf("200"), new Asset("1.3.0"));
         HashMap<String, Integer> keyAuths = new HashMap<>();
         keyAuths.put("BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY", 1);
@@ -786,12 +785,8 @@ public class Test {
             AccountUpdateOperation operation = new AccountUpdateOperation(account, owner, active, fee);
             ArrayList<BaseOperation> operations = new ArrayList<BaseOperation>();
             operations.add(operation);
-            Transaction transaction = new Transaction(Main.WIF, null, operations);
-
-            ArrayList<Serializable> transactionList = new ArrayList<>();
-            transactionList.add(transaction);
-
-            ApiCall call = new ApiCall(4, "call", "broadcast_transaction", transactionList, RPC.VERSION, 1);
+            BrainKey brainKey = new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0);
+            Transaction transaction = new Transaction(brainKey.getWalletImportFormat(), null, operations);
 
             SSLContext context = null;
             context = NaiveSSLContext.getInstance("TLS");
@@ -802,7 +797,7 @@ public class Test {
 
             WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
 
-            mWebSocket.addListener(new TransactionBroadcastSequence(transaction, listener));
+            mWebSocket.addListener(new TransactionBroadcastSequence(transaction, new Asset("1.3.0"), listener));
             mWebSocket.connect();
         } catch (MalformedAddressException e) {
             System.out.println("MalformedAddressException. Msg: "+e.getMessage());

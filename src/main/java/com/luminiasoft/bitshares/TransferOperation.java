@@ -40,6 +40,7 @@ public class TransferOperation extends BaseOperation {
         this.memo = new Memo();
     }
 
+    @Override
     public void setFee(AssetAmount newFee){
         this.fee = newFee;
     }
