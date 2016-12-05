@@ -31,8 +31,6 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
     private final static int GET_REQUIRED_FEES = 4;
     private final static int BROADCAST_TRANSACTION = 5;
 
-//    private Transaction transaction;
-//    private ArrayList<Serializable> transactions;
     private Asset feeAsset;
     private Transaction transaction;
     private WitnessResponseListener mListener;
@@ -76,14 +74,21 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
             currentId++;
             ArrayList<Serializable> emptyParams = new ArrayList<>();
             if(baseResponse.id == LOGIN_ID){
-                ApiCall networkApiIdCall = new ApiCall(1, RPC.CALL_NETWORK_BROADCAST, emptyParams, "2.0", currentId);
+                ApiCall networkApiIdCall = new ApiCall(1, RPC.CALL_NETWORK_BROADCAST, emptyParams, RPC.VERSION, currentId);
                 websocket.sendText(networkApiIdCall.toJsonString());
             }else if(baseResponse.id == GET_NETWORK_BROADCAST_ID){
                 Type ApiIdResponse = new TypeToken<WitnessResponse<Integer>>() {}.getType();
                 WitnessResponse<Integer> witnessResponse = gson.fromJson(response, ApiIdResponse);
                 broadcastApiId = witnessResponse.result;
 
-                ApiCall getDynamicParametersCall = new ApiCall(0, RPC.CALL_GET_DYNAMIC_GLOBAL_PROPERTIES, emptyParams, "2.0", currentId);
+                // Building API call to request dynamic network properties
+                ApiCall getDynamicParametersCall = new ApiCall(0,
+                        RPC.CALL_GET_DYNAMIC_GLOBAL_PROPERTIES,
+                        emptyParams,
+                        RPC.VERSION,
+                        currentId);
+
+                // Requesting network properties
                 websocket.sendText(getDynamicParametersCall.toJsonString());
             }else if(baseResponse.id == GET_NETWORK_DYNAMIC_PARAMETERS){
                 Type DynamicGlobalPropertiesResponse = new TypeToken<WitnessResponse<DynamicGlobalProperties>>(){}.getType();
@@ -100,12 +105,13 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
                 long headBlockNumber = dynamicProperties.head_block_number;
                 transaction.setBlockData(new BlockData(headBlockNumber, headBlockId, expirationTime));
 
+                // Building a new API call to request fees information
                 ArrayList<Serializable> accountParams = new ArrayList<>();
                 accountParams.add((Serializable) transaction.getOperations());
                 accountParams.add(this.feeAsset.getObjectId());
                 ApiCall getRequiredFees = new ApiCall(0, RPC.CALL_GET_REQUIRED_FEES, accountParams, RPC.VERSION, currentId);
 
-                // Finally sending transaction
+                // Requesting fee amount
                 websocket.sendText(getRequiredFees.toJsonString());
             }else if(baseResponse.id ==  GET_REQUIRED_FEES){
                 Type GetRequiredFeesResponse = new TypeToken<WitnessResponse<List<AssetAmount>>>(){}.getType();
@@ -113,6 +119,7 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
                 gsonBuilder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetDeserializer());
                 WitnessResponse<List<AssetAmount>> requiredFeesResponse = gsonBuilder.create().fromJson(response, GetRequiredFeesResponse);
 
+                // Setting fees
                 transaction.setFees(requiredFeesResponse.result);
                 ArrayList<Serializable> transactions = new ArrayList<>();
                 transactions.add(transaction);
@@ -122,8 +129,9 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
                         transactions,
                         RPC.VERSION,
                         currentId);
+
+                // Finally broadcasting transaction
                 websocket.sendText(call.toJsonString());
-//                websocket.disconnect();
             }else if(baseResponse.id >= BROADCAST_TRANSACTION){
                 Type WitnessResponseType = new TypeToken<WitnessResponse<String>>(){}.getType();
                 WitnessResponse<WitnessResponse<String>> witnessResponse = gson.fromJson(response, WitnessResponseType);
