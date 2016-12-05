@@ -432,8 +432,6 @@ public class Test {
             ArrayList<Serializable> transactionList = new ArrayList<>();
             transactionList.add(transaction);
 
-            transactionList.add(transaction);
-
             SSLContext context = null;
             context = NaiveSSLContext.getInstance("TLS");
             WebSocketFactory factory = new WebSocketFactory();
@@ -744,20 +742,76 @@ public class Test {
         System.out.println("fileOutput " + Arrays.toString(fileOutput));
     }
 
-    public void testAccountUpdateOperationSerialization(){
+    public void testAccountUpdateSerialization() {
         UserAccount account = new UserAccount("1.2.138632");
-        AssetAmount fee = new AssetAmount(UnsignedLong.valueOf("4294967295"), new Asset("1.3.0"));
+        AssetAmount fee = new AssetAmount(UnsignedLong.valueOf("200"), new Asset("1.3.0"));
         HashMap<String, Integer> keyAuths = new HashMap<>();
-        keyAuths.put("BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY", 65535);
+        keyAuths.put("BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY", 1);
+        try {
+            BlockData blockData = new BlockData(0, 0, 0);
+            Authority owner = new Authority(1, keyAuths);
+            Authority active = new Authority(1, keyAuths);
+            AccountUpdateOperation operation = new AccountUpdateOperation(account, owner, active, fee);
+            ArrayList<BaseOperation> operations = new ArrayList<BaseOperation>();
+            operations.add(operation);
+            Transaction transaction = new Transaction(Main.WIF, blockData, operations);
+            System.out.println("Json format of transaction");
+            System.out.println(transaction.toJsonString());
+        } catch(MalformedAddressException e){
+            System.out.println("MalformedAddressException. Msg: "+e.getMessage());
+        }
+    }
+
+    public void testAccountUpdateOperationBroadcast(){
+
+        WitnessResponseListener listener = new WitnessResponseListener() {
+            @Override
+            public void onSuccess(WitnessResponse response) {
+                System.out.println("onSuccess");
+            }
+
+            @Override
+            public void onError(BaseResponse.Error error) {
+                System.out.println("onError");
+            }
+        };
+
+        UserAccount account = new UserAccount("1.2.138632");
+        AssetAmount fee = new AssetAmount(UnsignedLong.valueOf("200"), new Asset("1.3.0"));
+        HashMap<String, Integer> keyAuths = new HashMap<>();
+        keyAuths.put("BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY", 1);
         try {
             Authority owner = new Authority(1, keyAuths);
             Authority active = new Authority(1, keyAuths);
             AccountUpdateOperation operation = new AccountUpdateOperation(account, owner, active, fee);
-            byte[] serializedOperation = operation.toBytes();
-            System.out.println("serialized operation");
-            System.out.println(Util.bytesToHex(serializedOperation));
+            ArrayList<BaseOperation> operations = new ArrayList<BaseOperation>();
+            operations.add(operation);
+            Transaction transaction = new Transaction(Main.WIF, null, operations);
+
+            ArrayList<Serializable> transactionList = new ArrayList<>();
+            transactionList.add(transaction);
+
+            ApiCall call = new ApiCall(4, "call", "broadcast_transaction", transactionList, RPC.VERSION, 1);
+
+            SSLContext context = null;
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
+
+            mWebSocket.addListener(new TransactionBroadcastSequence(transaction, listener));
+            mWebSocket.connect();
         } catch (MalformedAddressException e) {
             System.out.println("MalformedAddressException. Msg: "+e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: "+e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: "+e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: "+e.getMessage());
         }
     }
 }

@@ -45,4 +45,9 @@ public class UserAccount extends GrapheneObject implements ByteSerializable, Jso
     public JsonObject toJsonObject() {
         return null;
     }
+
+    @Override
+    public String toString() {
+        return this.toJsonString();
+    }
 }

@@ -7,6 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.luminiasoft.bitshares.errors.MalformedTransactionException;
 import com.luminiasoft.bitshares.interfaces.ByteSerializable;
 import com.luminiasoft.bitshares.interfaces.JsonSerializable;
 
@@ -28,6 +29,7 @@ import java.util.TimeZone;
 public class Transaction implements ByteSerializable, JsonSerializable {
     private final String TAG = this.getClass().getName();
 
+    public static final int DEFAULT_EXPIRATION_TIME = 30;
     public static final String KEY_EXPIRATION = "expiration";
     public static final String KEY_SIGNATURES = "signatures";
     public static final String KEY_OPERATIONS = "operations";
@@ -42,19 +44,6 @@ public class Transaction implements ByteSerializable, JsonSerializable {
 
     /**
      * Transaction constructor.
-     * @param wif: The user's private key in the base58 format.
-     * @param block_data: Block data containing important information used to sign a transaction.
-     * @param operation_list: List of operations to include in the transaction.
-     */
-    public Transaction(String wif, BlockData block_data, List<BaseOperation> operation_list){
-        this.privateKey = DumpedPrivateKey.fromBase58(null, wif).getKey();
-        this.blockData = block_data;
-        this.operations = operation_list;
-        this.extensions = new ArrayList<Extensions>();
-    }
-
-    /**
-     * Transaction constructor.
      * @param privateKey : Instance of a ECKey containing the private key that will be used to sign this transaction.
      * @param blockData : Block data containing important information used to sign a transaction.
      * @param operationList : List of operations to include in the transaction.
@@ -64,6 +53,20 @@ public class Transaction implements ByteSerializable, JsonSerializable {
         this.blockData = blockData;
         this.operations = operationList;
         this.extensions = new ArrayList<Extensions>();
+    }
+
+    /**
+     * Transaction constructor.
+     * @param wif: The user's private key in the base58 format.
+     * @param block_data: Block data containing important information used to sign a transaction.
+     * @param operation_list: List of operations to include in the transaction.
+     */
+    public Transaction(String wif, BlockData block_data, List<BaseOperation> operation_list){
+        this(DumpedPrivateKey.fromBase58(null, wif).getKey(), block_data, operation_list);
+    }
+
+    public void setBlockData(BlockData blockData){
+        this.blockData = blockData;
     }
 
     public ECKey getPrivateKey(){
@@ -87,6 +90,8 @@ public class Transaction implements ByteSerializable, JsonSerializable {
 
         while(!isGrapheneCanonical) {
             byte[] serializedTransaction = this.toBytes();
+            System.out.println("Signing serialized transaction");
+            System.out.println(Util.bytesToHex(serializedTransaction));
             Sha256Hash hash = Sha256Hash.wrap(Sha256Hash.hash(serializedTransaction));
             int recId = -1;
             ECKey.ECDSASignature sig = privateKey.sign(hash);

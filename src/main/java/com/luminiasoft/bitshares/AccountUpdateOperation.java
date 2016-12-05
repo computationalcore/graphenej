@@ -48,13 +48,17 @@ public class AccountUpdateOperation extends BaseOperation {
 
     @Override
     public JsonElement toJsonObject() {
+        JsonArray array = new JsonArray();
+        array.add(this.getId());
+
         JsonObject accountUpdate = new JsonObject();
         accountUpdate.add(KEY_FEE, fee.toJsonObject());
-        accountUpdate.add(KEY_ACCOUNT, account.toJsonObject());
+        accountUpdate.addProperty(KEY_ACCOUNT, account.toJsonString());
         accountUpdate.add(KEY_OWNER, owner.toJsonObject());
         accountUpdate.add(KEY_ACTIVE, active.toJsonObject());
         accountUpdate.add(KEY_EXTENSIONS, extensions.toJsonObject());
-        return accountUpdate;
+        array.add(accountUpdate);
+        return array;
     }
 
     @Override

@@ -13,6 +13,10 @@ public class PublicKey implements ByteSerializable {
         this.publicKey = key;
     }
 
+    public ECKey getKey(){
+        return publicKey;
+    }
+
     @Override
     public byte[] toBytes() {
         return publicKey.getPubKey();

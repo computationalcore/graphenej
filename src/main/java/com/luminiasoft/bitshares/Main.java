@@ -61,6 +61,7 @@ public class Main {
 //        test.testingInvoiceGeneration();
 //        test.testCompression();
 //        test.testCreateBinFile();
-        test.testAccountUpdateOperationSerialization();
+        test.testAccountUpdateSerialization();
+//        test.testAccountUpdateOperationSerialization();
     }
 }

@@ -58,8 +58,6 @@ public class TransferTransactionBuilder extends TransactionBuilder {
     public Transaction build() throws MalformedTransactionException {
         if(privateKey == null){
             throw new MalformedTransactionException("Missing private key information");
-        }else if(blockData == null){
-            throw new MalformedTransactionException("Missing block data information");
         }else if(operations == null){
             // If the operations list has not been set, we might be able to build one with the
             // previously provided data. But in order for this to work we have to have all

@@ -2,7 +2,8 @@ package com.luminiasoft.bitshares.ws;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.luminiasoft.bitshares.*;
+import com.luminiasoft.bitshares.BlockData;
+import com.luminiasoft.bitshares.RPC;
 import com.luminiasoft.bitshares.Transaction;
 import com.luminiasoft.bitshares.interfaces.WitnessResponseListener;
 import com.luminiasoft.bitshares.models.ApiCall;
@@ -33,17 +34,12 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
     private final static int GET_NETWORK_BROADCAST_ID = 2;
     private final static int GET_NETWORK_DYNAMIC_PARAMETERS = 3;
     private final static int BROADCAST_TRANSACTION = 4;
-    public final static int EXPIRATION_TIME = 30;
 
     private Transaction transaction;
-    private long expirationTime;
-    private String headBlockId;
-    private long headBlockNumber;
     private WitnessResponseListener mListener;
 
     private int currentId = 1;
     private int broadcastApiId = -1;
-    private int retries = 0;
 
     /**
      * Constructor of this class. The ids required
@@ -62,16 +58,18 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
         ArrayList<Serializable> loginParams = new ArrayList<>();
         loginParams.add(null);
         loginParams.add(null);
-        ApiCall loginCall = new ApiCall(1, RPC.CALL_LOGIN, loginParams, "2.0", currentId);
+        ApiCall loginCall = new ApiCall(1, RPC.CALL_LOGIN, loginParams, RPC.VERSION, currentId);
         websocket.sendText(loginCall.toJsonString());
     }
 
     @Override
     public void onTextFrame(WebSocket websocket, WebSocketFrame frame) throws Exception {
+        if(frame.isTextFrame())
+            System.out.println("<<< "+frame.getPayloadText());
         String response = frame.getPayloadText();
         Gson gson = new Gson();
         BaseResponse baseResponse = gson.fromJson(response, BaseResponse.class);
-        if(baseResponse.error != null && baseResponse.error.message.indexOf("is_canonical") == -1){
+        if(baseResponse.error != null){
             mListener.onError(baseResponse.error);
             websocket.disconnect();
         }else{
@@ -97,64 +95,42 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
                 Date date = dateFormat.parse(dynamicProperties.time);
 
                 // Obtained block data
-                expirationTime = (date.getTime() / 1000) + EXPIRATION_TIME;
-                headBlockId = dynamicProperties.head_block_id;
-                headBlockNumber = dynamicProperties.head_block_number;
+                long expirationTime = (date.getTime() / 1000) + Transaction.DEFAULT_EXPIRATION_TIME;
+                String headBlockId = dynamicProperties.head_block_id;
+                long headBlockNumber = dynamicProperties.head_block_number;
+                transaction.setBlockData(new BlockData(headBlockNumber, headBlockId, expirationTime));
 
                 ArrayList<Serializable> transactionList = new ArrayList<>();
                 transactionList.add(transaction);
                 ApiCall call = new ApiCall(broadcastApiId,
                         RPC.CALL_BROADCAST_TRANSACTION,
                         transactionList,
-                        "2.0",
+                        RPC.VERSION,
                         currentId);
 
+                System.out.println("Json of transaction");
+                System.out.println(transaction.toJsonString());
+
+                //TODO: Remove this debug code
+                String jsonCall = call.toJsonString();
+                System.out.println("json call");
+                System.out.println(jsonCall);
+
                 // Finally sending transaction
-                websocket.sendText(call.toJsonString());
+//                websocket.sendText(call.toJsonString());
             }else if(baseResponse.id >= BROADCAST_TRANSACTION){
                 Type WitnessResponseType = new TypeToken<WitnessResponse<String>>(){}.getType();
                 WitnessResponse<WitnessResponse<String>> witnessResponse = gson.fromJson(response, WitnessResponseType);
-                if(witnessResponse.error == null){
-                    mListener.onSuccess(witnessResponse);
-                    websocket.disconnect();
-                }else{
-                    if(witnessResponse.error.message.indexOf("is_canonical") != -1 && retries < 10){
-                        /*
-                        * This is a very ugly hack, but it will do for now.
-                        *
-                        * The issue is that the witness is complaining about the signature not
-                        * being canonical even though the bitcoinj ECKey.ECDSASignature.isCanonical()
-                        * method says it is! We'll have to dive deeper into this issue and avoid
-                        * this error altogether
-                        *
-                        * But this MUST BE FIXED! Since this hack will only work for transactions
-                        * with ONE transfer operation.
-                        */
-                        retries++;
-                        List<BaseOperation> operations = this.transaction.getOperations();
-                        TransferOperation transfer = (TransferOperation) operations.get(0);
-                        transaction = new TransferTransactionBuilder()
-                                .setSource(transfer.getFrom())
-                                .setDestination(transfer.getTo())
-                                .setAmount(transfer.getAmount())
-                                .setFee(transfer.getFee())
-                                .setBlockData(new BlockData(headBlockNumber, headBlockId, expirationTime + EXPIRATION_TIME))
-                                .setPrivateKey(transaction.getPrivateKey())
-                                .build();
-                        ArrayList<Serializable> transactionList = new ArrayList<>();
-                        transactionList.add(transaction);
-                        ApiCall call = new ApiCall(broadcastApiId,
-                                RPC.CALL_BROADCAST_TRANSACTION,
-                                transactionList,
-                                "2.0",
-                                currentId);
-                        websocket.sendText(call.toJsonString());
-                    }else{
-                        mListener.onError(witnessResponse.error);
-                        websocket.disconnect();
-                    }
-                }
+                mListener.onSuccess(witnessResponse);
+                websocket.disconnect();
             }
+        }
+    }
+
+    @Override
+    public void onFrameSent(WebSocket websocket, WebSocketFrame frame) throws Exception {
+        if(frame.isTextFrame()){
+            System.out.println(">>> "+frame.getPayloadText());
         }
     }
 

@@ -1,7 +1,9 @@
 package com.luminiasoft.bitshares;
 
 import com.google.common.primitives.Bytes;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.luminiasoft.bitshares.errors.MalformedAddressException;
 import com.luminiasoft.bitshares.interfaces.ByteSerializable;
 import com.luminiasoft.bitshares.interfaces.JsonSerializable;
@@ -13,6 +15,11 @@ import java.util.*;
  * Created by nelson on 11/30/16.
  */
 public class Authority implements JsonSerializable, ByteSerializable {
+    public static final String KEY_ACCOUNT_AUTHS = "account_auths";
+    public static final String KEY_KEY_AUTHS = "key_auths";
+    public static final String KEY_WEIGHT_THRESHOLD = "weight_threshold";
+    public static final String KEY_EXTENSIONS = "extensions";
+
     private long weight_threshold;
     private HashMap<UserAccount, Integer> account_auths;
     private HashMap<PublicKey, Integer> key_auths;
@@ -36,7 +43,29 @@ public class Authority implements JsonSerializable, ByteSerializable {
 
     @Override
     public JsonElement toJsonObject() {
-        return null;
+        JsonObject authority = new JsonObject();
+        authority.addProperty(KEY_WEIGHT_THRESHOLD, weight_threshold);
+        JsonArray keyAuthArray = new JsonArray();
+        JsonArray accountAuthArray = new JsonArray();
+
+        for(PublicKey publicKey : key_auths.keySet()){
+            JsonArray subArray = new JsonArray();
+            Address address = new Address(publicKey.getKey());
+            subArray.add(address.toString());
+            subArray.add(key_auths.get(publicKey));
+            keyAuthArray.add(subArray);
+        }
+
+        for(UserAccount key : account_auths.keySet()){
+            JsonArray subArray = new JsonArray();
+            subArray.add(key.toString());
+            subArray.add(key_auths.get(key));
+            accountAuthArray.add(subArray);
+        }
+        authority.add(KEY_KEY_AUTHS, keyAuthArray);
+        authority.add(KEY_ACCOUNT_AUTHS, accountAuthArray);
+        authority.add(KEY_EXTENSIONS, extensions.toJsonObject());
+        return authority;
     }
 
     @Override
