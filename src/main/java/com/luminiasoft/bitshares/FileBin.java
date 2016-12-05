@@ -49,14 +49,13 @@ public abstract class FileBin {
             byte[] finalKey = randomECKey.getPubKeyPoint().multiply(ECKey.fromPrivate(md.digest(password.getBytes("UTF-8"))).getPrivKey()).normalize().getXCoord().getEncoded();
             MessageDigest md1 = MessageDigest.getInstance("SHA-512");
             finalKey = md1.digest(finalKey);
-            byte[] rawData = decryptAES(rawDataEncripted, byteToString(finalKey).getBytes());
+            byte[] rawData = Util.decryptAES(rawDataEncripted, Util.byteToString(finalKey).getBytes());
             
             byte[] checksum = new byte[4];
             System.arraycopy(rawData, 0, checksum, 0, 4);
             byte[] compressedData = new byte[rawData.length - 4];
             System.arraycopy(rawData, 4, compressedData, 0, compressedData.length);
             
-            System.out.println("Despues:"+byteToString(compressedData));                        
             byte[] wallet_object_bytes = Util.decompress(compressedData, Util.XZ);
             String wallet_string = new String(wallet_object_bytes, "UTF-8");
             JsonObject wallet = new JsonParser().parse(wallet_string).getAsJsonObject();
@@ -69,7 +68,7 @@ public abstract class FileBin {
             byte[] encKey_enc = new BigInteger(wallet.get("encryption_key").getAsString(), 16).toByteArray();
             byte[] temp = new byte[encKey_enc.length - (encKey_enc[0] == 0 ? 1 : 0)];
             System.arraycopy(encKey_enc, (encKey_enc[0] == 0 ? 1 : 0), temp, 0, temp.length);
-            byte[] encKey = decryptAES(temp, password.getBytes("UTF-8"));
+            byte[] encKey = Util.decryptAES(temp, password.getBytes("UTF-8"));
             temp = new byte[encKey.length];
             System.arraycopy(encKey, 0, temp, 0, temp.length);
 
@@ -79,7 +78,7 @@ public abstract class FileBin {
                 System.arraycopy(encBrain, 1, temp2, 0, temp2.length);
                 encBrain = temp2;
             }
-            String BrainKey = new String((decryptAES(encBrain, temp)), "UTF-8");
+            String BrainKey = new String((Util.decryptAES(encBrain, temp)), "UTF-8");
 
             return BrainKey;
 
@@ -105,15 +104,15 @@ public abstract class FileBin {
             //randomStrengthener.addEntropySource(new AndroidRandomSource());
             SecureRandom secureRandom = randomStrengthener.generateAndSeedRandomNumberGenerator();
             secureRandom.nextBytes(encKey);
-            byte[] encKey_enc = encryptAES(encKey, password.getBytes("UTF-8"));
-            byte[] encBrain = encryptAES(BrainKey.getBytes("ASCII"), encKey);
+            byte[] encKey_enc = Util.encryptAES(encKey, password.getBytes("UTF-8"));
+            byte[] encBrain = Util.encryptAES(BrainKey.getBytes("ASCII"), encKey);
 
             /**
              * Data to Store
              */
             JsonObject wallet = new JsonObject();
-            wallet.add("encryption_key", new JsonParser().parse(byteToString(encKey_enc)));
-            wallet.add("encrypted_brainkey", new JsonParser().parse(byteToString(encBrain)));
+            wallet.add("encryption_key", new JsonParser().parse(Util.byteToString(encKey_enc)));
+            wallet.add("encrypted_brainkey", new JsonParser().parse(Util.byteToString(encBrain)));
             JsonObject wallet_object = new JsonObject();
             wallet_object.add("wallet", wallet);
             JsonArray accountNames = new JsonArray();
@@ -122,7 +121,6 @@ public abstract class FileBin {
             accountNames.add(jsonAccountName);
             wallet_object.add("linked_accounts", accountNames);
             byte[] compressedData = Util.compress(wallet_object.toString().getBytes("UTF-8"), Util.XZ);
-            System.out.println("Antes:"+byteToString(compressedData));
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] checksum = md.digest(compressedData);
             byte[] rawData = new byte[compressedData.length + 4];
@@ -135,7 +133,7 @@ public abstract class FileBin {
             byte[] finalKey = randomECKey.getPubKeyPoint().multiply(ECKey.fromPrivate(md.digest(password.getBytes("UTF-8"))).getPrivKey()).normalize().getXCoord().getEncoded();
             MessageDigest md1 = MessageDigest.getInstance("SHA-512");
             finalKey = md1.digest(finalKey);
-            rawData = encryptAES(rawData, byteToString(finalKey).getBytes());
+            rawData = Util.encryptAES(rawData, Util.byteToString(finalKey).getBytes());
             
             byte[] result = new byte[rawData.length + randPubKey.length];
             System.arraycopy(randPubKey, 0, result, 0, randPubKey.length);
@@ -149,80 +147,5 @@ public abstract class FileBin {
         return null;
     }
 
-    private static byte[] encryptAES(byte[] input, byte[] key) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-512");
-            byte[] result = md.digest(key);
-            byte[] ivBytes = new byte[16];
-            System.arraycopy(result, 32, ivBytes, 0, 16);
-            byte[] sksBytes = new byte[32];
-            System.arraycopy(result, 0, sksBytes, 0, 32);
-            PaddedBufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESFastEngine()));
-            cipher.init(true, new ParametersWithIV(new KeyParameter(sksBytes), ivBytes));
-            byte[] temp = new byte[input.length + (16 - (input.length % 16))];
-            System.arraycopy(input, 0, temp, 0, input.length);
-            Arrays.fill(temp, input.length, temp.length, (byte) (16 - (input.length % 16)));
-            byte[] out = new byte[cipher.getOutputSize(temp.length)];
-            int proc = cipher.processBytes(temp, 0, temp.length, out, 0);
-            cipher.doFinal(out, proc);
-            temp = new byte[out.length - 16];
-            System.arraycopy(out, 0, temp, 0, temp.length);
-            return temp;
-        } catch (NoSuchAlgorithmException | DataLengthException | IllegalStateException | InvalidCipherTextException ex) {
-        }
-        return null;
-    }
-
-    private static byte[] decryptAES(byte[] input, byte[] key) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-512");
-            byte[] result = md.digest(key);
-            byte[] ivBytes = new byte[16];
-            System.arraycopy(result, 32, ivBytes, 0, 16);
-            byte[] sksBytes = new byte[32];
-            System.arraycopy(result, 0, sksBytes, 0, 32);
-            PaddedBufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESFastEngine()));
-            cipher.init(false, new ParametersWithIV(new KeyParameter(sksBytes), ivBytes));
-
-            byte[] pre_out = new byte[cipher.getOutputSize(input.length)];
-            int proc = cipher.processBytes(input, 0, input.length, pre_out, 0);
-            int proc2 = cipher.doFinal(pre_out, proc);
-            byte[] out = new byte[proc+proc2]; 
-            System.arraycopy(pre_out, 0, out, 0, proc+proc2);
-            
-            //Unpadding
-            byte countByte = (byte)((byte)out[out.length-1] % 16);
-            int count = countByte & 0xFF;
-                       
-            if ((count > 15) || (count <= 0)){
-                return out;
-            }
-            
-            byte[] temp = new byte[count];
-            System.arraycopy(out, out.length - count, temp, 0, temp.length);
-            byte[] temp2 = new byte[count];
-            Arrays.fill(temp2, (byte) count);
-            if (Arrays.equals(temp, temp2)) {
-                temp = new byte[out.length - count];
-                System.arraycopy(out, 0, temp, 0, out.length - count);
-                return temp;
-            } else {
-                return out;
-            }            
-        } catch (NoSuchAlgorithmException | DataLengthException | IllegalStateException | InvalidCipherTextException ex) {
-            ex.printStackTrace();
-        }
-        return null;
-    }
-
-    public static String byteToString(byte[] input) {
-        StringBuilder result = new StringBuilder();
-        for (byte in : input) {
-            if ((in & 0xff) < 0x10) {
-                result.append("0");
-            }
-            result.append(Integer.toHexString(in & 0xff));
-        }
-        return result.toString();
-    }
+    
 }
