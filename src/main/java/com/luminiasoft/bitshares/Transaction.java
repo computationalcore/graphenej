@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 /**
- * Class used to represent a generic graphene transaction.
+ * Class used to represent a generic Graphene transaction.
  */
 public class Transaction implements ByteSerializable, JsonSerializable {
     private final String TAG = this.getClass().getName();
@@ -65,10 +65,18 @@ public class Transaction implements ByteSerializable, JsonSerializable {
         this(DumpedPrivateKey.fromBase58(null, wif).getKey(), block_data, operation_list);
     }
 
+    /**
+     * Updates the block data
+     * @param blockData: New block data
+     */
     public void setBlockData(BlockData blockData){
         this.blockData = blockData;
     }
 
+    /**
+     * Updates the fees for all operations in this transaction.
+     * @param fees: New fees to apply
+     */
     public void setFees(List<AssetAmount> fees){
         for(int i = 0; i < operations.size(); i++)
             operations.get(i).setFee(fees.get(i));

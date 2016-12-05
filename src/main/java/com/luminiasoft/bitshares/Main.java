@@ -11,6 +11,8 @@ public class Main {
 
     public static final String BILTHON_5_BRAIN_KEY = "UNMATE AURIGAL NAVET WAVICLE REWOVE ABBOTCY COWHERB OUTKICK STOPPER JUSSORY BEAMLET WIRY";
 
+    public static final String BILTHON_7_BRAIN_KEY = "VENIN QUOTHA OBESELY TORIC OSMATIC SPOKEN DIACOPE CUBICA TABULA REDDING APONIA TARTAR";
+
     //public static final String BRAIN_KEY = "TWIXT SERMO TRILLI AUDIO PARDED PLUMET BIWA REHUNG MAUDLE VALVULA OUTBURN FEWNESS ALIENER UNTRACE PRICH TROKER";
     //public static final String BRAIN_KEY = "SIVER TIKKER FOGO HOMINAL PRAYER LUTEIN SMALLY ACARID MEROPIA TRANCE BOGONG IDDAT HICKORY SOUTANE MOOD DOWSER";
     public static final String BIP39_KEY = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
@@ -55,7 +57,7 @@ public class Main {
 //        test.testGetAccountByName();
 //        test.testGetRequiredFees();
 //        test.testRandomNumberGeneration();
-//        test.testBrainKeyOperations(false);
+//        test.testBrainKeyOperations(true);
 //        test.testBip39Opertion();
 //        test.testAccountNamebyAddress();
 //        test.testAccountNameById();

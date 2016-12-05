@@ -142,12 +142,17 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
 
     @Override
     public void onError(WebSocket websocket, WebSocketException cause) throws Exception {
+        System.out.println("onError. cause: "+cause.getMessage());
         mListener.onError(new BaseResponse.Error(cause.getMessage()));
         websocket.disconnect();
     }
 
     @Override
     public void handleCallbackError(WebSocket websocket, Throwable cause) throws Exception {
+        System.out.println("handleCallbackError. cause: "+cause.getMessage()+", error: "+cause.getClass());
+        for (StackTraceElement element : cause.getStackTrace()){
+            System.out.println(element.getFileName()+"#"+element.getClassName()+":"+element.getLineNumber());
+        }
         mListener.onError(new BaseResponse.Error(cause.getMessage()));
         websocket.disconnect();
     }

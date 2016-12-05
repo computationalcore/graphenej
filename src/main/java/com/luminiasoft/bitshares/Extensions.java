@@ -11,6 +11,8 @@ import java.util.ArrayList;
  * Created by nelson on 11/9/16.
  */
 public class Extensions implements JsonSerializable, ByteSerializable {
+    public static final String KEY_EXTENSIONS = "extensions";
+
     private ArrayList<JsonSerializable> extensions;
 
     public Extensions(){

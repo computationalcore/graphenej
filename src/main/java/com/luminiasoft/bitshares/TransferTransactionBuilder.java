@@ -16,6 +16,12 @@ public class TransferTransactionBuilder extends TransactionBuilder {
     private AssetAmount transferAmount;
     private AssetAmount feeAmount;
 
+    public TransferTransactionBuilder(){}
+
+    public TransferTransactionBuilder(ECKey privKey) {
+        super(privKey);
+    }
+
     public TransferTransactionBuilder setPrivateKey(ECKey key){
         this.privateKey = key;
         return this;

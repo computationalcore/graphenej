@@ -341,8 +341,8 @@ public class Test {
                     .setDestination(new UserAccount("1.2.129848"))
                     .setAmount(new AssetAmount(UnsignedLong.valueOf(100), new Asset("1.3.120")))
                     .setFee(new AssetAmount(UnsignedLong.valueOf(264174), new Asset("1.3.0")))
-                    .setBlockData(new BlockData(Main.REF_BLOCK_NUM, Main.REF_BLOCK_PREFIX, Main.RELATIVE_EXPIRATION))
                     .setPrivateKey(DumpedPrivateKey.fromBase58(null, Main.WIF).getKey())
+                    .setBlockData(new BlockData(Main.REF_BLOCK_NUM, Main.REF_BLOCK_PREFIX, Main.RELATIVE_EXPIRATION))
                     .build();
 
             ArrayList<Serializable> transactionList = new ArrayList<>();
@@ -532,49 +532,6 @@ public class Test {
         }
     }
 
-    public void testRandomNumberGeneration() {
-        byte[] seed = new byte[]{new Long(System.nanoTime()).byteValue()};
-        doCountTest(new SHA512Digest(), seed);
-    }
-
-    private void doCountTest(Digest digest, byte[] seed)//, byte[] expectedXors)
-    {
-        DigestRandomGenerator generator = new DigestRandomGenerator(digest);
-        byte[] output = new byte[digest.getDigestSize()];
-        int[] averages = new int[digest.getDigestSize()];
-        byte[] ands = new byte[digest.getDigestSize()];
-        byte[] xors = new byte[digest.getDigestSize()];
-        byte[] ors = new byte[digest.getDigestSize()];
-
-        generator.addSeedMaterial(seed);
-
-        for (int i = 0; i != 1000000; i++) {
-            generator.nextBytes(output);
-            for (int j = 0; j != output.length; j++) {
-                averages[j] += output[j] & 0xff;
-                ands[j] &= output[j];
-                xors[j] ^= output[j];
-                ors[j] |= output[j];
-            }
-        }
-
-        for (int i = 0; i != output.length; i++) {
-            if ((averages[i] / 1000000) != 127) {
-                System.out.println("average test failed for " + digest.getAlgorithmName());
-            }
-            System.out.println("averages[" + i + "] / 1000000: " + averages[i] / 1000000);
-            if (ands[i] != 0) {
-                System.out.println("and test failed for " + digest.getAlgorithmName());
-            }
-            if ((ors[i] & 0xff) != 0xff) {
-                System.out.println("or test failed for " + digest.getAlgorithmName());
-            }
-//            if (xors[i] != expectedXors[i]) {
-//                System.out.println("xor test failed for " + digest.getAlgorithmName());
-//            }
-        }
-    }
-
     /**
      * The final purpose of this test is to convert the plain brainkey at
      * Main.BRAIN_KEY into the WIF at Main.WIF
@@ -595,29 +552,21 @@ public class Test {
                 brainKey = new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0);
             }
             ECKey key = brainKey.getPrivateKey();
-            System.out.println("Private key");
-            System.out.println(Util.bytesToHex(key.getSecretBytes()));
+            System.out.println("Private key..................: "+Util.bytesToHex(key.getSecretBytes()));
             String wif = key.getPrivateKeyAsWiF(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
-            System.out.println("wif compressed: " + wif);
+            System.out.println("Wif Compressed...............: " + wif);
             String wif2 = key.decompress().getPrivateKeyAsWiF(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
-            System.out.println("wif decompressed: " + wif2);
+            System.out.println("Wif Decompressed.............: " + wif2);
 
             byte[] pubKey1 = key.decompress().getPubKey();
-            System.out.println("decompressed public key: " + Base58.encode(pubKey1));
             byte[] pubKey2 = key.getPubKey();
-            System.out.println("compressed public key: " + Base58.encode(pubKey2));
 
-            System.out.println("pub key compressed   : " + Util.bytesToHex(pubKey1));
-            System.out.println("pub key uncompressed : " + Util.bytesToHex(pubKey2));
-
-            byte[] pubKey3 = key.getPubKeyPoint().getEncoded(true);
-            System.out.println("pub key compressed  : " + Base58.encode(pubKey3));
+            System.out.println("Public Key Decompressed........: " + Util.bytesToHex(pubKey1));
+            System.out.println("Public Key Compressed..........: " + Util.bytesToHex(pubKey2));
 
             // Address generation test
             Address address = new Address(key);
-            System.out.println("Block explorer's address: " + address);
-
-            System.out.println("Wif:                : " + brainKey.getWalletImportFormat());
+            System.out.println("Block explorer's address.....: " + address);
         } catch (FileNotFoundException e) {
             System.out.println("FileNotFoundException. Msg: " + e.getMessage());
         } catch (IOException e) {
@@ -744,20 +693,30 @@ public class Test {
     }
 
     public void testAccountUpdateSerialization() {
-        UserAccount account = new UserAccount("1.2.138632");
-        AssetAmount fee = new AssetAmount(UnsignedLong.valueOf("200"), new Asset("1.3.0"));
-        HashMap<String, Integer> keyAuths = new HashMap<>();
-        keyAuths.put("BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY", 1);
+        String newAddress = "BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY";
         try {
-            BlockData blockData = new BlockData(0, 0, 0);
-            Authority owner = new Authority(1, keyAuths);
-            Authority active = new Authority(1, keyAuths);
-            AccountUpdateOperation operation = new AccountUpdateOperation(account, owner, active, fee);
-            ArrayList<BaseOperation> operations = new ArrayList<BaseOperation>();
-            operations.add(operation);
-            Transaction transaction = new Transaction(Main.WIF, blockData, operations);
+            Address address = new Address(newAddress);
+            HashMap<PublicKey, Integer> authMap = new HashMap<>();
+            authMap.put(address.getPublicKey(), 1);
+            Authority authority = new Authority(1, authMap, null);
+            AccountOptions options = new AccountOptions(address.getPublicKey());
+            BrainKey brainKey = new BrainKey(Main.BILTHON_7_BRAIN_KEY, 0);
+            Transaction transaction = new AccountUpdateTransactionBuilder(brainKey.getPrivateKey())
+                    .setAccont(new UserAccount("1.2.140994"))
+                    .setOwner(authority)
+                    .setActive(authority)
+                    .setOptions(options)
+                    .setBlockData(new BlockData(Main.REF_BLOCK_NUM, Main.REF_BLOCK_PREFIX, Main.RELATIVE_EXPIRATION))
+                    .build();
+
+            System.out.println("Json object");
+            System.out.println(transaction.toJsonString());
+            System.out.println("Serialized transaction");
+            System.out.println(Util.bytesToHex(transaction.toBytes()));
         } catch(MalformedAddressException e){
             System.out.println("MalformedAddressException. Msg: "+e.getMessage());
+        } catch (MalformedTransactionException e) {
+            System.out.println("MalformedTransactionException. Msg: "+e.getMessage());
         }
     }
 
@@ -775,18 +734,20 @@ public class Test {
             }
         };
 
-        UserAccount account = new UserAccount("1.2.139313");
-        AssetAmount fee = new AssetAmount(UnsignedLong.valueOf("200"), new Asset("1.3.0"));
-        HashMap<String, Integer> keyAuths = new HashMap<>();
-        keyAuths.put("BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY", 1);
+        String newAddress = "BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY";
         try {
-            Authority owner = new Authority(1, keyAuths);
-            Authority active = new Authority(1, keyAuths);
-            AccountUpdateOperation operation = new AccountUpdateOperation(account, owner, active, fee);
-            ArrayList<BaseOperation> operations = new ArrayList<BaseOperation>();
-            operations.add(operation);
-            BrainKey brainKey = new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0);
-            Transaction transaction = new Transaction(brainKey.getWalletImportFormat(), null, operations);
+            Address address = new Address(newAddress);
+            HashMap<PublicKey, Integer> authMap = new HashMap<>();
+            authMap.put(address.getPublicKey(), 1);
+            Authority authority = new Authority(1, authMap, null);
+            AccountOptions options = new AccountOptions(address.getPublicKey());
+            BrainKey brainKey = new BrainKey(Main.BILTHON_7_BRAIN_KEY, 0);
+            Transaction transaction = new AccountUpdateTransactionBuilder(brainKey.getPrivateKey())
+                    .setAccont(new UserAccount("1.2.140994"))
+                    .setOwner(authority)
+                    .setActive(authority)
+                    .setOptions(options)
+                    .build();
 
             SSLContext context = null;
             context = NaiveSSLContext.getInstance("TLS");
@@ -799,8 +760,11 @@ public class Test {
 
             mWebSocket.addListener(new TransactionBroadcastSequence(transaction, new Asset("1.3.0"), listener));
             mWebSocket.connect();
+
         } catch (MalformedAddressException e) {
             System.out.println("MalformedAddressException. Msg: "+e.getMessage());
+        } catch (MalformedTransactionException e) {
+            System.out.println("MalformedTransactionException. Msg: "+e.getMessage());
         } catch (NoSuchAlgorithmException e) {
             System.out.println("NoSuchAlgorithmException. Msg: "+e.getMessage());
         } catch (IOException e) {
@@ -808,5 +772,42 @@ public class Test {
         } catch (WebSocketException e) {
             System.out.println("WebSocketException. Msg: "+e.getMessage());
         }
+
+
+        // --
+
+//        UserAccount account = new UserAccount("1.2.139313");
+//        AssetAmount fee = new AssetAmount(UnsignedLong.valueOf("200"), new Asset("1.3.0"));
+//        HashMap<String, Integer> keyAuths = new HashMap<>();
+//        keyAuths.put("BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY", 1);
+//        try {
+//            Authority owner = new Authority(1, keyAuths);
+//            Authority active = new Authority(1, keyAuths);
+//            AccountUpdateOperation operation = new AccountUpdateOperation(account, owner, active, null, fee);
+//            ArrayList<BaseOperation> operations = new ArrayList<BaseOperation>();
+//            operations.add(operation);
+//            BrainKey brainKey = new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0);
+//            Transaction transaction = new Transaction(brainKey.getWalletImportFormat(), null, operations);
+//
+//            SSLContext context = null;
+//            context = NaiveSSLContext.getInstance("TLS");
+//            WebSocketFactory factory = new WebSocketFactory();
+//
+//            // Set the custom SSL context.
+//            factory.setSSLContext(context);
+//
+//            WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
+//
+//            mWebSocket.addListener(new TransactionBroadcastSequence(transaction, new Asset("1.3.0"), listener));
+//            mWebSocket.connect();
+//        } catch (MalformedAddressException e) {
+//            System.out.println("MalformedAddressException. Msg: "+e.getMessage());
+//        } catch (NoSuchAlgorithmException e) {
+//            System.out.println("NoSuchAlgorithmException. Msg: "+e.getMessage());
+//        } catch (IOException e) {
+//            System.out.println("IOException. Msg: "+e.getMessage());
+//        } catch (WebSocketException e) {
+//            System.out.println("WebSocketException. Msg: "+e.getMessage());
+//        }
     }
 }

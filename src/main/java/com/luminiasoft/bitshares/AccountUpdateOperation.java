@@ -6,6 +6,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.sun.istack.internal.NotNull;
+import com.sun.istack.internal.Nullable;
 
 /**
  * Class used to encapsulate operations related to the account_update_operation.
@@ -15,30 +17,53 @@ public class AccountUpdateOperation extends BaseOperation {
     public static final String KEY_OWNER = "owner";
     public static final String KEY_ACTIVE = "active";
     public static final String KEY_FEE = "fee";
+    public static final String KEY_NEW_OPTIONS = "new_options";
     public static final String KEY_EXTENSIONS = "extensions";
 
-    private UserAccount account;
     private AssetAmount fee;
-    private Authority owner;
-    private Authority active;
+    private UserAccount account;
+    private Optional<Authority> owner;
+    private Optional<Authority> active;
+    private Optional<AccountOptions> new_options;
     private Extensions extensions;
 
-    public AccountUpdateOperation(UserAccount account, Authority owner, Authority active, AssetAmount fee){
+    /**
+     * Account update operation constructor.
+     * @param account User account to update. Can't be null.
+     * @param owner Owner authority to set. Can be null.
+     * @param active Active authority to set. Can be null.
+     * @param options Active authority to set. Can be null.
+     * @param fee The fee to pay. Can be null.
+     */
+    public AccountUpdateOperation(UserAccount account, Authority owner, Authority active, AccountOptions options, AssetAmount fee){
         super(OperationType.account_update_operation);
-        this.account = account;
-        this.owner = owner;
-        this.active = active;
         this.fee = fee;
+        this.account = account;
+        this.owner = new Optional<>(owner);
+        this.active = new Optional<>(active);
+        this.new_options = new Optional<>(options);
         extensions = new Extensions();
     }
 
-    public AccountUpdateOperation(UserAccount account, Authority owner, Authority active){
-        this(account, owner, active, new AssetAmount(UnsignedLong.valueOf(0), new Asset("1.3.0")));
+    public AccountUpdateOperation(UserAccount account, Authority owner, Authority active, AccountOptions options){
+        this(account, owner, active, options, new AssetAmount(UnsignedLong.valueOf(0), new Asset("1.3.0")));
     }
 
     @Override
     public void setFee(AssetAmount fee){
         this.fee = fee;
+    }
+
+    public void setOwner(Authority owner){
+        this.owner = new Optional<>(owner);
+    }
+
+    public void setActive(Authority active){
+        this.active = new Optional<>(active);
+    }
+
+    public void setAccountOptions(AccountOptions options){
+        this.new_options = new Optional<>(options);
     }
 
     @Override
@@ -57,6 +82,7 @@ public class AccountUpdateOperation extends BaseOperation {
         accountUpdate.addProperty(KEY_ACCOUNT, account.toJsonString());
         accountUpdate.add(KEY_OWNER, owner.toJsonObject());
         accountUpdate.add(KEY_ACTIVE, active.toJsonObject());
+        accountUpdate.add(KEY_NEW_OPTIONS, new_options.toJsonObject());
         accountUpdate.add(KEY_EXTENSIONS, extensions.toJsonObject());
         array.add(accountUpdate);
         return array;
@@ -68,7 +94,8 @@ public class AccountUpdateOperation extends BaseOperation {
         byte[] accountBytes = account.toBytes();
         byte[] ownerBytes = owner.toBytes();
         byte[] activeBytes = active.toBytes();
+        byte[] newOptionsBytes = new_options.toBytes();
         byte[] extensionBytes = extensions.toBytes();
-        return Bytes.concat(feeBytes, accountBytes, ownerBytes, activeBytes, extensionBytes);
+        return Bytes.concat(feeBytes, accountBytes, ownerBytes, activeBytes, newOptionsBytes, extensionBytes);
     }
 }
