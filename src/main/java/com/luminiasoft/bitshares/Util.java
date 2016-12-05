@@ -125,7 +125,7 @@ public class Util {
      * @return The array of bytes that represent this value in the reverse format.
      */
     public static byte[] revertInteger(Integer input){
-        return ByteBuffer.allocate(Integer.BYTES).putInt(Integer.reverseBytes(input)).array();
+        return ByteBuffer.allocate(Integer.SIZE / 8).putInt(Integer.reverseBytes(input)).array();
     }
 
     /**
@@ -134,7 +134,7 @@ public class Util {
      * @return The array of bytes that represent this value in the reverse format.
      */
     public static byte[] revertShort(Short input){
-        return ByteBuffer.allocate(Short.BYTES).putShort(Short.reverseBytes(input)).array();
+        return ByteBuffer.allocate(Short.SIZE / 8).putShort(Short.reverseBytes(input)).array();
     }
 
     /**
@@ -143,6 +143,6 @@ public class Util {
      * @return The array of bytes that represent this value in the reverse format.
      */
     public static byte[] revertLong(Long input){
-        return ByteBuffer.allocate(Long.BYTES).putLong(Long.reverseBytes(input)).array();
+        return ByteBuffer.allocate(Long.SIZE / 8).putLong(Long.reverseBytes(input)).array();
     }
 }
