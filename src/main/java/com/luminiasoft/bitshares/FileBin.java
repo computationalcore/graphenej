@@ -65,11 +65,12 @@ public abstract class FileBin {
             } else {
                 wallet = wallet.get("wallet").getAsJsonObject();
             }
+            
             byte[] encKey_enc = new BigInteger(wallet.get("encryption_key").getAsString(), 16).toByteArray();
             byte[] temp = new byte[encKey_enc.length - (encKey_enc[0] == 0 ? 1 : 0)];
             System.arraycopy(encKey_enc, (encKey_enc[0] == 0 ? 1 : 0), temp, 0, temp.length);
             byte[] encKey = decryptAES(temp, password.getBytes("UTF-8"));
-            temp = new byte[encKey.length - 16];
+            temp = new byte[encKey.length];
             System.arraycopy(encKey, 0, temp, 0, temp.length);
 
             byte[] encBrain = new BigInteger(wallet.get("encrypted_brainkey").getAsString(), 16).toByteArray();
@@ -190,7 +191,13 @@ public abstract class FileBin {
             System.arraycopy(pre_out, 0, out, 0, proc+proc2);
             
             //Unpadding
-            int count = out[out.length-1];            
+            byte countByte = (byte)((byte)out[out.length-1] % 16);
+            int count = countByte & 0xFF;
+                       
+            if ((count > 15) || (count <= 0)){
+                return out;
+            }
+            
             byte[] temp = new byte[count];
             System.arraycopy(out, out.length - count, temp, 0, temp.length);
             byte[] temp2 = new byte[count];
@@ -201,7 +208,7 @@ public abstract class FileBin {
                 return temp;
             } else {
                 return out;
-            }
+            }            
         } catch (NoSuchAlgorithmException | DataLengthException | IllegalStateException | InvalidCipherTextException ex) {
             ex.printStackTrace();
         }

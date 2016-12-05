@@ -64,8 +64,9 @@ public class Main {
 //        test.testRelativeAccountHistory();
 //        test.testingInvoiceGeneration();
 //        test.testCompression();
-//        test.testCreateBinFile();
-        test.testAccountUpdateSerialization();
+//        test.testAccountUpdateSerialization();
 //        test.testAccountUpdateOperationBroadcast();
+        test.testCreateBinFile();
+        test.testImportBinFile();
     }
 }
