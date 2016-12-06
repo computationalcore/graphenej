@@ -39,11 +39,11 @@ public class Memo implements ByteSerializable {
         this.message = null;
     }
     
-    public Memo(byte[] private_key, byte[] public_key, byte[] msg){
-        this(private_key,public_key,msg,0);
+    public void encodeMessage(byte[] private_key, byte[] public_key, byte[] msg){
+        this.encodeMessage(private_key,public_key,msg,0);
     }
     
-    public Memo(byte[] private_key, byte[] public_key, byte[] msg, long custom_nonce){
+    public void encodeMessage(byte[] private_key, byte[] public_key, byte[] msg, long custom_nonce){
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             ECKey privateECKey = ECKey.fromPrivate(md.digest(private_key));
@@ -73,7 +73,10 @@ public class Memo implements ByteSerializable {
 
             byte[] secret = privateECKey.getPubKeyPoint().multiply(ECKey.fromPublicOnly(md.digest(public_key)).getPrivKey()).normalize().getXCoord().getEncoded();
             byte[] finalKey = new byte[secret.length + this.nonce.length];
-
+            System.arraycopy(secret, 0, finalKey, 0, secret.length);
+            System.arraycopy(this.nonce, 0, finalKey, secret.length, this.nonce.length);
+            
+            
             byte[] sha256Msg = md.digest(msg);
             byte[] serialChecksum = new byte[4];
             System.arraycopy(sha256Msg, 0, serialChecksum, 0, 4);
@@ -85,5 +88,27 @@ public class Memo implements ByteSerializable {
         } catch (NoSuchAlgorithmException ex){
             
         }
+    }
+    
+    public void decodeMessage(byte[] private_key, byte[] public_key, byte[] msg, byte[] nonce){
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            ECKey privateECKey = ECKey.fromPrivate(md.digest(private_key));
+            this.to = privateECKey.getPubKey();
+            this.from = public_key;
+            this.nonce = nonce;
+            
+            byte[] secret = privateECKey.getPubKeyPoint().multiply(ECKey.fromPublicOnly(md.digest(public_key)).getPrivKey()).normalize().getXCoord().getEncoded();
+            byte[] finalKey = new byte[secret.length + this.nonce.length];
+            System.arraycopy(secret, 0, finalKey, 0, secret.length);
+            System.arraycopy(this.nonce, 0, finalKey, secret.length, this.nonce.length);
+            
+            byte[] msgFinal = Util.decryptAES(msg, finalKey);
+            byte[] decodedMsg = new byte[msgFinal.length-4];
+            System.arraycopy(msgFinal, 4, decodedMsg, 0, decodedMsg.length);
+            this.message = decodedMsg;
+        } catch (NoSuchAlgorithmException ex){
+            
+        }  
     }
 }
