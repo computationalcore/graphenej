@@ -1,7 +1,6 @@
 package com.luminiasoft.bitshares;
 
 import org.tukaani.xz.FinishableOutputStream;
-import com.google.common.primitives.Bytes;
 import org.tukaani.xz.LZMA2Options;
 import org.tukaani.xz.LZMAInputStream;
 import org.tukaani.xz.LZMAOutputStream;
@@ -11,10 +10,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-<<<<<<< HEAD
 import java.nio.ByteBuffer;
-=======
->>>>>>> 9d4ca57823604965fa940c07c0752249d701cd59
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
