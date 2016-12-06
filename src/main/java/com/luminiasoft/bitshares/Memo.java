@@ -21,7 +21,7 @@ public class Memo implements ByteSerializable {
     public byte[] toBytes() {
         if ((this.from == null) || (this.to == null) || (this.nonce == null) ||(this.message == null)){
             return new byte[] { (byte) 0 };
-        } 
+        }
         
         byte[] result = new byte[this.from.length+this.to.length+this.nonce.length+this.message.length];
         System.arraycopy(this.from, 0, result, 0, this.from.length);

@@ -11,7 +11,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+<<<<<<< HEAD
 import java.nio.ByteBuffer;
+=======
+>>>>>>> 9d4ca57823604965fa940c07c0752249d701cd59
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
