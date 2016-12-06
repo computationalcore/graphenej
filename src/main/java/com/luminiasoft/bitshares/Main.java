@@ -7,20 +7,20 @@ import java.io.IOException;
 public class Main {
 
     // Brain key from Nelson's app referencing the bilthon-83 account
-    public static final String BRAIN_KEY = "PUMPER ISOTOME SERE STAINER CLINGER MOONLIT CHAETA UPBRIM AEDILIC BERTHER NIT SHAP SAID SHADING JUNCOUS CHOUGH";
+    public static final String BILTHON_83_BRAIN_KEY = "PUMPER ISOTOME SERE STAINER CLINGER MOONLIT CHAETA UPBRIM AEDILIC BERTHER NIT SHAP SAID SHADING JUNCOUS CHOUGH";
 
     public static final String BILTHON_5_BRAIN_KEY = "UNMATE AURIGAL NAVET WAVICLE REWOVE ABBOTCY COWHERB OUTKICK STOPPER JUSSORY BEAMLET WIRY";
 
     public static final String BILTHON_7_BRAIN_KEY = "VENIN QUOTHA OBESELY TORIC OSMATIC SPOKEN DIACOPE CUBICA TABULA REDDING APONIA TARTAR";
 
-    //public static final String BRAIN_KEY = "TWIXT SERMO TRILLI AUDIO PARDED PLUMET BIWA REHUNG MAUDLE VALVULA OUTBURN FEWNESS ALIENER UNTRACE PRICH TROKER";
-    //public static final String BRAIN_KEY = "SIVER TIKKER FOGO HOMINAL PRAYER LUTEIN SMALLY ACARID MEROPIA TRANCE BOGONG IDDAT HICKORY SOUTANE MOOD DOWSER";
+    //public static final String BILTHON_83_BRAIN_KEY = "TWIXT SERMO TRILLI AUDIO PARDED PLUMET BIWA REHUNG MAUDLE VALVULA OUTBURN FEWNESS ALIENER UNTRACE PRICH TROKER";
+    //public static final String BILTHON_83_BRAIN_KEY = "SIVER TIKKER FOGO HOMINAL PRAYER LUTEIN SMALLY ACARID MEROPIA TRANCE BOGONG IDDAT HICKORY SOUTANE MOOD DOWSER";
     public static final String BIP39_KEY = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 
     // WIF from Nelson's app referencing the bilthon-83 account
 //    public static final String WIF = "5J96pne45qWM1WpektoeazN6k9Mt93jQ7LyueRxFfEMTiy6yxjM";
     // Brain key from an empty account created by the cli_wallet
-//    public static final String BRAIN_KEY = "TWIXT SERMO TRILLI AUDIO PARDED PLUMET BIWA REHUNG MAUDLE VALVULA OUTBURN FEWNESS ALIENER UNTRACE PRICH TROKER";
+//    public static final String BILTHON_83_BRAIN_KEY = "TWIXT SERMO TRILLI AUDIO PARDED PLUMET BIWA REHUNG MAUDLE VALVULA OUTBURN FEWNESS ALIENER UNTRACE PRICH TROKER";
     // WIF from an empty account created by the cli_wallet
     public static final String WIF = "5KMzB2GqGhnh7ufhgddmz1eKPHS72uTLeL9hHjSvPb1UywWknF5";
 
@@ -57,7 +57,7 @@ public class Main {
 //        test.testGetAccountByName();
 //        test.testGetRequiredFees();
 //        test.testRandomNumberGeneration();
-//        test.testBrainKeyOperations(true);
+        test.testBrainKeyOperations(false);
 //        test.testBip39Opertion();
 //        test.testAccountNamebyAddress();
 //        test.testAccountNameById();
@@ -66,7 +66,7 @@ public class Main {
 //        test.testCompression();
 //        test.testAccountUpdateSerialization();
 //        test.testAccountUpdateOperationBroadcast();
-        test.testCreateBinFile();
-        test.testImportBinFile();
+//        test.testCreateBinFile();
+//        test.testImportBinFile();
     }
 }
