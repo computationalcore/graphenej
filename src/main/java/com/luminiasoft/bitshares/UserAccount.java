@@ -1,6 +1,6 @@
 package com.luminiasoft.bitshares;
 
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import com.luminiasoft.bitshares.interfaces.ByteSerializable;
 import com.luminiasoft.bitshares.interfaces.JsonSerializable;
 
@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 /**
  * Class tha represents a graphene user account.
@@ -17,13 +18,33 @@ public class UserAccount extends GrapheneObject implements ByteSerializable, Jso
 
     public static final String PROXY_TO_SELF = "1.2.5";
 
+    private String accountName;
+
     /**
      * Constructor that expects a user account in the string representation.
      * That is in the 1.2.x format.
-     * @param id: The string representing the account apiId.
+     * @param id: The string representing the user account.
      */
     public UserAccount(String id) {
         super(id);
+    }
+
+    /**
+     * Constructor that expects a user account withe the proper graphene object id and an account name.
+     * @param id: The string representing the user account.
+     * @param name: The name of this user account.
+     */
+    public UserAccount(String id, String name){
+        super(id);
+        this.accountName = name;
+    }
+
+    /**
+     * Getter for the account name field.
+     * @return: The name of this account.
+     */
+    public String getAccountName() {
+        return accountName;
     }
 
     @Override
@@ -51,5 +72,25 @@ public class UserAccount extends GrapheneObject implements ByteSerializable, Jso
     @Override
     public String toString() {
         return this.toJsonString();
+    }
+
+    /**
+     * Custom deserializer used to deserialize user accounts provided as response from the 'lookup_accounts' api call.
+     * This response contains serialized user accounts in the form [[{id1},{name1}][{id1},{name1}]].
+     *
+     * For instance:
+     *  [["bilthon-1","1.2.139205"],["bilthon-2","1.2.139207"],["bilthon-2016","1.2.139262"]]
+     *
+     * So this class will pick up this data and turn it into a UserAccount object.
+     */
+    public static class UserAccountDeserializer implements JsonDeserializer<UserAccount> {
+
+        @Override
+        public UserAccount deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            JsonArray array = json.getAsJsonArray();
+            String name = array.get(0).getAsString();
+            String id = array.get(1).getAsString();
+            return new UserAccount(id, name);
+        }
     }
 }

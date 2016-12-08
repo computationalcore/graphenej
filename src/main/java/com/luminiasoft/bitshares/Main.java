@@ -57,7 +57,7 @@ public class Main {
 //        test.testGetAccountByName();
 //        test.testGetRequiredFees();
 //        test.testRandomNumberGeneration();
-        test.testBrainKeyOperations(false);
+//        test.testBrainKeyOperations(false);
 //        test.testBip39Opertion();
 //        test.testAccountNamebyAddress();
 //        test.testAccountNameById();
@@ -68,5 +68,6 @@ public class Main {
 //        test.testAccountUpdateOperationBroadcast();
 //        test.testCreateBinFile();
 //        test.testImportBinFile();
+        test.testLookupAccounts();
     }
 }

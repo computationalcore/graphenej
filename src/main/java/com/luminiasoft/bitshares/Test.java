@@ -650,4 +650,39 @@ public class Test {
             System.out.println("WebSocketException. Msg: "+e.getMessage());
         }
     }
+
+    public void testLookupAccounts(){
+        WitnessResponseListener listener = new WitnessResponseListener() {
+            @Override
+            public void onSuccess(WitnessResponse response) {
+                System.out.println("onSuccess");
+            }
+
+            @Override
+            public void onError(BaseResponse.Error error) {
+                System.out.println("onError");
+            }
+        };
+
+        SSLContext context = null;
+        try {
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
+
+            mWebSocket.addListener(new LookupAccounts("bilthon", listener));
+            mWebSocket.connect();
+
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: "+e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: "+e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: "+e.getMessage());
+        }
+    }
 }
