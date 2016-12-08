@@ -1,8 +1,6 @@
 package com.luminiasoft.bitshares.ws;
 
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 import com.google.gson.reflect.TypeToken;
 import com.luminiasoft.bitshares.RPC;
 import com.luminiasoft.bitshares.UserAccount;
@@ -48,7 +46,7 @@ public class LookupAccounts extends WebSocketAdapter {
         ArrayList<Serializable> accountParams = new ArrayList<>();
         accountParams.add(this.accountName);
         accountParams.add(this.maxAccounts);
-        ApiCall getAccountByName = new ApiCall(0, RPC.LOOKUP_ACCOUNTS, accountParams, RPC.VERSION, 1);
+        ApiCall getAccountByName = new ApiCall(0, RPC.CALL_LOOKUP_ACCOUNTS, accountParams, RPC.VERSION, 1);
         websocket.sendText(getAccountByName.toJsonString());
     }
 
