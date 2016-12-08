@@ -38,25 +38,23 @@ public abstract class FileBin {
     public static String getBrainkeyFromByte(byte[] input, String password) {
         try {
             byte[] publicKey = new byte[33];
-            byte[] rawDataEncripted = new byte[input.length-33];
+            byte[] rawDataEncripted = new byte[input.length - 33];
 
             System.arraycopy(input, 0, publicKey, 0, publicKey.length);
             System.arraycopy(input, 33, rawDataEncripted, 0, rawDataEncripted.length);
 
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            
+
             ECKey randomECKey = ECKey.fromPublicOnly(publicKey);
             byte[] finalKey = randomECKey.getPubKeyPoint().multiply(ECKey.fromPrivate(md.digest(password.getBytes("UTF-8"))).getPrivKey()).normalize().getXCoord().getEncoded();
             MessageDigest md1 = MessageDigest.getInstance("SHA-512");
             finalKey = md1.digest(finalKey);
             byte[] rawData = decryptAES(rawDataEncripted, byteToString(finalKey).getBytes());
-            
+
             byte[] checksum = new byte[4];
             System.arraycopy(rawData, 0, checksum, 0, 4);
             byte[] compressedData = new byte[rawData.length - 4];
             System.arraycopy(rawData, 4, compressedData, 0, compressedData.length);
-            
-            System.out.println("Despues:"+byteToString(compressedData));                        
             byte[] wallet_object_bytes = Util.decompress(compressedData, Util.XZ);
             String wallet_string = new String(wallet_object_bytes, "UTF-8");
             JsonObject wallet = new JsonParser().parse(wallet_string).getAsJsonObject();
@@ -65,7 +63,7 @@ public abstract class FileBin {
             } else {
                 wallet = wallet.get("wallet").getAsJsonObject();
             }
-            
+
             byte[] encKey_enc = new BigInteger(wallet.get("encryption_key").getAsString(), 16).toByteArray();
             byte[] temp = new byte[encKey_enc.length - (encKey_enc[0] == 0 ? 1 : 0)];
             System.arraycopy(encKey_enc, (encKey_enc[0] == 0 ? 1 : 0), temp, 0, temp.length);
@@ -74,8 +72,8 @@ public abstract class FileBin {
             System.arraycopy(encKey, 0, temp, 0, temp.length);
 
             byte[] encBrain = new BigInteger(wallet.get("encrypted_brainkey").getAsString(), 16).toByteArray();
-            while(encBrain[0] == 0){
-                byte[]temp2 = new byte[encBrain.length-1];
+            while (encBrain[0] == 0) {
+                byte[] temp2 = new byte[encBrain.length - 1];
                 System.arraycopy(encBrain, 1, temp2, 0, temp2.length);
                 encBrain = temp2;
             }
@@ -122,7 +120,6 @@ public abstract class FileBin {
             accountNames.add(jsonAccountName);
             wallet_object.add("linked_accounts", accountNames);
             byte[] compressedData = Util.compress(wallet_object.toString().getBytes("UTF-8"), Util.XZ);
-            System.out.println("Antes:"+byteToString(compressedData));
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] checksum = md.digest(compressedData);
             byte[] rawData = new byte[compressedData.length + 4];
@@ -136,7 +133,7 @@ public abstract class FileBin {
             MessageDigest md1 = MessageDigest.getInstance("SHA-512");
             finalKey = md1.digest(finalKey);
             rawData = encryptAES(rawData, byteToString(finalKey).getBytes());
-            
+
             byte[] result = new byte[rawData.length + randPubKey.length];
             System.arraycopy(randPubKey, 0, result, 0, randPubKey.length);
             System.arraycopy(rawData, 0, result, randPubKey.length, rawData.length);
@@ -187,17 +184,17 @@ public abstract class FileBin {
             byte[] pre_out = new byte[cipher.getOutputSize(input.length)];
             int proc = cipher.processBytes(input, 0, input.length, pre_out, 0);
             int proc2 = cipher.doFinal(pre_out, proc);
-            byte[] out = new byte[proc+proc2]; 
-            System.arraycopy(pre_out, 0, out, 0, proc+proc2);
-            
+            byte[] out = new byte[proc + proc2];
+            System.arraycopy(pre_out, 0, out, 0, proc + proc2);
+
             //Unpadding
-            byte countByte = (byte)((byte)out[out.length-1] % 16);
+            byte countByte = (byte) ((byte) out[out.length - 1] % 16);
             int count = countByte & 0xFF;
-                       
-            if ((count > 15) || (count <= 0)){
+
+            if ((count > 15) || (count <= 0)) {
                 return out;
             }
-            
+
             byte[] temp = new byte[count];
             System.arraycopy(out, out.length - count, temp, 0, temp.length);
             byte[] temp2 = new byte[count];
@@ -208,9 +205,8 @@ public abstract class FileBin {
                 return temp;
             } else {
                 return out;
-            }            
+            }
         } catch (NoSuchAlgorithmException | DataLengthException | IllegalStateException | InvalidCipherTextException ex) {
-            ex.printStackTrace();
         }
         return null;
     }
