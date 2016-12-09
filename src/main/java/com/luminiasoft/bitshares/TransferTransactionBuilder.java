@@ -16,6 +16,12 @@ public class TransferTransactionBuilder extends TransactionBuilder {
     private AssetAmount transferAmount;
     private AssetAmount feeAmount;
 
+    public TransferTransactionBuilder(){}
+
+    public TransferTransactionBuilder(ECKey privKey) {
+        super(privKey);
+    }
+
     public TransferTransactionBuilder setPrivateKey(ECKey key){
         this.privateKey = key;
         return this;
@@ -46,7 +52,8 @@ public class TransferTransactionBuilder extends TransactionBuilder {
         return this;
     }
 
-    public TransferTransactionBuilder addOperation(Transfer transferOperation){
+    //TODO: Add support for multiple transfer operations in a single transaction
+    public TransferTransactionBuilder addOperation(TransferOperation transferOperation){
         if(operations == null){
             operations = new ArrayList<BaseOperation>();
         }
@@ -57,8 +64,6 @@ public class TransferTransactionBuilder extends TransactionBuilder {
     public Transaction build() throws MalformedTransactionException {
         if(privateKey == null){
             throw new MalformedTransactionException("Missing private key information");
-        }else if(blockData == null){
-            throw new MalformedTransactionException("Missing block data information");
         }else if(operations == null){
             // If the operations list has not been set, we might be able to build one with the
             // previously provided data. But in order for this to work we have to have all
@@ -73,11 +78,11 @@ public class TransferTransactionBuilder extends TransactionBuilder {
             if(transferAmount == null){
                 throw new MalformedTransactionException("Missing transfer amount information");
             }
-            Transfer transferOperation;
+            TransferOperation transferOperation;
             if(feeAmount == null){
-                transferOperation = new Transfer(sourceAccount, destinationAccount, transferAmount);
+                transferOperation = new TransferOperation(sourceAccount, destinationAccount, transferAmount);
             }else{
-                transferOperation = new Transfer(sourceAccount, destinationAccount, transferAmount, feeAmount);
+                transferOperation = new TransferOperation(sourceAccount, destinationAccount, transferAmount, feeAmount);
             }
             operations.add(transferOperation);
         }

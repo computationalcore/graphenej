@@ -15,5 +15,5 @@ public class RPC {
     public static final String CALL_GET_ACCOUNTS = "get_accounts";
     public static final String CALL_GET_KEY_REFERENCES = "get_key_references";
     public static final String CALL_GET_RELATIVE_ACCOUNT_HISTORY = "get_relative_account_history";
-    public static final String CALL_GET_ID_BY_NAME = "lookup_accounts";
+    public static final String CALL_LOOKUP_ACCOUNTS = "lookup_accounts";
 }

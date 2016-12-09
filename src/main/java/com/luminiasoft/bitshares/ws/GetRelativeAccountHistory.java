@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.luminiasoft.bitshares.AssetAmount;
 import com.luminiasoft.bitshares.RPC;
-import com.luminiasoft.bitshares.Transfer;
+import com.luminiasoft.bitshares.TransferOperation;
 import com.luminiasoft.bitshares.UserAccount;
 import com.luminiasoft.bitshares.interfaces.WitnessResponseListener;
 import com.luminiasoft.bitshares.models.ApiCall;
@@ -119,7 +119,7 @@ public class GetRelativeAccountHistory extends WebSocketAdapter {
                 System.out.println(frame.getPayloadText());
                 Type RelativeAccountHistoryResponse = new TypeToken<WitnessResponse<List<HistoricalTransfer>>>(){}.getType();
                 GsonBuilder gsonBuilder = new GsonBuilder();
-                gsonBuilder.registerTypeAdapter(Transfer.class, new Transfer.TransferDeserializer());
+                gsonBuilder.registerTypeAdapter(TransferOperation.class, new TransferOperation.TransferDeserializer());
                 gsonBuilder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetDeserializer());
                 WitnessResponse<List<HistoricalTransfer>> transfersResponse = gsonBuilder.create().fromJson(response, RelativeAccountHistoryResponse);
                 mListener.onSuccess(transfersResponse);

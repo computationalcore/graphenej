@@ -88,6 +88,8 @@ public class ApiCall implements JsonSerializable {
                     }
                 }
                 methodParams.add(array);
+            }else{
+                System.out.println("Skipping parameter of type: "+this.params.get(i).getClass());
             }
         }
         paramsArray.add(methodParams);

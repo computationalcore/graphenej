@@ -1,6 +1,7 @@
 package com.luminiasoft.bitshares;
 
 import org.tukaani.xz.FinishableOutputStream;
+import com.google.common.primitives.Bytes;
 import org.tukaani.xz.LZMA2Options;
 import org.tukaani.xz.LZMAInputStream;
 import org.tukaani.xz.LZMAOutputStream;
@@ -11,6 +12,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -113,5 +115,34 @@ public class Util {
                 Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);            }
         }
         return null;
+    }
+
+    /**
+     * Returns an array of bytes with the underlying data used to represent an integer in the reverse form.
+     * This is useful for endianess switches, meaning that if you give this function a big-endian integer
+     * it will return it's little-endian bytes.
+     * @param input An Integer value.
+     * @return The array of bytes that represent this value in the reverse format.
+     */
+    public static byte[] revertInteger(Integer input){
+        return ByteBuffer.allocate(Integer.SIZE / 8).putInt(Integer.reverseBytes(input)).array();
+    }
+
+    /**
+     * Same operation as in the revertInteger function, but in this case for a short (2 bytes) value.
+     * @param input A Short value
+     * @return The array of bytes that represent this value in the reverse format.
+     */
+    public static byte[] revertShort(Short input){
+        return ByteBuffer.allocate(Short.SIZE / 8).putShort(Short.reverseBytes(input)).array();
+    }
+
+    /**
+     * Same operation as in the revertInteger function, but in this case for a long (8 bytes) value.
+     * @param input A Long value
+     * @return The array of bytes that represent this value in the reverse format.
+     */
+    public static byte[] revertLong(Long input){
+        return ByteBuffer.allocate(Long.SIZE / 8).putLong(Long.reverseBytes(input)).array();
     }
 }

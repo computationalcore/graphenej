@@ -7,6 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.luminiasoft.bitshares.errors.MalformedTransactionException;
 import com.luminiasoft.bitshares.interfaces.ByteSerializable;
 import com.luminiasoft.bitshares.interfaces.JsonSerializable;
 
@@ -23,11 +24,12 @@ import java.util.List;
 import java.util.TimeZone;
 
 /**
- * Class used to represent a generic graphene transaction.
+ * Class used to represent a generic Graphene transaction.
  */
 public class Transaction implements ByteSerializable, JsonSerializable {
     private final String TAG = this.getClass().getName();
 
+    public static final int DEFAULT_EXPIRATION_TIME = 30;
     public static final String KEY_EXPIRATION = "expiration";
     public static final String KEY_SIGNATURES = "signatures";
     public static final String KEY_OPERATIONS = "operations";
@@ -38,20 +40,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
     private ECKey privateKey;
     private BlockData blockData;
     private List<BaseOperation> operations;
-    private List<Extension> extensions;
-
-    /**
-     * Transaction constructor.
-     * @param wif: The user's private key in the base58 format.
-     * @param block_data: Block data containing important information used to sign a transaction.
-     * @param operation_list: List of operations to include in the transaction.
-     */
-    public Transaction(String wif, BlockData block_data, List<BaseOperation> operation_list){
-        this.privateKey = DumpedPrivateKey.fromBase58(null, wif).getKey();
-        this.blockData = block_data;
-        this.operations = operation_list;
-        this.extensions = new ArrayList<Extension>();
-    }
+    private List<Extensions> extensions;
 
     /**
      * Transaction constructor.
@@ -63,7 +52,34 @@ public class Transaction implements ByteSerializable, JsonSerializable {
         this.privateKey = privateKey;
         this.blockData = blockData;
         this.operations = operationList;
-        this.extensions = new ArrayList<Extension>();
+        this.extensions = new ArrayList<Extensions>();
+    }
+
+    /**
+     * Transaction constructor.
+     * @param wif: The user's private key in the base58 format.
+     * @param block_data: Block data containing important information used to sign a transaction.
+     * @param operation_list: List of operations to include in the transaction.
+     */
+    public Transaction(String wif, BlockData block_data, List<BaseOperation> operation_list){
+        this(DumpedPrivateKey.fromBase58(null, wif).getKey(), block_data, operation_list);
+    }
+
+    /**
+     * Updates the block data
+     * @param blockData: New block data
+     */
+    public void setBlockData(BlockData blockData){
+        this.blockData = blockData;
+    }
+
+    /**
+     * Updates the fees for all operations in this transaction.
+     * @param fees: New fees to apply
+     */
+    public void setFees(List<AssetAmount> fees){
+        for(int i = 0; i < operations.size(); i++)
+            operations.get(i).setFee(fees.get(i));
     }
 
     public ECKey getPrivateKey(){
@@ -117,6 +133,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
         }
         return sigData;
     }
+
     /**
      * Method that creates a serialized byte array with compact information about this transaction
      * that is needed for the creation of a signature.
@@ -142,8 +159,8 @@ public class Transaction implements ByteSerializable, JsonSerializable {
         //Adding the number of extensions
         byteArray.add((byte) this.extensions.size());
 
-        for(Extension extension : extensions){
-            //TODO: Implement the extension serialization
+        for(Extensions extensions : this.extensions){
+            //TODO: Implement the extensions serialization
         }
         // Adding a last zero byte to match the result obtained by the python-graphenelib code
         // I'm not exactly sure what's the meaning of this last zero byte, but for now I'll just

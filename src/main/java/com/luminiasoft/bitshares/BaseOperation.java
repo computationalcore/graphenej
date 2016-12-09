@@ -14,7 +14,11 @@ public abstract class BaseOperation implements ByteSerializable, JsonSerializabl
         this.type = type;
     }
 
-    public abstract byte getId();
+    public byte getId() {
+        return (byte) this.type.ordinal();
+    }
+
+    public abstract void setFee(AssetAmount assetAmount);
 
     public abstract byte[] toBytes();
 }
