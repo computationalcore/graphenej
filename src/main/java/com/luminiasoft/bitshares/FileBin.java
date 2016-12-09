@@ -38,13 +38,13 @@ public abstract class FileBin {
     public static String getBrainkeyFromByte(byte[] input, String password) {
         try {
             byte[] publicKey = new byte[33];
-            byte[] rawDataEncripted = new byte[input.length-33];
+            byte[] rawDataEncripted = new byte[input.length - 33];
 
             System.arraycopy(input, 0, publicKey, 0, publicKey.length);
             System.arraycopy(input, 33, rawDataEncripted, 0, rawDataEncripted.length);
 
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            
+
             ECKey randomECKey = ECKey.fromPublicOnly(publicKey);
             byte[] finalKey = randomECKey.getPubKeyPoint().multiply(ECKey.fromPrivate(md.digest(password.getBytes("UTF-8"))).getPrivKey()).normalize().getXCoord().getEncoded();
             MessageDigest md1 = MessageDigest.getInstance("SHA-512");
@@ -64,7 +64,7 @@ public abstract class FileBin {
             } else {
                 wallet = wallet.get("wallet").getAsJsonObject();
             }
-            
+
             byte[] encKey_enc = new BigInteger(wallet.get("encryption_key").getAsString(), 16).toByteArray();
             byte[] temp = new byte[encKey_enc.length - (encKey_enc[0] == 0 ? 1 : 0)];
             System.arraycopy(encKey_enc, (encKey_enc[0] == 0 ? 1 : 0), temp, 0, temp.length);
@@ -73,8 +73,8 @@ public abstract class FileBin {
             System.arraycopy(encKey, 0, temp, 0, temp.length);
 
             byte[] encBrain = new BigInteger(wallet.get("encrypted_brainkey").getAsString(), 16).toByteArray();
-            while(encBrain[0] == 0){
-                byte[]temp2 = new byte[encBrain.length-1];
+            while (encBrain[0] == 0) {
+                byte[] temp2 = new byte[encBrain.length - 1];
                 System.arraycopy(encBrain, 1, temp2, 0, temp2.length);
                 encBrain = temp2;
             }

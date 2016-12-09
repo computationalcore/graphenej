@@ -1,6 +1,7 @@
 package com.luminiasoft.bitshares;
 
 import org.tukaani.xz.FinishableOutputStream;
+import com.google.common.primitives.Bytes;
 import org.tukaani.xz.LZMA2Options;
 import org.tukaani.xz.LZMAInputStream;
 import org.tukaani.xz.LZMAOutputStream;

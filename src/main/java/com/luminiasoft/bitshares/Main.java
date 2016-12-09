@@ -50,14 +50,14 @@ public class Main {
 //        test.testGetDynamicParams();
 //        test.testGetRequiredFeesSerialization();
 //        test.testRequiredFeesResponse();
-//        test.testTransactionBroadcastSequence();
+        test.testTransactionBroadcastSequence();
 //        test.testAccountLookupDeserialization();
 //        test.testPrivateKeyManipulations();
 //        test.testPublicKeyManipulations();
 //        test.testGetAccountByName();
 //        test.testGetRequiredFees();
 //        test.testRandomNumberGeneration();
-        test.testBrainKeyOperations(false);
+        //test.testBrainKeyOperations(false);
 //        test.testBip39Opertion();
 //        test.testAccountNamebyAddress();
 //        test.testAccountNameById();
@@ -68,5 +68,6 @@ public class Main {
 //        test.testAccountUpdateOperationBroadcast();
 //        test.testCreateBinFile();
 //        test.testImportBinFile();
+        //test.testLookupAccounts();
     }
 }

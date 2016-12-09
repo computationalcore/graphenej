@@ -4,6 +4,7 @@ import com.google.common.primitives.Bytes;
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
+import org.bitcoinj.core.ECKey;
 
 /**
  * Class used to encapsulate the TransferOperation operation related functionalities.
@@ -15,6 +16,7 @@ public class TransferOperation extends BaseOperation {
     public static final String KEY_EXTENSIONS = "extensions";
     public static final String KEY_FROM = "from";
     public static final String KEY_TO = "to";
+    public static final String KEY_MEMO = "memo";
 
     private AssetAmount fee;
     private AssetAmount amount;
@@ -86,11 +88,16 @@ public class TransferOperation extends BaseOperation {
         JsonObject jsonObject = new JsonObject();
         jsonObject.add(KEY_FEE, fee.toJsonObject());
         jsonObject.add(KEY_AMOUNT, amount.toJsonObject());
+        //jsonObject.add(KEY_MEMO, memo.toJsonObject());
         jsonObject.add(KEY_EXTENSIONS, new JsonArray());
         jsonObject.addProperty(KEY_FROM, from.toJsonString());
         jsonObject.addProperty(KEY_TO, to.toJsonString());
         array.add(jsonObject);
         return array;
+    }
+
+    public void setMemo(ECKey fromKey, ECKey toKey, byte[] memo) {
+        this.memo.encodeMessage(fromKey, toKey, memo);
     }
 
     public static class TransferSerializer implements JsonSerializer<TransferOperation> {

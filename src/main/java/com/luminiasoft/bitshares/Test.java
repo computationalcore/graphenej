@@ -3,6 +3,7 @@ package com.luminiasoft.bitshares;
 import com.google.common.primitives.UnsignedLong;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.reflect.TypeToken;
 import com.luminiasoft.bitshares.errors.MalformedAddressException;
 import com.luminiasoft.bitshares.errors.MalformedTransactionException;
@@ -45,7 +46,10 @@ public class Test {
             if (response.result.getClass() == AccountProperties.class) {
                 AccountProperties accountProperties = (AccountProperties) response.result;
                 System.out.println("Got account properties");
+                System.out.println("account: " + accountProperties.toString());
                 System.out.println("id: " + accountProperties.id);
+                
+                
             } else if (response.result.getClass() == ArrayList.class) {
                 List list = (List) response.result;
                 if (list.size() > 0) {
@@ -93,6 +97,8 @@ public class Test {
                 } else {
                     System.out.println("Got empty list!");
                 }
+            } else if (response.result.getClass() == JsonArray.class) {
+                System.out.println("Json array : " + ((JsonArray)response.result));
             } else {
                 System.out.println("Got other: " + response.result.getClass());
             }
@@ -289,10 +295,12 @@ public class Test {
             Transaction transaction = new TransferTransactionBuilder()
                     .setSource(new UserAccount("1.2.138632"))
                     .setDestination(new UserAccount("1.2.129848"))
-                    .setAmount(new AssetAmount(UnsignedLong.valueOf(100), new Asset("1.3.120")))
+                    .setAmount(new AssetAmount(UnsignedLong.valueOf(1), new Asset("1.3.120")))
                     .setFee(new AssetAmount(UnsignedLong.valueOf(264174), new Asset("1.3.0")))
                     .setBlockData(new BlockData(43408, 1430521623, 1479231969))
-                    .setPrivateKey(DumpedPrivateKey.fromBase58(null, Main.BILTHON_5_BRAIN_KEY).getKey())
+                    //.setPrivateKey(DumpedPrivateKey.fromBase58(null, Main.BILTHON_5_BRAIN_KEY).getKey())
+                    .setPrivateKey(new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0).getPrivateKey())
+                    //.setMemo("prueba", new BrainKey(Main.BILTHON_7_BRAIN_KEY, 0).getPrivateKey())
                     .build();
 
             ArrayList<Serializable> transactionList = new ArrayList<>();
@@ -564,9 +572,10 @@ public class Test {
     }
 
     public void testImportBinFile() {
-        byte inputBytes[] = new byte[] {(byte)2, (byte)175, (byte)24, (byte)227, (byte)182, (byte)11, (byte)113, (byte)151, (byte)112, (byte)157, (byte)137, (byte)157, (byte)244, (byte)237, (byte)228, (byte)92, (byte)34, (byte)138, (byte)171, (byte)248, (byte)24, (byte)161, (byte)171, (byte)75, (byte)2, (byte)183, (byte)47, (byte)213, (byte)50, (byte)109, (byte)220, (byte)6, (byte)124, (byte)108, (byte)32, (byte)164, (byte)204, (byte)234, (byte)10, (byte)12, (byte)154, (byte)225, (byte)11, (byte)178, (byte)238, (byte)9, (byte)122, (byte)244, (byte)175, (byte)185, (byte)143, (byte)27, (byte)134, (byte)192, (byte)37, (byte)239, (byte)148, (byte)253, (byte)124, (byte)68, (byte)6, (byte)211, (byte)20, (byte)224, (byte)50, (byte)31, (byte)208, (byte)87, (byte)115, (byte)115, (byte)11, (byte)81, (byte)182, (byte)223, (byte)230, (byte)102, (byte)230, (byte)245, (byte)182, (byte)77, (byte)157, (byte)182, (byte)79, (byte)247, (byte)134, (byte)178, (byte)87, (byte)93, (byte)146, (byte)89, (byte)167, (byte)191, (byte)34, (byte)17, (byte)117, (byte)173, (byte)59, (byte)142, (byte)54, (byte)120, (byte)237, (byte)124, (byte)217, (byte)252, (byte)112, (byte)97, (byte)153, (byte)124, (byte)144, (byte)80, (byte)33, (byte)130, (byte)15, (byte)18, (byte)157, (byte)98, (byte)130, (byte)80, (byte)206, (byte)27, (byte)8, (byte)142, (byte)245, (byte)22, (byte)244, (byte)219, (byte)38, (byte)228, (byte)173, (byte)147, (byte)42, (byte)100, (byte)99, (byte)108, (byte)146, (byte)110, (byte)100, (byte)215, (byte)183, (byte)20, (byte)112, (byte)93, (byte)195, (byte)12, (byte)174, (byte)130, (byte)35, (byte)71, (byte)172, (byte)237, (byte)112, (byte)197, (byte)250, (byte)67, (byte)36, (byte)185, (byte)117, (byte)211, (byte)147, (byte)21, (byte)251, (byte)214, (byte)178, (byte)152, (byte)25, (byte)107, (byte)206, (byte)184, (byte)113, (byte)67, (byte)169, (byte)55, (byte)95, (byte)249, (byte)193, (byte)215, (byte)20, (byte)124, (byte)62, (byte)179, (byte)125, (byte)2, (byte)96, (byte)46, (byte)137, (byte)133, (byte)46, (byte)37, (byte)138, (byte)19, (byte)215, (byte)2, (byte)189, (byte)91, (byte)61, (byte)119, (byte)150, (byte)6, (byte)188, (byte)220, (byte)232, (byte)12, (byte)108, (byte)128, (byte)92, (byte)172, (byte)119, (byte)138, (byte)215, (byte)90, (byte)8, (byte)56, (byte)126, (byte)145, (byte)133, (byte)193, (byte)47, (byte)147, (byte)106, (byte)219, (byte)58, (byte)227, (byte)20, (byte)60, (byte)147, (byte)38, (byte)218, (byte)17, (byte)130, (byte)196, (byte)134, (byte)105, (byte)94, (byte)235, (byte)26, (byte)245, (byte)119, (byte)153, (byte)11, (byte)29, (byte)33, (byte)230, (byte)151, (byte)149, (byte)63, (byte)91, (byte)170, (byte)75, (byte)43, (byte)223, (byte)192, (byte)104, (byte)161, (byte)58, (byte)135, (byte)226, (byte)175, (byte)171, (byte)202, (byte)113, (byte)142, (byte)40, (byte)139, (byte)240, (byte)10, (byte)54, (byte)213, (byte)55, (byte)235, (byte)175, (byte)211, (byte)193, (byte)151, (byte)43, (byte)233, (byte)81, (byte)250, (byte)245, (byte)120, (byte)211, (byte)107, (byte)73, (byte)75, (byte)74, (byte)98, (byte)10, (byte)208, (byte)68, (byte)185, (byte)183, (byte)251, (byte)193, (byte)65, (byte)125, (byte)65, (byte)52, (byte)154, (byte)115, (byte)118, (byte)217, (byte)254, (byte)140, (byte)116, (byte)124, (byte)158, (byte)70, (byte)94, (byte)28, (byte)132, (byte)231, (byte)142, (byte)209, (byte)163, (byte)182, (byte)227, (byte)129, (byte)243, (byte)130, (byte)28, (byte)238, (byte)35, (byte)235, (byte)120, (byte)199, (byte)26, (byte)209, (byte)58, (byte)181, (byte)124, (byte)44, (byte)38, (byte)132, (byte)54, (byte)168, (byte)31, (byte)150, (byte)191, (byte)140, (byte)101, (byte)141, (byte)104, (byte)74, (byte)29, (byte)76, (byte)254, (byte)67, (byte)43, (byte)123, (byte)67, (byte)208, (byte)132, (byte)61, (byte)36, (byte)167, (byte)195, (byte)231, (byte)234, (byte)136, (byte)55, (byte)97, (byte)205, (byte)242, (byte)182, (byte)237, (byte)179, (byte)13, (byte)24, (byte)249, (byte)53, (byte)151, (byte)66, (byte)252, (byte)254, (byte)173, (byte)91, (byte)52, (byte)70, (byte)239, (byte)235, (byte)94, (byte)18, (byte)115, (byte)143, (byte)134, (byte)206, (byte)244, (byte)77, (byte)247, (byte)201, (byte)61, (byte)115, (byte)78, (byte)186, (byte)199, (byte)89, (byte)144, (byte)69, (byte)231, (byte)174, (byte)2, (byte)167, (byte)157, (byte)148, (byte)88, (byte)150, (byte)171, (byte)50, (byte)82, (byte)230, (byte)211, (byte)14, (byte)55, (byte)165, (byte)103, (byte)67, (byte)172, (byte)148, (byte)252, (byte)10, (byte)104, (byte)24, (byte)179, (byte)152, (byte)156, (byte)169, (byte)228, (byte)123, (byte)205, (byte)247, (byte)10, (byte)127, (byte)106, (byte)100, (byte)10, (byte)187, (byte)81, (byte)0, (byte)55, (byte)177, (byte)60, (byte)139, (byte)41, (byte)62, (byte)163, (byte)83, (byte)242, (byte)1, (byte)122, (byte)247, (byte)181, (byte)102, (byte)218, (byte)205, (byte)70, (byte)235, (byte)147, (byte)195, (byte)107, (byte)248, (byte)139, (byte)169, (byte)203, (byte)174, (byte)22, (byte)126, (byte)65, (byte)123, (byte)14, (byte)33, (byte)131, (byte)49, (byte)6, (byte)187, (byte)156, (byte)50, (byte)92, (byte)145, (byte)74, (byte)90, (byte)132, (byte)151, (byte)105, (byte)187, (byte)195, (byte)56, (byte)45, (byte)134, (byte)204, (byte)7, (byte)130, (byte)153, (byte)209, (byte)87, (byte)231, (byte)78, (byte)90, (byte)168, (byte)93, (byte)200, (byte)149, (byte)204, (byte)128, (byte)85, (byte)17, (byte)17, (byte)219, (byte)161, (byte)167, (byte)73, (byte)218, (byte)116, (byte)233, (byte)202, (byte)19, (byte)110, (byte)95, (byte)115, (byte)233, (byte)137, (byte)85, (byte)112, (byte)70, (byte)226, (byte)217, (byte)126, (byte)70, (byte)214, (byte)47, (byte)133, (byte)129, (byte)78, (byte)127, (byte)81, (byte)192, (byte)48, (byte)91, (byte)224, (byte)124, (byte)13, (byte)176, (byte)131, (byte)53, (byte)192, (byte)92, (byte)113, (byte)235, (byte)86, (byte)38, (byte)178, (byte)133, (byte)204, (byte)110, (byte)195, (byte)230, (byte)140, (byte)213, (byte)208, (byte)188, (byte)185, (byte)37, (byte)103, (byte)177, (byte)181, (byte)120, (byte)78, (byte)192, (byte)30, (byte)224, (byte)250, (byte)2, (byte)66, (byte)76, (byte)162, (byte)87, (byte)8, (byte)131, (byte)54, (byte)247, (byte)91, (byte)9, (byte)236, (byte)18, (byte)53, (byte)11, (byte)141, (byte)144, (byte)193, (byte)139, (byte)168, (byte)170, (byte)223, (byte)190, (byte)90, (byte)23, (byte)29, (byte)177, (byte)79, (byte)38, (byte)232, (byte)148, (byte)80, (byte)211, (byte)207, (byte)201, (byte)129, (byte)2, (byte)228, (byte)86, (byte)144, (byte)32, (byte)27, (byte)235, (byte)105, (byte)136, (byte)217, (byte)195, (byte)234, (byte)243, (byte)198, (byte)87, (byte)186, (byte)31, (byte)21, (byte)144, (byte)200, (byte)27, (byte)34, (byte)82, (byte)220, (byte)37, (byte)67, (byte)44, (byte)140, (byte)233, (byte)144, (byte)218, (byte)185, (byte)46, (byte)151, (byte)96, (byte)91};
-        //BigInteger b = new BigInteger(new String(inputBytes),16);
+        byte inputBytes[] = new byte[]{(byte) 2, (byte) 175, (byte) 24, (byte) 227, (byte) 182, (byte) 11, (byte) 113, (byte) 151, (byte) 112, (byte) 157, (byte) 137, (byte) 157, (byte) 244, (byte) 237, (byte) 228, (byte) 92, (byte) 34, (byte) 138, (byte) 171, (byte) 248, (byte) 24, (byte) 161, (byte) 171, (byte) 75, (byte) 2, (byte) 183, (byte) 47, (byte) 213, (byte) 50, (byte) 109, (byte) 220, (byte) 6, (byte) 124, (byte) 108, (byte) 32, (byte) 164, (byte) 204, (byte) 234, (byte) 10, (byte) 12, (byte) 154, (byte) 225, (byte) 11, (byte) 178, (byte) 238, (byte) 9, (byte) 122, (byte) 244, (byte) 175, (byte) 185, (byte) 143, (byte) 27, (byte) 134, (byte) 192, (byte) 37, (byte) 239, (byte) 148, (byte) 253, (byte) 124, (byte) 68, (byte) 6, (byte) 211, (byte) 20, (byte) 224, (byte) 50, (byte) 31, (byte) 208, (byte) 87, (byte) 115, (byte) 115, (byte) 11, (byte) 81, (byte) 182, (byte) 223, (byte) 230, (byte) 102, (byte) 230, (byte) 245, (byte) 182, (byte) 77, (byte) 157, (byte) 182, (byte) 79, (byte) 247, (byte) 134, (byte) 178, (byte) 87, (byte) 93, (byte) 146, (byte) 89, (byte) 167, (byte) 191, (byte) 34, (byte) 17, (byte) 117, (byte) 173, (byte) 59, (byte) 142, (byte) 54, (byte) 120, (byte) 237, (byte) 124, (byte) 217, (byte) 252, (byte) 112, (byte) 97, (byte) 153, (byte) 124, (byte) 144, (byte) 80, (byte) 33, (byte) 130, (byte) 15, (byte) 18, (byte) 157, (byte) 98, (byte) 130, (byte) 80, (byte) 206, (byte) 27, (byte) 8, (byte) 142, (byte) 245, (byte) 22, (byte) 244, (byte) 219, (byte) 38, (byte) 228, (byte) 173, (byte) 147, (byte) 42, (byte) 100, (byte) 99, (byte) 108, (byte) 146, (byte) 110, (byte) 100, (byte) 215, (byte) 183, (byte) 20, (byte) 112, (byte) 93, (byte) 195, (byte) 12, (byte) 174, (byte) 130, (byte) 35, (byte) 71, (byte) 172, (byte) 237, (byte) 112, (byte) 197, (byte) 250, (byte) 67, (byte) 36, (byte) 185, (byte) 117, (byte) 211, (byte) 147, (byte) 21, (byte) 251, (byte) 214, (byte) 178, (byte) 152, (byte) 25, (byte) 107, (byte) 206, (byte) 184, (byte) 113, (byte) 67, (byte) 169, (byte) 55, (byte) 95, (byte) 249, (byte) 193, (byte) 215, (byte) 20, (byte) 124, (byte) 62, (byte) 179, (byte) 125, (byte) 2, (byte) 96, (byte) 46, (byte) 137, (byte) 133, (byte) 46, (byte) 37, (byte) 138, (byte) 19, (byte) 215, (byte) 2, (byte) 189, (byte) 91, (byte) 61, (byte) 119, (byte) 150, (byte) 6, (byte) 188, (byte) 220, (byte) 232, (byte) 12, (byte) 108, (byte) 128, (byte) 92, (byte) 172, (byte) 119, (byte) 138, (byte) 215, (byte) 90, (byte) 8, (byte) 56, (byte) 126, (byte) 145, (byte) 133, (byte) 193, (byte) 47, (byte) 147, (byte) 106, (byte) 219, (byte) 58, (byte) 227, (byte) 20, (byte) 60, (byte) 147, (byte) 38, (byte) 218, (byte) 17, (byte) 130, (byte) 196, (byte) 134, (byte) 105, (byte) 94, (byte) 235, (byte) 26, (byte) 245, (byte) 119, (byte) 153, (byte) 11, (byte) 29, (byte) 33, (byte) 230, (byte) 151, (byte) 149, (byte) 63, (byte) 91, (byte) 170, (byte) 75, (byte) 43, (byte) 223, (byte) 192, (byte) 104, (byte) 161, (byte) 58, (byte) 135, (byte) 226, (byte) 175, (byte) 171, (byte) 202, (byte) 113, (byte) 142, (byte) 40, (byte) 139, (byte) 240, (byte) 10, (byte) 54, (byte) 213, (byte) 55, (byte) 235, (byte) 175, (byte) 211, (byte) 193, (byte) 151, (byte) 43, (byte) 233, (byte) 81, (byte) 250, (byte) 245, (byte) 120, (byte) 211, (byte) 107, (byte) 73, (byte) 75, (byte) 74, (byte) 98, (byte) 10, (byte) 208, (byte) 68, (byte) 185, (byte) 183, (byte) 251, (byte) 193, (byte) 65, (byte) 125, (byte) 65, (byte) 52, (byte) 154, (byte) 115, (byte) 118, (byte) 217, (byte) 254, (byte) 140, (byte) 116, (byte) 124, (byte) 158, (byte) 70, (byte) 94, (byte) 28, (byte) 132, (byte) 231, (byte) 142, (byte) 209, (byte) 163, (byte) 182, (byte) 227, (byte) 129, (byte) 243, (byte) 130, (byte) 28, (byte) 238, (byte) 35, (byte) 235, (byte) 120, (byte) 199, (byte) 26, (byte) 209, (byte) 58, (byte) 181, (byte) 124, (byte) 44, (byte) 38, (byte) 132, (byte) 54, (byte) 168, (byte) 31, (byte) 150, (byte) 191, (byte) 140, (byte) 101, (byte) 141, (byte) 104, (byte) 74, (byte) 29, (byte) 76, (byte) 254, (byte) 67, (byte) 43, (byte) 123, (byte) 67, (byte) 208, (byte) 132, (byte) 61, (byte) 36, (byte) 167, (byte) 195, (byte) 231, (byte) 234, (byte) 136, (byte) 55, (byte) 97, (byte) 205, (byte) 242, (byte) 182, (byte) 237, (byte) 179, (byte) 13, (byte) 24, (byte) 249, (byte) 53, (byte) 151, (byte) 66, (byte) 252, (byte) 254, (byte) 173, (byte) 91, (byte) 52, (byte) 70, (byte) 239, (byte) 235, (byte) 94, (byte) 18, (byte) 115, (byte) 143, (byte) 134, (byte) 206, (byte) 244, (byte) 77, (byte) 247, (byte) 201, (byte) 61, (byte) 115, (byte) 78, (byte) 186, (byte) 199, (byte) 89, (byte) 144, (byte) 69, (byte) 231, (byte) 174, (byte) 2, (byte) 167, (byte) 157, (byte) 148, (byte) 88, (byte) 150, (byte) 171, (byte) 50, (byte) 82, (byte) 230, (byte) 211, (byte) 14, (byte) 55, (byte) 165, (byte) 103, (byte) 67, (byte) 172, (byte) 148, (byte) 252, (byte) 10, (byte) 104, (byte) 24, (byte) 179, (byte) 152, (byte) 156, (byte) 169, (byte) 228, (byte) 123, (byte) 205, (byte) 247, (byte) 10, (byte) 127, (byte) 106, (byte) 100, (byte) 10, (byte) 187, (byte) 81, (byte) 0, (byte) 55, (byte) 177, (byte) 60, (byte) 139, (byte) 41, (byte) 62, (byte) 163, (byte) 83, (byte) 242, (byte) 1, (byte) 122, (byte) 247, (byte) 181, (byte) 102, (byte) 218, (byte) 205, (byte) 70, (byte) 235, (byte) 147, (byte) 195, (byte) 107, (byte) 248, (byte) 139, (byte) 169, (byte) 203, (byte) 174, (byte) 22, (byte) 126, (byte) 65, (byte) 123, (byte) 14, (byte) 33, (byte) 131, (byte) 49, (byte) 6, (byte) 187, (byte) 156, (byte) 50, (byte) 92, (byte) 145, (byte) 74, (byte) 90, (byte) 132, (byte) 151, (byte) 105, (byte) 187, (byte) 195, (byte) 56, (byte) 45, (byte) 134, (byte) 204, (byte) 7, (byte) 130, (byte) 153, (byte) 209, (byte) 87, (byte) 231, (byte) 78, (byte) 90, (byte) 168, (byte) 93, (byte) 200, (byte) 149, (byte) 204, (byte) 128, (byte) 85, (byte) 17, (byte) 17, (byte) 219, (byte) 161, (byte) 167, (byte) 73, (byte) 218, (byte) 116, (byte) 233, (byte) 202, (byte) 19, (byte) 110, (byte) 95, (byte) 115, (byte) 233, (byte) 137, (byte) 85, (byte) 112, (byte) 70, (byte) 226, (byte) 217, (byte) 126, (byte) 70, (byte) 214, (byte) 47, (byte) 133, (byte) 129, (byte) 78, (byte) 127, (byte) 81, (byte) 192, (byte) 48, (byte) 91, (byte) 224, (byte) 124, (byte) 13, (byte) 176, (byte) 131, (byte) 53, (byte) 192, (byte) 92, (byte) 113, (byte) 235, (byte) 86, (byte) 38, (byte) 178, (byte) 133, (byte) 204, (byte) 110, (byte) 195, (byte) 230, (byte) 140, (byte) 213, (byte) 208, (byte) 188, (byte) 185, (byte) 37, (byte) 103, (byte) 177, (byte) 181, (byte) 120, (byte) 78, (byte) 192, (byte) 30, (byte) 224, (byte) 250, (byte) 2, (byte) 66, (byte) 76, (byte) 162, (byte) 87, (byte) 8, (byte) 131, (byte) 54, (byte) 247, (byte) 91, (byte) 9, (byte) 236, (byte) 18, (byte) 53, (byte) 11, (byte) 141, (byte) 144, (byte) 193, (byte) 139, (byte) 168, (byte) 170, (byte) 223, (byte) 190, (byte) 90, (byte) 23, (byte) 29, (byte) 177, (byte) 79, (byte) 38, (byte) 232, (byte) 148, (byte) 80, (byte) 211, (byte) 207, (byte) 201, (byte) 129, (byte) 2, (byte) 228, (byte) 86, (byte) 144, (byte) 32, (byte) 27, (byte) 235, (byte) 105, (byte) 136, (byte) 217, (byte) 195, (byte) 234, (byte) 243, (byte) 198, (byte) 87, (byte) 186, (byte) 31, (byte) 21, (byte) 144, (byte) 200, (byte) 27, (byte) 34, (byte) 82, (byte) 220, (byte) 37, (byte) 67, (byte) 44, (byte) 140, (byte) 233, (byte) 144, (byte) 218, (byte) 185, (byte) 46, (byte) 151, (byte) 96, (byte) 91};
+
         System.out.println(FileBin.getBrainkeyFromByte(inputBytes, "123456"));
+
     }
 
     public void testAccountUpdateSerialization() {
@@ -650,4 +659,40 @@ public class Test {
             System.out.println("WebSocketException. Msg: "+e.getMessage());
         }
     }
+
+    public void testLookupAccounts(){
+        WitnessResponseListener listener = new WitnessResponseListener() {
+            @Override
+            public void onSuccess(WitnessResponse response) {
+                System.out.println("onSuccess");
+            }
+
+            @Override
+            public void onError(BaseResponse.Error error) {
+                System.out.println("onError");
+            }
+        };
+
+        SSLContext context = null;
+        try {
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
+
+            mWebSocket.addListener(new LookupAccounts("bilthon", listener));
+            mWebSocket.connect();
+
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: "+e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: "+e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: "+e.getMessage());
+        }
+    }
+    
 }

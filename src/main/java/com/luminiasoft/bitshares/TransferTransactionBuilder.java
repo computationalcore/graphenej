@@ -15,6 +15,8 @@ public class TransferTransactionBuilder extends TransactionBuilder {
     private UserAccount destinationAccount;
     private AssetAmount transferAmount;
     private AssetAmount feeAmount;
+    private String memo;
+    private ECKey memoPublicKey;
 
     public TransferTransactionBuilder(){}
 
@@ -51,6 +53,12 @@ public class TransferTransactionBuilder extends TransactionBuilder {
         this.feeAmount = amount;
         return this;
     }
+    
+    public TransferTransactionBuilder setMemo(String memo,ECKey publicKey){
+        this.memo = memo;
+        this.memoPublicKey = publicKey;
+        return this;
+    }
 
     //TODO: Add support for multiple transfer operations in a single transaction
     public TransferTransactionBuilder addOperation(TransferOperation transferOperation){
@@ -83,6 +91,10 @@ public class TransferTransactionBuilder extends TransactionBuilder {
                 transferOperation = new TransferOperation(sourceAccount, destinationAccount, transferAmount);
             }else{
                 transferOperation = new TransferOperation(sourceAccount, destinationAccount, transferAmount, feeAmount);
+            }
+            if(memo != null){
+                
+                transferOperation.setMemo(this.privateKey,this.memoPublicKey,memo.getBytes());
             }
             operations.add(transferOperation);
         }
