@@ -87,17 +87,17 @@ public class TransferOperation extends BaseOperation {
         array.add(this.getId());
         JsonObject jsonObject = new JsonObject();
         jsonObject.add(KEY_FEE, fee.toJsonObject());
-        jsonObject.add(KEY_AMOUNT, amount.toJsonObject());
-        //jsonObject.add(KEY_MEMO, memo.toJsonObject());
-        jsonObject.add(KEY_EXTENSIONS, new JsonArray());
         jsonObject.addProperty(KEY_FROM, from.toJsonString());
         jsonObject.addProperty(KEY_TO, to.toJsonString());
+        jsonObject.add(KEY_AMOUNT, amount.toJsonObject());
+        jsonObject.add(KEY_MEMO, memo.toJsonObject());
+        jsonObject.add(KEY_EXTENSIONS, new JsonArray());
         array.add(jsonObject);
         return array;
     }
 
-    public void setMemo(ECKey fromKey, ECKey toKey, byte[] memo) {
-        this.memo.encodeMessage(fromKey, toKey, memo);
+    public void setMemo(Memo memo) {
+        this.memo = memo;
     }
 
     public static class TransferSerializer implements JsonSerializer<TransferOperation> {

@@ -30,6 +30,7 @@ public class Test {
 
     public static final String WITNESS_URL = "ws://api.devling.xyz:8088";
     public static final String OPENLEDGER_WITNESS_URL = "wss://bitshares.openledger.info/ws";
+    public static final String BLOCK_PAY_DE = "wss://de.blockpay.ch:8089";
 //    public static final String WITNESS_URL = "wss://fr.blockpay.ch:8089";
 
     private Transaction transaction;
@@ -292,15 +293,19 @@ public class Test {
         };
 
         try {
+            // Creating memo
+            PublicKey from = new PublicKey(ECKey.fromPublicOnly(new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0).getPublicKey()));
+            PublicKey to = new PublicKey(ECKey.fromPublicOnly(new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0).getPublicKey()));
+            Memo memo = new Memo(from, to, "sample message");
+
+            // Creating transaction
             Transaction transaction = new TransferTransactionBuilder()
-                    .setSource(new UserAccount("1.2.138632"))
-                    .setDestination(new UserAccount("1.2.129848"))
-                    .setAmount(new AssetAmount(UnsignedLong.valueOf(1), new Asset("1.3.120")))
+                    .setSource(new UserAccount("1.2.138632")) // bilthon-83
+                    .setDestination(new UserAccount("1.2.139313"))  // bilthon-5
+                    .setAmount(new AssetAmount(UnsignedLong.valueOf(1), new Asset("1.3.0")))
                     .setFee(new AssetAmount(UnsignedLong.valueOf(264174), new Asset("1.3.0")))
-                    .setBlockData(new BlockData(43408, 1430521623, 1479231969))
-                    //.setPrivateKey(DumpedPrivateKey.fromBase58(null, Main.BILTHON_5_BRAIN_KEY).getKey())
-                    .setPrivateKey(new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0).getPrivateKey())
-                    //.setMemo("prueba", new BrainKey(Main.BILTHON_7_BRAIN_KEY, 0).getPrivateKey())
+                    .setPrivateKey(new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0).getPrivateKey())
+                    .setMemo(memo)
                     .build();
 
             ArrayList<Serializable> transactionList = new ArrayList<>();
@@ -313,7 +318,7 @@ public class Test {
             // Set the custom SSL context.
             factory.setSSLContext(context);
 
-            WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
+            WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
 
             mWebSocket.addListener(new TransactionBroadcastSequence(transaction, new Asset("1.3.0"), listener));
             mWebSocket.connect();

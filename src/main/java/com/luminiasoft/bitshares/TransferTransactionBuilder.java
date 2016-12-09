@@ -15,8 +15,7 @@ public class TransferTransactionBuilder extends TransactionBuilder {
     private UserAccount destinationAccount;
     private AssetAmount transferAmount;
     private AssetAmount feeAmount;
-    private String memo;
-    private ECKey memoPublicKey;
+    private Memo memo;
 
     public TransferTransactionBuilder(){}
 
@@ -54,9 +53,8 @@ public class TransferTransactionBuilder extends TransactionBuilder {
         return this;
     }
     
-    public TransferTransactionBuilder setMemo(String memo,ECKey publicKey){
+    public TransferTransactionBuilder setMemo(Memo memo){
         this.memo = memo;
-        this.memoPublicKey = publicKey;
         return this;
     }
 
@@ -93,8 +91,7 @@ public class TransferTransactionBuilder extends TransactionBuilder {
                 transferOperation = new TransferOperation(sourceAccount, destinationAccount, transferAmount, feeAmount);
             }
             if(memo != null){
-                
-                transferOperation.setMemo(this.privateKey,this.memoPublicKey,memo.getBytes());
+                transferOperation.setMemo(this.memo);
             }
             operations.add(transferOperation);
         }

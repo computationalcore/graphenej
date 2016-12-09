@@ -22,24 +22,31 @@ public class Memo implements ByteSerializable, JsonSerializable {
      public static final String KEY_NONCE = "nonce";
      public static final String KEY_MESSAGE = "message";
 
-    //TODO: Give this class a proper implementation
     private PublicKey from;
     private PublicKey to;
     private byte[] nonce = new byte[8];
     private byte[] message;
 
+    public Memo(){
+        this.from = null;
+        this.to = null;
+        this.nonce = null;
+        this.message = null;
+    }
+
+    public Memo(PublicKey from, PublicKey to, String message){
+        this.from = from;
+        this.to = to;
+        this.message = message.getBytes();
+    }
+
     @Override
     public byte[] toBytes() {
         if ((this.from == null) || (this.to == null) || (this.nonce == null) || (this.message == null)) {
-            return new byte[]{(byte) 0};
+            return new byte[] { (byte) 0};
+        }else{
+            return Bytes.concat(this.from.toBytes(), this.to.toBytes(), this.nonce, this.message);
         }
-        return Bytes.concat(this.from.toBytes(), this.to.toBytes(), this.nonce, this.message);
-    }
-
-    public Memo() {
-        this.from = null;
-        this.to = null;
-        this.message = null;
     }
 
     public void encodeMessage(ECKey fromKey, ECKey toKey, byte[] msg) {
