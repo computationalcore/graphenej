@@ -21,4 +21,8 @@ public class PublicKey implements ByteSerializable {
     public byte[] toBytes() {
         return publicKey.getPubKey();
     }
+    
+    public String getAddress(){
+        return new Address(publicKey).toString();
+    }
 }

@@ -47,7 +47,11 @@ public class Memo implements ByteSerializable, JsonSerializable {
         if ((this.from == null) || (this.to == null) || (this.nonce == null) || (this.message == null)) {
             return new byte[]{(byte) 0};
         } else {
-            return Bytes.concat(this.from.toBytes(), this.to.toBytes(), this.nonce, this.message);
+            byte[] nonceformat = new byte[nonce.length];
+            for (int i = 0; i < nonceformat.length; i++) {
+                nonceformat[i] = nonce[nonce.length - i];
+            }
+            return Bytes.concat(new byte[]{1}, this.from.toBytes(), this.to.toBytes(), nonceformat, new byte[]{(byte) this.message.length}, this.message);
         }
     }
 
@@ -127,10 +131,10 @@ public class Memo implements ByteSerializable, JsonSerializable {
             return null;
         }
         JsonObject memoObject = new JsonObject();
-        memoObject.addProperty(KEY_FROM, new Address(this.from.getKey()).toString());
-        memoObject.addProperty(KEY_MESSAGE, new BigInteger(1, this.message).toString(16));
+        memoObject.addProperty(KEY_FROM, this.from.getAddress());
+        memoObject.addProperty(KEY_TO, this.to.getAddress());
         memoObject.addProperty(KEY_NONCE, new BigInteger(1, this.nonce).toString(10));
-        memoObject.addProperty(KEY_TO, new Address(this.to.getKey()).toString());
+        memoObject.addProperty(KEY_MESSAGE, new BigInteger(1, this.message).toString(16));
         return memoObject;
     }
 
