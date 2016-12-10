@@ -17,34 +17,36 @@ import org.bitcoinj.core.ECKey;
  * Created by nelson on 11/9/16.
  */
 public class Memo implements ByteSerializable, JsonSerializable {
-     public static final String KEY_FROM = "from";
-     public static final String KEY_TO = "to";
-     public static final String KEY_NONCE = "nonce";
-     public static final String KEY_MESSAGE = "message";
+
+    public static final String KEY_FROM = "from";
+    public static final String KEY_TO = "to";
+    public static final String KEY_NONCE = "nonce";
+    public static final String KEY_MESSAGE = "message";
 
     private PublicKey from;
     private PublicKey to;
     private byte[] nonce = new byte[8];
     private byte[] message;
 
-    public Memo(){
+    public Memo() {
         this.from = null;
         this.to = null;
         this.nonce = null;
         this.message = null;
     }
 
-    public Memo(PublicKey from, PublicKey to, String message){
+    public Memo(PublicKey from, PublicKey to, String message) {
         this.from = from;
         this.to = to;
         this.message = message.getBytes();
+        this.encodeMessage(from.getKey(), to.getKey(), this.message, 0);
     }
 
     @Override
     public byte[] toBytes() {
         if ((this.from == null) || (this.to == null) || (this.nonce == null) || (this.message == null)) {
-            return new byte[] { (byte) 0};
-        }else{
+            return new byte[]{(byte) 0};
+        } else {
             return Bytes.concat(this.from.toBytes(), this.to.toBytes(), this.nonce, this.message);
         }
     }
@@ -79,7 +81,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
                 }
             }
 
-            byte[] secret = fromKey.getPubKeyPoint().multiply(toKey.getPrivKey()).normalize().getXCoord().getEncoded();
+            byte[] secret = toKey.getPubKeyPoint().multiply(fromKey.getPrivKey()).normalize().getXCoord().getEncoded();
             byte[] finalKey = new byte[secret.length + this.nonce.length];
             System.arraycopy(secret, 0, finalKey, 0, secret.length);
             System.arraycopy(this.nonce, 0, finalKey, secret.length, this.nonce.length);
@@ -102,7 +104,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
         this.from = new PublicKey(fromKey);
         this.nonce = nonce;
 
-        byte[] secret = toKey.getPubKeyPoint().multiply(fromKey.getPrivKey()).normalize().getXCoord().getEncoded();
+        byte[] secret = fromKey.getPubKeyPoint().multiply(toKey.getPrivKey()).normalize().getXCoord().getEncoded();
         byte[] finalKey = new byte[secret.length + this.nonce.length];
         System.arraycopy(secret, 0, finalKey, 0, secret.length);
         System.arraycopy(this.nonce, 0, finalKey, secret.length, this.nonce.length);
@@ -126,10 +128,9 @@ public class Memo implements ByteSerializable, JsonSerializable {
         }
         JsonObject memoObject = new JsonObject();
         memoObject.addProperty(KEY_FROM, new Address(this.from.getKey()).toString());
+        memoObject.addProperty(KEY_MESSAGE, new BigInteger(1, this.message).toString(16));
+        memoObject.addProperty(KEY_NONCE, new BigInteger(1, this.nonce).toString(10));
         memoObject.addProperty(KEY_TO, new Address(this.to.getKey()).toString());
-        //memoObject.addProperty(KEY_NONCE, new BigInteger(1,this.nonce).toString(10));
-        memoObject.addProperty(KEY_NONCE, new BigInteger(1,this.nonce).toString(10));
-        memoObject.addProperty(KEY_MESSAGE, new BigInteger(1,this.message).toString(16));
         return memoObject;
     }
 
