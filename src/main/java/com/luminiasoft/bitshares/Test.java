@@ -1,14 +1,17 @@
 package com.luminiasoft.bitshares;
 
+import com.luminiasoft.bitshares.objects.Memo;
 import com.google.common.primitives.UnsignedLong;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import com.luminiasoft.bitshares.errors.MalformedAddressException;
 import com.luminiasoft.bitshares.errors.MalformedTransactionException;
 import com.luminiasoft.bitshares.interfaces.WitnessResponseListener;
 import com.luminiasoft.bitshares.models.*;
+import com.luminiasoft.bitshares.objects.MemoBuilder;
 import com.luminiasoft.bitshares.test.NaiveSSLContext;
 import com.luminiasoft.bitshares.ws.*;
 import com.neovisionaries.ws.client.*;
@@ -49,8 +52,7 @@ public class Test {
                 System.out.println("Got account properties");
                 System.out.println("account: " + accountProperties.toString());
                 System.out.println("id: " + accountProperties.id);
-                
-                
+
             } else if (response.result.getClass() == ArrayList.class) {
                 List list = (List) response.result;
                 if (list.size() > 0) {
@@ -99,7 +101,7 @@ public class Test {
                     System.out.println("Got empty list!");
                 }
             } else if (response.result.getClass() == JsonArray.class) {
-                System.out.println("Json array : " + ((JsonArray)response.result));
+                System.out.println("Json array : " + ((JsonArray) response.result));
             } else {
                 System.out.println("Got other: " + response.result.getClass());
             }
@@ -294,14 +296,14 @@ public class Test {
 
         try {
             // Creating memo
-            PublicKey from = new PublicKey(ECKey.fromPublicOnly(new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0).getPublicKey()));
+            PublicKey from = new PublicKey(new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0).getPrivateKey());
             PublicKey to = new PublicKey(ECKey.fromPublicOnly(new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0).getPublicKey()));
-            Memo memo = new Memo(from, to, "sample message");
+            Memo memo = new MemoBuilder().setFromKey(from).setToKey(to).setMessage("sample message").build();
 
             // Creating transaction
             Transaction transaction = new TransferTransactionBuilder()
-                    .setSource(new UserAccount("1.2.138632")) // bilthon-83
-                    .setDestination(new UserAccount("1.2.139313"))  // bilthon-5
+                    .setSource(new UserAccount("1.2.139270")) // bilthon-83
+                    .setDestination(new UserAccount("1.2.142115")) // bilthon-5
                     .setAmount(new AssetAmount(UnsignedLong.valueOf(1), new Asset("1.3.0")))
                     .setFee(new AssetAmount(UnsignedLong.valueOf(264174), new Asset("1.3.0")))
                     .setPrivateKey(new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0).getPrivateKey())
@@ -357,7 +359,7 @@ public class Test {
         System.out.println("base58...................: " + Base58.encode(privateKey.getPubKey()));
     }
 
-    public void testPublicKeyManipulations(){
+    public void testPublicKeyManipulations() {
 //            PublicKey publicKey = new PublicKey("BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY");
 //            System.out.println("Public key bytes");
 //            System.out.println(Util.bytesToHex(publicKey.toBytes()));
@@ -427,17 +429,17 @@ public class Test {
                 String suggestion = BrainKey.suggest(words);
                 brainKey = new BrainKey(suggestion, 0);
             } else {
-                System.out.println("Using brain key: "+Main.BILTHON_5_BRAIN_KEY);
+                System.out.println("Using brain key: " + Main.BILTHON_5_BRAIN_KEY);
 //                brainKey = new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0);
                 brainKey = new BrainKey("CYNEBOT LUFBERY DAUNTER TOO SALOOP HOPOFF DIAULOS REV AES TORPOR RECTRIX DEVILRY", 0);
             }
             ECKey key = brainKey.getPrivateKey();
-            System.out.println("Private key..................: "+Util.bytesToHex(key.getSecretBytes()));
+            System.out.println("Private key..................: " + Util.bytesToHex(key.getSecretBytes()));
             String wif = key.getPrivateKeyAsWiF(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
             System.out.println("Wif Compressed...............: " + wif);
             String wif2 = key.decompress().getPrivateKeyAsWiF(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
             System.out.println("Wif Decompressed.............: " + wif2);
-            System.out.println("Wif from BrainKey............: "+ brainKey.getWalletImportFormat());
+            System.out.println("Wif from BrainKey............: " + brainKey.getWalletImportFormat());
 
             byte[] uncompressedPubKey = key.decompress().getPubKey();
             byte[] compressedPubKey = key.getPubKey();
@@ -604,14 +606,14 @@ public class Test {
             System.out.println(transaction.toJsonString());
             System.out.println("Serialized transaction");
             System.out.println(Util.bytesToHex(transaction.toBytes()));
-        } catch(MalformedAddressException e){
-            System.out.println("MalformedAddressException. Msg: "+e.getMessage());
+        } catch (MalformedAddressException e) {
+            System.out.println("MalformedAddressException. Msg: " + e.getMessage());
         } catch (MalformedTransactionException e) {
-            System.out.println("MalformedTransactionException. Msg: "+e.getMessage());
+            System.out.println("MalformedTransactionException. Msg: " + e.getMessage());
         }
     }
 
-    public void testAccountUpdateOperationBroadcast(){
+    public void testAccountUpdateOperationBroadcast() {
 
         WitnessResponseListener listener = new WitnessResponseListener() {
             @Override
@@ -653,19 +655,19 @@ public class Test {
             mWebSocket.connect();
 
         } catch (MalformedAddressException e) {
-            System.out.println("MalformedAddressException. Msg: "+e.getMessage());
+            System.out.println("MalformedAddressException. Msg: " + e.getMessage());
         } catch (MalformedTransactionException e) {
-            System.out.println("MalformedTransactionException. Msg: "+e.getMessage());
+            System.out.println("MalformedTransactionException. Msg: " + e.getMessage());
         } catch (NoSuchAlgorithmException e) {
-            System.out.println("NoSuchAlgorithmException. Msg: "+e.getMessage());
+            System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
         } catch (IOException e) {
-            System.out.println("IOException. Msg: "+e.getMessage());
+            System.out.println("IOException. Msg: " + e.getMessage());
         } catch (WebSocketException e) {
-            System.out.println("WebSocketException. Msg: "+e.getMessage());
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
         }
     }
 
-    public void testLookupAccounts(){
+    public void testLookupAccounts() {
         WitnessResponseListener listener = new WitnessResponseListener() {
             @Override
             public void onSuccess(WitnessResponse response) {
@@ -692,12 +694,24 @@ public class Test {
             mWebSocket.connect();
 
         } catch (NoSuchAlgorithmException e) {
-            System.out.println("NoSuchAlgorithmException. Msg: "+e.getMessage());
+            System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
         } catch (WebSocketException e) {
-            System.out.println("WebSocketException. Msg: "+e.getMessage());
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
         } catch (IOException e) {
-            System.out.println("IOException. Msg: "+e.getMessage());
+            System.out.println("IOException. Msg: " + e.getMessage());
         }
     }
-    
+
+    public void testDecodeMemo() {
+
+        PublicKey from = new PublicKey((new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0).getPrivateKey()));
+        PublicKey to = new PublicKey(new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0).getPrivateKey());
+        
+        Memo sendMemo = new MemoBuilder().setFromKey(from).setToKey(to).setMessage("test message").build();
+        
+        JsonElement memoJson = sendMemo.toJsonObject();
+        System.out.println("generated Json : " + memoJson.toString());
+        System.out.println("Decode Memo : " + Memo.decodeMessage(from, to, memoJson.getAsJsonObject().get("message").getAsString(), memoJson.getAsJsonObject().get("nonce").getAsString()));
+        
+    }
 }

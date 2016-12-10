@@ -1,5 +1,6 @@
 package com.luminiasoft.bitshares;
 
+import com.luminiasoft.bitshares.objects.Memo;
 import com.luminiasoft.bitshares.errors.MalformedTransactionException;
 import org.bitcoinj.core.ECKey;
 

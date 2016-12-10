@@ -50,7 +50,7 @@ public class Main {
 //        test.testGetDynamicParams();
 //        test.testGetRequiredFeesSerialization();
 //        test.testRequiredFeesResponse();
-        test.testTransactionBroadcastSequence();
+//        test.testTransactionBroadcastSequence();
 //        test.testAccountLookupDeserialization();
 //        test.testPrivateKeyManipulations();
 //        test.testPublicKeyManipulations();
@@ -69,5 +69,6 @@ public class Main {
 //        test.testCreateBinFile();
 //        test.testImportBinFile();
         //test.testLookupAccounts();
+        test.testDecodeMemo();
     }
 }

@@ -1,5 +1,6 @@
 package com.luminiasoft.bitshares;
 
+import com.luminiasoft.bitshares.objects.Memo;
 import com.google.common.primitives.Bytes;
 import com.google.gson.*;
 
@@ -65,6 +66,7 @@ public class TransferOperation extends BaseOperation {
 
     @Override
     public byte[] toBytes() {
+        System.out.println("ne toBytes");
         byte[] feeBytes = fee.toBytes();
         byte[] fromBytes = from.toBytes();
         byte[] toBytes = to.toBytes();
