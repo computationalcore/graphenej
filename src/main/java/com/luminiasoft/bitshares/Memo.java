@@ -42,6 +42,27 @@ public class Memo implements ByteSerializable, JsonSerializable {
         this.encodeMessage(from.getKey(), to.getKey(), this.message, 0);
     }
 
+    /**
+     * Constructor for receiving Message
+     *
+     * @param from Public Key of the source
+     * @param to Our Public Key
+     * @param message The message cnoded
+     * @param nonce The nonce used for encoding the message
+     */
+    public Memo(PublicKey from, PublicKey to, String message, String nonce) {
+        this.from = from;
+        this.to = to;
+        this.message = new BigInteger(message, 16).toByteArray();
+        byte[] firstNonce = new BigInteger(nonce,10).toByteArray();
+        this.nonce = new byte[8];
+        System.arraycopy(firstNonce, firstNonce.length-8, this.nonce, 0, this.nonce.length);
+        
+        //this.nonce = new BigInteger(nonce,10).toByteArray();
+        
+        
+    }
+
     @Override
     public byte[] toBytes() {
         if ((this.from == null) || (this.to == null) || (this.nonce == null) || (this.message == null)) {
@@ -49,7 +70,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
         } else {
             byte[] nonceformat = new byte[nonce.length];
             for (int i = 0; i < nonceformat.length; i++) {
-                nonceformat[i] = nonce[nonce.length - i];
+                nonceformat[i] = nonce[nonce.length - i - 1];
             }
             return Bytes.concat(new byte[]{1}, this.from.toBytes(), this.to.toBytes(), nonceformat, new byte[]{(byte) this.message.length}, this.message);
         }
@@ -103,21 +124,18 @@ public class Memo implements ByteSerializable, JsonSerializable {
         }
     }
 
-    public void decodeMessage(ECKey toKey, ECKey fromKey, byte[] msg, byte[] nonce) {
-        this.to = new PublicKey(toKey);
-        this.from = new PublicKey(fromKey);
-        this.nonce = nonce;
+    public String decodeMessage() {
 
-        byte[] secret = fromKey.getPubKeyPoint().multiply(toKey.getPrivKey()).normalize().getXCoord().getEncoded();
+        byte[] secret = this.from.getKey().getPubKeyPoint().multiply(this.to.getKey().getPrivKey()).normalize().getXCoord().getEncoded();
         byte[] finalKey = new byte[secret.length + this.nonce.length];
         System.arraycopy(secret, 0, finalKey, 0, secret.length);
         System.arraycopy(this.nonce, 0, finalKey, secret.length, this.nonce.length);
 
-        byte[] msgFinal = Util.decryptAES(msg, finalKey);
+        byte[] msgFinal = Util.decryptAES(this.message, finalKey);
         byte[] decodedMsg = new byte[msgFinal.length - 4];
         //TODO verify checksum for integrity
         System.arraycopy(msgFinal, 4, decodedMsg, 0, decodedMsg.length);
-        this.message = decodedMsg;
+        return new String(decodedMsg);
     }
 
     @Override
