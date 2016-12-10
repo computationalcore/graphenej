@@ -66,7 +66,6 @@ public class TransferOperation extends BaseOperation {
 
     @Override
     public byte[] toBytes() {
-        System.out.println("ne toBytes");
         byte[] feeBytes = fee.toBytes();
         byte[] fromBytes = from.toBytes();
         byte[] toBytes = to.toBytes();
