@@ -212,7 +212,7 @@ public class Util {
             byte countByte = (byte)((byte)out[out.length-1] % 16);
             int count = countByte & 0xFF;
                        
-            if ((count > 15) || (count <= 0)){
+            if ((count > 15) || (count <= 0) || count > out.length){
                 return out;
             }
             
