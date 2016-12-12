@@ -1,7 +1,10 @@
 package de.bitsharesmunich.graphenej.api;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import de.bitsharesmunich.graphenej.AccountOptions;
+import de.bitsharesmunich.graphenej.Authority;
 import de.bitsharesmunich.graphenej.RPC;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
 import de.bitsharesmunich.graphenej.models.AccountProperties;
@@ -43,10 +46,12 @@ public class GetAccountByName extends WebSocketAdapter {
     @Override
     public void onTextFrame(WebSocket websocket, WebSocketFrame frame) throws Exception {
         String response = frame.getPayloadText();
-        Gson gson = new Gson();
+        GsonBuilder builder = new GsonBuilder();
 
         Type GetAccountByNameResponse = new TypeToken<WitnessResponse<AccountProperties>>(){}.getType();
-        WitnessResponse<WitnessResponse<AccountProperties>> witnessResponse = gson.fromJson(response, GetAccountByNameResponse);
+        builder.registerTypeAdapter(Authority.class, new Authority.AuthorityDeserializer());
+        builder.registerTypeAdapter(AccountOptions.class, new AccountOptions.AccountOptionsDeserializer());
+        WitnessResponse<AccountProperties> witnessResponse = builder.create().fromJson(response, GetAccountByNameResponse);
 
         if(witnessResponse.error != null){
             this.mListener.onError(witnessResponse.error);

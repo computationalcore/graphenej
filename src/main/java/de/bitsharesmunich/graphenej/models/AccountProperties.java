@@ -1,5 +1,8 @@
 package de.bitsharesmunich.graphenej.models;
 
+import de.bitsharesmunich.graphenej.AccountOptions;
+import de.bitsharesmunich.graphenej.Authority;
+
 /**
  * Created by nelson on 11/15/16.
  */
@@ -13,9 +16,9 @@ public class AccountProperties {
     public long lifetime_referrer_fee_percentage;
     public long referrer_rewards_percentage;
     public String name;
-    public User owner;
-    public User active;
-    public Options options;
+    public Authority owner;
+    public Authority active;
+    public AccountOptions options;
     public String statistics;
     public String[] whitelisting_accounts;
     public String[] blacklisting_accounts;
@@ -24,20 +27,4 @@ public class AccountProperties {
     public Object[] owner_special_authority;
     public Object[] active_special_authority;
     public long top_n_control_flags;
-
-    class User {
-        public long weight_threshold;
-        public String[] account_auths; //TODO: Check this type
-        public String[][] key_auths; //TODO: Check how to deserialize this
-        public String[] address_auths;
-    }
-
-    class Options {
-        public String memo_key;
-        public String voting_account;
-        public long num_witness;
-        public long num_committee;
-        public String[] votes; //TODO: Check this type
-        public String[] extensions; //TODO: Check this type
-    }
 }

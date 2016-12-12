@@ -1,11 +1,11 @@
 package de.bitsharesmunich.graphenej;
 
 import com.google.common.primitives.Bytes;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
+import de.bitsharesmunich.graphenej.errors.MalformedAddressException;
 import de.bitsharesmunich.graphenej.interfaces.GrapheneSerializable;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +37,8 @@ public class AccountOptions implements GrapheneSerializable {
         this();
         this.memo_key = memoKey;
     }
+
+    //TODO: Implement constructor that takes a Vote array.
 
     public PublicKey getMemoKey() {
         return memo_key;
@@ -130,5 +132,26 @@ public class AccountOptions implements GrapheneSerializable {
         options.add(KEY_VOTES, votesArray);
         options.add(KEY_EXTENSIONS, extensions.toJsonObject());
         return options;
+    }
+
+    /**
+     * Custom deserializer used while parsing the 'get_account_by_name' API call response.
+     * TODO: Implement all other details besides the key
+     */
+    public static class AccountOptionsDeserializer implements JsonDeserializer<AccountOptions> {
+
+        @Override
+        public AccountOptions deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            JsonObject baseObject = json.getAsJsonObject();
+            AccountOptions options;
+            try {
+                Address address = new Address(baseObject.get(KEY_MEMO_KEY).getAsString());
+                options = new AccountOptions(address.getPublicKey());
+            } catch (MalformedAddressException e) {
+                System.out.println("MalformedAddressException. Msg: "+e.getMessage());
+                options = new AccountOptions();
+            }
+            return options;
+        }
     }
 }

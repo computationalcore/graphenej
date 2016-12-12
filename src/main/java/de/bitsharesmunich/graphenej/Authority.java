@@ -1,12 +1,11 @@
 package de.bitsharesmunich.graphenej;
 
 import com.google.common.primitives.Bytes;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import de.bitsharesmunich.graphenej.errors.MalformedAddressException;
 import de.bitsharesmunich.graphenej.interfaces.GrapheneSerializable;
 
+import java.lang.reflect.Type;
 import java.util.*;
 
 /**
@@ -42,8 +41,12 @@ public class Authority implements GrapheneSerializable {
         this.weight_threshold = weight_threshold;
         if(keyAuths != null)
             this.key_auths = keyAuths;
+        else
+            this.key_auths = new HashMap<>();
         if(accountAuths != null)
             this.account_auths = accountAuths;
+        else
+            this.account_auths = new HashMap<>();
     }
 
     public void setKeyAuthorities(HashMap<Address, Integer> keyAuths){
@@ -56,6 +59,14 @@ public class Authority implements GrapheneSerializable {
 
     public void setAccountAuthorities(HashMap<UserAccount, Integer> accountAuthorities){
         this.account_auths = accountAuthorities;
+    }
+
+    public List<PublicKey> getKeyAuths(){
+        ArrayList<PublicKey> keys = new ArrayList<>();
+        for(PublicKey pk : key_auths.keySet()){
+            keys.add(pk);
+        }
+        return keys;
     }
 
     @Override
@@ -125,5 +136,44 @@ public class Authority implements GrapheneSerializable {
             byteArray.add((byte) extensions.size());
         }
         return Bytes.toArray(byteArray);
+    }
+
+    /**
+     * Custom deserializer used while parsing the 'get_account_by_name' API call response.
+     *
+     * This will deserialize an account authority in the form:
+     *
+     * {
+     *   "weight_threshold": 1,
+     *   "account_auths": [],
+     *   "key_auths": [["BTS6yoiaoC4p23n31AV4GnMy5QDh5yUQEUmU4PmNxRQPGg7jjPkBq",1]],
+     *   "address_auths": []
+     * }
+     */
+    public static class AuthorityDeserializer implements JsonDeserializer<Authority> {
+
+        @Override
+        public Authority deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            JsonObject baseObject = json.getAsJsonObject();
+            long weightThreshold = baseObject.get(KEY_WEIGHT_THRESHOLD).getAsLong();
+            JsonArray keyAuthArray = baseObject.getAsJsonArray(KEY_KEY_AUTHS);
+            JsonArray accountAuthArray = baseObject.getAsJsonArray(KEY_ACCOUNT_AUTHS);
+            HashMap<PublicKey, Integer> keyAuthMap = new HashMap<>();
+            HashMap<UserAccount, Integer> accountAuthMap = new HashMap<>();
+            for(int i = 0; i < keyAuthArray.size(); i++){
+                JsonArray subArray = keyAuthArray.get(i).getAsJsonArray();
+                String addr = subArray.get(0).getAsString();
+                int weight = subArray.get(1).getAsInt();
+                try {
+                    keyAuthMap.put(new Address(addr).getPublicKey(), weight);
+                } catch (MalformedAddressException e) {
+                    System.out.println("MalformedAddressException. Msg: "+e.getMessage());
+                }
+            }
+            for(int i = 0; i < accountAuthArray.size(); i++){
+                //TODO: Implement this
+            }
+            return new Authority(weightThreshold, keyAuthMap, accountAuthMap);
+        }
     }
 }
