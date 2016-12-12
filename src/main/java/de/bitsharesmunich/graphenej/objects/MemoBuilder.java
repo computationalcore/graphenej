@@ -1,6 +1,7 @@
 package de.bitsharesmunich.graphenej.objects;
 
 import de.bitsharesmunich.graphenej.PublicKey;
+import org.bitcoinj.core.ECKey;
 
 /**
  * Class to build a Memo Object
@@ -8,7 +9,7 @@ import de.bitsharesmunich.graphenej.PublicKey;
  */
 public class MemoBuilder {
 
-    private PublicKey fromKey;
+    private ECKey fromKey;
     private PublicKey toKey;
     private String message;
     private long nonce = 0;
@@ -24,7 +25,7 @@ public class MemoBuilder {
      * @param fromKey The Public Key of the sender
      * @return The MemoBuilder
      */
-    public MemoBuilder setFromKey(PublicKey fromKey) {
+    public MemoBuilder setFromKey(ECKey fromKey) {
         this.fromKey = fromKey;
         return this;
     }
@@ -70,5 +71,4 @@ public class MemoBuilder {
         }
         return Memo.encodeMessage(fromKey, toKey, message.getBytes(), nonce);
     }
-
 }

@@ -56,8 +56,8 @@ public class Main {
 //        test.testAccountUpdateOperationBroadcast();
 //        test.testCreateBinFile();
 //        test.testImportBinFile();
-          test.testLookupAccounts();
+//          test.testLookupAccounts();
 //        test.testLookupAccounts();
-//        test.testDecodeMemo();
+        test.testDecodeMemo();
     }
 }

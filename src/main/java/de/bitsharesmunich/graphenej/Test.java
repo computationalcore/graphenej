@@ -299,7 +299,7 @@ public class Test {
 
         try {
             // Creating memo
-            PublicKey from = new PublicKey(new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0).getPrivateKey());
+            ECKey from = new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0).getPrivateKey();
             PublicKey to = new PublicKey(ECKey.fromPublicOnly(new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0).getPublicKey()));
             Memo memo = new MemoBuilder().setFromKey(from).setToKey(to).setMessage("sample message").build();
 
@@ -377,15 +377,44 @@ public class Test {
     }
 
     public void testGetAccountByName() {
+
+        WitnessResponseListener accountByNameListener = new WitnessResponseListener() {
+            @Override
+            public void onSuccess(WitnessResponse response) {
+                System.out.println("onSuccess");
+                WitnessResponse<AccountProperties> accountProperties = response;
+                System.out.println("account id: "+accountProperties.result.id);
+                Authority authority = accountProperties.result.active;
+                System.out.println("number of keys: "+authority.getKeyAuths().size());
+                for(PublicKey publicKey : authority.getKeyAuths()){
+                    System.out.println("public key: "+publicKey.getAddress());
+                }
+            }
+
+            @Override
+            public void onError(BaseResponse.Error error) {
+                System.out.println("onError. Msg: "+error.message);
+            }
+        };
+
         try {
-            WebSocketFactory factory = new WebSocketFactory().setConnectionTimeout(5000);
-            WebSocket mWebSocket = factory.createSocket(WITNESS_URL);
-            mWebSocket.addListener(new GetAccountByName("bilthon-83", mListener));
+            SSLContext context = null;
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
+
+            mWebSocket.addListener(new GetAccountByName("bilthon-83", accountByNameListener));
             mWebSocket.connect();
         } catch (IOException e) {
             System.out.println("IOException. Msg: " + e.getMessage());
         } catch (WebSocketException e) {
             System.out.println("WebSocketException. Msg: " + e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: "+e.getMessage());
         }
     }
 
@@ -434,7 +463,7 @@ public class Test {
             } else {
                 System.out.println("Using brain key: " + Main.BILTHON_5_BRAIN_KEY);
 //                brainKey = new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0);
-                brainKey = new BrainKey("CYNEBOT LUFBERY DAUNTER TOO SALOOP HOPOFF DIAULOS REV AES TORPOR RECTRIX DEVILRY", 0);
+                brainKey = new BrainKey("CONCOCT BALOW JINJILI UNOILED MESOBAR REEST BREATH OOCYST MOUSLE HOGWARD STOLLEN ASH", 0);
             }
             ECKey key = brainKey.getPrivateKey();
             System.out.println("Private key..................: " + Util.bytesToHex(key.getSecretBytes()));
@@ -707,13 +736,13 @@ public class Test {
 
     public void testDecodeMemo() {
 
-        PublicKey from = new PublicKey((new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0).getPrivateKey()));
-        PublicKey to = new PublicKey(new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0).getPrivateKey());
+        ECKey from = new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0).getPrivateKey();
+        PublicKey to = new PublicKey(ECKey.fromPublicOnly(new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0).getPublicKey()));
         
         Memo sendMemo = new MemoBuilder().setFromKey(from).setToKey(to).setMessage("test message").build();
         
         JsonElement memoJson = sendMemo.toJsonObject();
         System.out.println("generated Json : " + memoJson.toString());
-        System.out.println("Decode Memo : " + Memo.decodeMessage(from, to, memoJson.getAsJsonObject().get("message").getAsString(), memoJson.getAsJsonObject().get("nonce").getAsString()));
+//        System.out.println("Decode Memo : " + Memo.decodeMessage(from, to, memoJson.getAsJsonObject().get("message").getAsString(), memoJson.getAsJsonObject().get("nonce").getAsString()));
     }
 }
