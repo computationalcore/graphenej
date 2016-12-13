@@ -69,6 +69,8 @@ public class Main {
 //        test.testCreateBinFile();
 //        test.testImportBinFile();
         //test.testLookupAccounts();
-        test.testDecodeMemo();
+        //test.testDecodeMemo();
+        test.testGetAsset();
+        test.testGetALimitOrders();
     }
 }

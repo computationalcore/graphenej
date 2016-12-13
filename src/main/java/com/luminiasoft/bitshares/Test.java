@@ -706,12 +706,92 @@ public class Test {
 
         PublicKey from = new PublicKey((new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0).getPrivateKey()));
         PublicKey to = new PublicKey(new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0).getPrivateKey());
-        
+
         Memo sendMemo = new MemoBuilder().setFromKey(from).setToKey(to).setMessage("test message").build();
-        
+
         JsonElement memoJson = sendMemo.toJsonObject();
         System.out.println("generated Json : " + memoJson.toString());
         System.out.println("Decode Memo : " + Memo.decodeMessage(from, to, memoJson.getAsJsonObject().get("message").getAsString(), memoJson.getAsJsonObject().get("nonce").getAsString()));
-        
+
+    }
+
+    void testGetAsset() {
+        SSLContext context = null;
+        try {
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
+
+            mWebSocket.addListener(new GetAsset("1.3.562", new WitnessResponseListener() {
+                @Override
+                public void onSuccess(WitnessResponse response) {
+                    if (response.result.getClass() == ArrayList.class) {
+                        ArrayList list = (ArrayList) response.result;
+
+                        for (Object listObject : list) {
+                            if (listObject.getClass() == Asset.class) {
+                                Asset asset = (Asset) listObject;
+                                System.out.println(" " + asset.symbol + " " + asset.precision);
+                            }
+                        }
+                    }
+                }
+
+                @Override
+                public void onError(BaseResponse.Error error) {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+            }));
+            mWebSocket.connect();
+
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: " + e.getMessage());
+        }
+    }
+
+    void testGetALimitOrders() {
+        SSLContext context = null;
+        try {
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
+
+            mWebSocket.addListener(new getLimitOrders("1.3.0", "1.3.562", 100, new WitnessResponseListener() {
+                @Override
+                public void onSuccess(WitnessResponse response) {
+                    if (response.result.getClass() == ArrayList.class) {
+                        ArrayList list = (ArrayList) response.result;
+                           if (list.get(0).getClass() == Market.class) {
+                                System.out.println(" " + ((Market)list.get(0)).sell_price.base.amount/((Market)list.get(0)).sell_price.quote.amount);
+                            }
+                    }
+                }
+
+                @Override
+                public void onError(BaseResponse.Error error) {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+            }));
+            mWebSocket.connect();
+
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: " + e.getMessage());
+        }
     }
 }
