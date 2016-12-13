@@ -1,7 +1,6 @@
 package de.bitsharesmunich.graphenej;
 
-import de.bitsharesmunich.graphenej.models.ApiCall;
-import de.bitsharesmunich.graphenej.models.BaseResponse;
+import de.bitsharesmunich.graphenej.models.*;
 import de.bitsharesmunich.graphenej.objects.Memo;
 import com.google.common.primitives.UnsignedLong;
 import com.google.gson.Gson;
@@ -15,8 +14,6 @@ import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
 import de.bitsharesmunich.graphenej.objects.MemoBuilder;
 import de.bitsharesmunich.graphenej.test.NaiveSSLContext;
 import com.neovisionaries.ws.client.*;
-import de.bitsharesmunich.graphenej.models.AccountProperties;
-import de.bitsharesmunich.graphenej.models.WitnessResponse;
 import de.bitsharesmunich.graphenej.api.*;
 import org.bitcoinj.core.*;
 import org.spongycastle.crypto.digests.RIPEMD160Digest;
@@ -462,8 +459,7 @@ public class Test {
                 brainKey = new BrainKey(suggestion, 0);
             } else {
                 System.out.println("Using brain key: " + Main.BILTHON_5_BRAIN_KEY);
-//                brainKey = new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0);
-                brainKey = new BrainKey("CONCOCT BALOW JINJILI UNOILED MESOBAR REEST BREATH OOCYST MOUSLE HOGWARD STOLLEN ASH", 0);
+                brainKey = new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0);
             }
             ECKey key = brainKey.getPrivateKey();
             System.out.println("Private key..................: " + Util.bytesToHex(key.getSecretBytes()));
@@ -744,5 +740,91 @@ public class Test {
         JsonElement memoJson = sendMemo.toJsonObject();
         System.out.println("generated Json : " + memoJson.toString());
 //        System.out.println("Decode Memo : " + Memo.decodeMessage(from, to, memoJson.getAsJsonObject().get("message").getAsString(), memoJson.getAsJsonObject().get("nonce").getAsString()));
+    }
+
+    public void testGetRelativeAccountHistory(){
+        WitnessResponseListener listener = new WitnessResponseListener() {
+            @Override
+            public void onSuccess(WitnessResponse response) {
+                System.out.println("onSuccess");
+                List<HistoricalTransfer> transactionHistory = (List<HistoricalTransfer>) response.result;
+                System.out.println("Number of transactions: "+transactionHistory.size());
+                for(HistoricalTransfer historical : transactionHistory){
+                    if(historical.op != null){
+                        TransferOperation op = historical.op;
+                        System.out.println("from: "+op.getFrom().getObjectId()+", to: "+op.getTo().getObjectId()+", amount: "+op.getAssetAmount().getAmount()+", block #: "+historical.block_num);
+                    }
+                }
+            }
+
+            @Override
+            public void onError(BaseResponse.Error error) {
+                System.out.println("onError");
+            }
+        };
+
+        SSLContext context = null;
+        try {
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
+
+            mWebSocket.addListener(new GetRelativeAccountHistory(new UserAccount("1.2.140994"), listener));
+            mWebSocket.connect();
+
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: " + e.getMessage());
+        }
+    }
+
+    public void testLookupAssetSymbols(){
+        WitnessResponseListener listener = new WitnessResponseListener() {
+            @Override
+            public void onSuccess(WitnessResponse response) {
+                System.out.println("onSuccess");
+                WitnessResponse<List<Asset>> resp = response;
+                for(Asset asset : resp.result){
+                    System.out.println("Asset: "+asset.getId()+", Symbol: "+asset.getSymbol());
+                }
+            }
+
+            @Override
+            public void onError(BaseResponse.Error error) {
+                System.out.println("onError");
+            }
+        };
+
+        SSLContext context = null;
+        try {
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
+
+            ArrayList<Asset> assets = new ArrayList<>();
+            assets.add(new Asset("1.3.0"));
+            assets.add(new Asset("1.3.120"));
+            assets.add(new Asset("1.3.121"));
+            mWebSocket.addListener(new LookupAssetSymbols(assets, listener));
+            mWebSocket.connect();
+
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: " + e.getMessage());
+        }
     }
 }

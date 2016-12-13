@@ -83,7 +83,7 @@ public class GetRelativeAccountHistory extends WebSocketAdapter {
         ArrayList<Serializable> loginParams = new ArrayList<>();
         loginParams.add(null);
         loginParams.add(null);
-        ApiCall loginCall = new ApiCall(1, RPC.CALL_LOGIN, loginParams, "2.0", currentId);
+        ApiCall loginCall = new ApiCall(1, RPC.CALL_LOGIN, loginParams, RPC.VERSION, currentId);
         websocket.sendText(loginCall.toJsonString());
     }
 

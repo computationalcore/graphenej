@@ -55,7 +55,7 @@ public class TransferOperation extends BaseOperation {
         return this.to;
     }
 
-    public AssetAmount getAmount(){
+    public AssetAmount getAssetAmount(){
         return this.amount;
     }
 

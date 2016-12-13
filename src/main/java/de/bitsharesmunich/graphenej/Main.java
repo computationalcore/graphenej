@@ -58,6 +58,8 @@ public class Main {
 //        test.testImportBinFile();
 //          test.testLookupAccounts();
 //        test.testLookupAccounts();
-        test.testDecodeMemo();
+//        test.testDecodeMemo();
+//        test.testGetRelativeAccountHistory();
+        test.testLookupAssetSymbols();
     }
 }

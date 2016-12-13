@@ -2,6 +2,7 @@ package de.bitsharesmunich.graphenej.models;
 
 import de.bitsharesmunich.graphenej.TransferOperation;
 
+
 /**
  * This class offers support to deserialization of transfer operations received by the API
  * method get_relative_account_history.
