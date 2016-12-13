@@ -47,6 +47,7 @@ public class LookupAssetSymbols extends WebSocketAdapter {
         System.out.println("<<< "+response);
         GsonBuilder gsonBuilder = new GsonBuilder();
         Type LookupAssetSymbolsResponse = new TypeToken<WitnessResponse<List<Asset>>>(){}.getType();
+        gsonBuilder.registerTypeAdapter(Asset.class, new Asset.AssetDeserializer());
         WitnessResponse<List<Asset>> witnessResponse = gsonBuilder.create().fromJson(response, LookupAssetSymbolsResponse);
         mListener.onSuccess(witnessResponse);
     }

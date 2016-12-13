@@ -792,7 +792,7 @@ public class Test {
                 System.out.println("onSuccess");
                 WitnessResponse<List<Asset>> resp = response;
                 for(Asset asset : resp.result){
-                    System.out.println("Asset: "+asset.getId()+", Symbol: "+asset.getSymbol());
+                    System.out.println("Asset: "+asset.getObjectId()+", Symbol: "+asset.getSymbol());
                 }
             }
 
