@@ -157,12 +157,12 @@ public class TransferOperation extends BaseOperation {
                 JsonObject jsonObject = json.getAsJsonObject();
 
                 // Deserializing AssetAmount objects
-                AssetAmount amount = context.deserialize(jsonObject.get("amount"), AssetAmount.class);
-                AssetAmount fee = context.deserialize(jsonObject.get("fee"), AssetAmount.class);
+                AssetAmount amount = context.deserialize(jsonObject.get(KEY_AMOUNT), AssetAmount.class);
+                AssetAmount fee = context.deserialize(jsonObject.get(KEY_FEE), AssetAmount.class);
 
                 // Deserializing UserAccount objects
-                UserAccount from = new UserAccount(jsonObject.get("from").getAsString());
-                UserAccount to = new UserAccount(jsonObject.get("to").getAsString());
+                UserAccount from = new UserAccount(jsonObject.get(KEY_FROM).getAsString());
+                UserAccount to = new UserAccount(jsonObject.get(KEY_TO).getAsString());
                 TransferOperation transfer = new TransferOperation(from, to, amount, fee);
                 return transfer;
             }

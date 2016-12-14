@@ -47,7 +47,7 @@ public class Main {
 //        test.testRandomNumberGeneration();
 //        test.testBrainKeyOperations(false);
 //        test.testBip39Opertion();
-//        test.testAccountNamebyAddress();
+        test.testAccountNamebyAddress();
 //        test.testAccountNameById();
 //        test.testRelativeAccountHistory();
 //        test.testingInvoiceGeneration();
@@ -60,6 +60,7 @@ public class Main {
 //        test.testLookupAccounts();
 //        test.testDecodeMemo();
 //        test.testGetRelativeAccountHistory();
-        test.testLookupAssetSymbols();
+//        test.testLookupAssetSymbols();
+//        test.testGetBlockHeader();
     }
 }

@@ -42,6 +42,20 @@ public class Asset extends GrapheneObject {
         this.precision = precision;
     }
 
+    /**
+     * Constructor
+     * @param id: The graphene object id.
+     * @param symbol: The asset symbol.
+     * @param precision: The asset precision.
+     * @param issuer: Graphene object id of the issuer.
+     */
+    public Asset(String id, String symbol, int precision, String issuer){
+        super(id);
+        this.symbol = symbol;
+        this.precision = precision;
+        this.issuer = issuer;
+    }
+
     public String getSymbol(){
         return this.symbol;
     }
@@ -49,6 +63,10 @@ public class Asset extends GrapheneObject {
     public int getPrecision(){
         return this.precision;
     }
+
+    public void setIssuer(String issuer){ this.issuer = issuer; }
+
+    public String getIssuer() { return this.issuer; }
 
     /**
      * Custom deserializer used to instantiate a simple version of the Asset class from the response of the
@@ -62,7 +80,8 @@ public class Asset extends GrapheneObject {
             String id = object.get(KEY_ID).getAsString();
             String symbol = object.get(KEY_SYMBOL).getAsString();
             int precision = object.get(KEY_PRECISION).getAsInt();
-            return new Asset(id, symbol, precision);
+            String issuer = object.get(KEY_ISSUER).getAsString();
+            return new Asset(id, symbol, precision, issuer);
         }
     }
 }

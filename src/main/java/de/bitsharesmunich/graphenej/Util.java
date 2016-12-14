@@ -247,4 +247,28 @@ public class Util {
         }
         return result.toString();
     }
+
+    /**
+     * Converts a base value to an adjusted one considering the precision of the asset.
+     * @param assetAmount: The asset amount instance.
+     * @return: Converts the base
+     */
+    public static float fromBase(AssetAmount assetAmount){
+        long value = assetAmount.getAmount().longValue();
+        int precision = assetAmount.getAsset().getPrecision();
+        if(precision != 0)
+            return value / precision;
+        else
+            return 0;
+    }
+
+    /**
+     * Converts a value and its corresponding precision to a base value.
+     * @param value
+     * @param precision
+     * @return
+     */
+    public static long toBase(long value, int precision){
+        return (long) (value * Math.pow(10, precision));
+    }
 }

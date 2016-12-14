@@ -85,7 +85,9 @@ public class Test {
                                     factory.setSSLContext(context);
 
                                     WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
-                                    mWebSocket.addListener(new GetAccountNameById(accountId, null));
+                                    ArrayList<UserAccount> userAccounts = new ArrayList<UserAccount>();
+                                    userAccounts.add(new UserAccount(accountId));
+                                    mWebSocket.addListener(new GetAccountNameById(userAccounts, null));
                                     mWebSocket.connect();
                                 } catch (IOException e) {
                                     System.out.println("IOException. Msg: " + e.getMessage());
@@ -513,7 +515,7 @@ public class Test {
         };
 
         BrainKey brainKey = new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0);
-        Address address = new Address(brainKey.getPrivateKey());
+        Address address = new Address(ECKey.fromPublicOnly(brainKey.getPrivateKey().getPubKey()));
         try {
             // Create a custom SSL context.
             SSLContext context = null;
@@ -523,7 +525,7 @@ public class Test {
             // Set the custom SSL context.
             factory.setSSLContext(context);
 
-            WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
+            WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
             mWebSocket.addListener(new GetAccountsByAddress(address, listener));
             mWebSocket.connect();
         } catch (IOException e) {
@@ -536,6 +538,18 @@ public class Test {
     }
 
     public void testAccountNameById() {
+        WitnessResponseListener listener = new WitnessResponseListener() {
+            @Override
+            public void onSuccess(WitnessResponse response) {
+                System.out.println("onSuccess");
+            }
+
+            @Override
+            public void onError(BaseResponse.Error error) {
+                System.out.println("onError");
+            }
+        };
+
         try {
             // Create a custom SSL context.
             SSLContext context = null;
@@ -545,8 +559,10 @@ public class Test {
             // Set the custom SSL context.
             factory.setSSLContext(context);
 
-            WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
-            mWebSocket.addListener(new GetAccountNameById("1.2.138632", mListener));
+            WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_FR);
+            ArrayList<UserAccount> userAccounts = new ArrayList<>();
+            userAccounts.add(new UserAccount("1.2.138632"));
+            mWebSocket.addListener(new GetAccountNameById(userAccounts, listener));
             mWebSocket.connect();
         } catch (IOException e) {
             System.out.println("IOException. Msg: " + e.getMessage());
@@ -750,9 +766,9 @@ public class Test {
                 List<HistoricalTransfer> transactionHistory = (List<HistoricalTransfer>) response.result;
                 System.out.println("Number of transactions: "+transactionHistory.size());
                 for(HistoricalTransfer historical : transactionHistory){
-                    if(historical.op != null){
-                        TransferOperation op = historical.op;
-                        System.out.println("from: "+op.getFrom().getObjectId()+", to: "+op.getTo().getObjectId()+", amount: "+op.getAssetAmount().getAmount()+", block #: "+historical.block_num);
+                    if(historical.getOperation() != null){
+                        TransferOperation op = historical.getOperation();
+                        System.out.println("from: "+op.getFrom().getObjectId()+", to: "+op.getTo().getObjectId()+", amount: "+op.getAssetAmount().getAmount()+", block #: "+historical.getBlockNum());
                     }
                 }
             }
@@ -792,7 +808,7 @@ public class Test {
                 System.out.println("onSuccess");
                 WitnessResponse<List<Asset>> resp = response;
                 for(Asset asset : resp.result){
-                    System.out.println("Asset: "+asset.getObjectId()+", Symbol: "+asset.getSymbol());
+                    System.out.println("Asset: "+asset.getObjectId()+", Symbol: "+asset.getSymbol()+", supply: ");
                 }
             }
 
@@ -817,6 +833,42 @@ public class Test {
             assets.add(new Asset("1.3.120"));
             assets.add(new Asset("1.3.121"));
             mWebSocket.addListener(new LookupAssetSymbols(assets, listener));
+            mWebSocket.connect();
+
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: " + e.getMessage());
+        }
+    }
+
+    public void testGetBlockHeader(){
+        WitnessResponseListener listener = new WitnessResponseListener() {
+            @Override
+            public void onSuccess(WitnessResponse response) {
+                System.out.println("onSuccess");
+            }
+
+            @Override
+            public void onError(BaseResponse.Error error) {
+                System.out.println("onError");
+            }
+        };
+
+        SSLContext context = null;
+        try {
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
+
+
+            mWebSocket.addListener(new GetBlockHeader(11989481, listener));
             mWebSocket.connect();
 
         } catch (NoSuchAlgorithmException e) {

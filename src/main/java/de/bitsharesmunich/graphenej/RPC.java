@@ -8,6 +8,7 @@ public class RPC {
     public static final String CALL_LOGIN = "login";
     public static final String CALL_NETWORK_BROADCAST = "network_broadcast";
     public static final String CALL_HISTORY = "history";
+    public static final String CALL_DATABASE = "database";
     public static final String CALL_GET_ACCOUNT_BY_NAME = "get_account_by_name";
     public static final String CALL_GET_DYNAMIC_GLOBAL_PROPERTIES = "get_dynamic_global_properties";
     public static final String CALL_BROADCAST_TRANSACTION = "broadcast_transaction";
@@ -17,4 +18,5 @@ public class RPC {
     public static final String CALL_GET_RELATIVE_ACCOUNT_HISTORY = "get_relative_account_history";
     public static final String CALL_LOOKUP_ACCOUNTS = "lookup_accounts";
     public static final String CALL_LOOKUP_ASSET_SYMBOLS = "lookup_asset_symbols";
+    public static final String CALL_GET_BLOCK_HEADER = "get_block_header";
 }

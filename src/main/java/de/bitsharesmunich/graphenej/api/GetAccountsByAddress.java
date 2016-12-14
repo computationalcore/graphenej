@@ -62,7 +62,7 @@ public class GetAccountsByAddress extends WebSocketAdapter {
         Gson gson = new Gson();
 
         Type GetAccountByAddressResponse = new TypeToken<WitnessResponse<List<List<String>>>>(){}.getType();
-        WitnessResponse<WitnessResponse<List<List<String>>>> witnessResponse = gson.fromJson(response, GetAccountByAddressResponse);
+        WitnessResponse<List<List<String>>> witnessResponse = gson.fromJson(response, GetAccountByAddressResponse);
         if (witnessResponse.error != null) {
             this.mListener.onError(witnessResponse.error);
         } else {
