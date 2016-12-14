@@ -42,7 +42,7 @@ public class GetRequiredFees extends WebSocketAdapter {
         ArrayList<Serializable> accountParams = new ArrayList<>();
         accountParams.add((Serializable) this.operations);
         accountParams.add(this.asset.getObjectId());
-        ApiCall getRequiredFees = new ApiCall(0, RPC.CALL_GET_REQUIRED_FEES, accountParams, "2.0", 1);
+        ApiCall getRequiredFees = new ApiCall(0, RPC.CALL_GET_REQUIRED_FEES, accountParams, RPC.VERSION, 1);
         websocket.sendText(getRequiredFees.toJsonString());
     }
 

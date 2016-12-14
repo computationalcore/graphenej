@@ -5,6 +5,10 @@ public class Main {
     // Brain key from Nelson's app referencing the bilthon-83 account
     public static final String BILTHON_83_BRAIN_KEY = System.getenv("BILTHON_83_BRAIN_KEY");
 
+    public static final String BILTHON_83_ORIGINAL_BRAIN_KEY = System.getenv("BILTHON_83_ORIGINAL_BRAIN_KEY");
+
+    public static final String BILTHON_1_BRAIN_KEY = System.getenv("BILTHON_1_BRAIN_KEY");
+
     public static final String BILTHON_5_BRAIN_KEY = System.getenv("BILTHON_5_BRAIN_KEY");
 
     public static final String BILTHON_7_BRAIN_KEY = System.getenv("BILTHON_7_BRAIN_KEY");

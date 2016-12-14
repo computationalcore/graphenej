@@ -1,12 +1,10 @@
 package de.bitsharesmunich.graphenej.api;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import de.bitsharesmunich.graphenej.Address;
 import de.bitsharesmunich.graphenej.RPC;
-import de.bitsharesmunich.graphenej.interfaces.JsonSerializable;
+import de.bitsharesmunich.graphenej.UserAccount;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
 import de.bitsharesmunich.graphenej.models.ApiCall;
 import de.bitsharesmunich.graphenej.models.BaseResponse;
@@ -37,21 +35,11 @@ public class GetAccountsByAddress extends WebSocketAdapter {
 
     @Override
     public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
-        ArrayList<Serializable> accountParams = new ArrayList();
-        ArrayList<Serializable> paramAddress = new ArrayList();
-        paramAddress.add(new JsonSerializable() {
-            @Override
-            public String toJsonString() {
-                return address.toString();
-            }
-
-            @Override
-            public JsonElement toJsonObject() {
-                return new JsonParser().parse(address.toString());
-            }
-        });
-        accountParams.add(paramAddress);
-        ApiCall getAccountByAddress = new ApiCall(0, RPC.CALL_GET_KEY_REFERENCES, accountParams, RPC.VERSION, 1);
+        ArrayList<Serializable> params = new ArrayList();
+        ArrayList<Serializable> addresses = new ArrayList();
+        addresses.add(address.toString());
+        params.add(addresses);
+        ApiCall getAccountByAddress = new ApiCall(0, RPC.CALL_GET_KEY_REFERENCES, params, RPC.VERSION, 1);
         websocket.sendText(getAccountByAddress.toJsonString());
     }
 
@@ -59,10 +47,11 @@ public class GetAccountsByAddress extends WebSocketAdapter {
     public void onTextFrame(WebSocket websocket, WebSocketFrame frame) throws Exception {
         System.out.println("<<< "+frame.getPayloadText());
         String response = frame.getPayloadText();
-        Gson gson = new Gson();
+        GsonBuilder builder = new GsonBuilder();
 
-        Type GetAccountByAddressResponse = new TypeToken<WitnessResponse<List<List<String>>>>(){}.getType();
-        WitnessResponse<List<List<String>>> witnessResponse = gson.fromJson(response, GetAccountByAddressResponse);
+        Type GetAccountByAddressResponse = new TypeToken<WitnessResponse<List<List<UserAccount>>>>(){}.getType();
+        builder.registerTypeAdapter(UserAccount.class, new UserAccount.UserAccountSimpleDeserializer());
+        WitnessResponse<List<List<UserAccount>>> witnessResponse = builder.create().fromJson(response, GetAccountByAddressResponse);
         if (witnessResponse.error != null) {
             this.mListener.onError(witnessResponse.error);
         } else {

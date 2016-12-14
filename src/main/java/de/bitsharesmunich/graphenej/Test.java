@@ -514,9 +514,11 @@ public class Test {
             }
         };
 
-        BrainKey brainKey = new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0);
+        BrainKey brainKey = new BrainKey(Main.BILTHON_83_ORIGINAL_BRAIN_KEY, 0);
         Address address = new Address(ECKey.fromPublicOnly(brainKey.getPrivateKey().getPubKey()));
         try {
+//            Address address = new Address("BTS5BgjNRDeawGSc1NPk91p2BYYEhJWKgsjLZGDmFgY6uwhAYLy9G");
+
             // Create a custom SSL context.
             SSLContext context = null;
             context = NaiveSSLContext.getInstance("TLS");
@@ -535,6 +537,9 @@ public class Test {
         } catch (NoSuchAlgorithmException e) {
             System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
         }
+//        catch (MalformedAddressException e) {
+//            System.out.println("MalformedAddressException. Msg: "+e.getMessage());
+//        }
     }
 
     public void testAccountNameById() {
@@ -678,9 +683,9 @@ public class Test {
             authMap.put(address.getPublicKey(), 1);
             Authority authority = new Authority(1, authMap, null);
             AccountOptions options = new AccountOptions(address.getPublicKey());
-            BrainKey brainKey = new BrainKey(Main.BILTHON_7_BRAIN_KEY, 0);
+            BrainKey brainKey = new BrainKey(Main.BILTHON_1_BRAIN_KEY, 0);
             Transaction transaction = new AccountUpdateTransactionBuilder(brainKey.getPrivateKey())
-                    .setAccont(new UserAccount("1.2.140994"))
+                    .setAccont(new UserAccount("1.2.139205"))
                     .setOwner(authority)
                     .setActive(authority)
                     .setOptions(options)
@@ -693,7 +698,7 @@ public class Test {
             // Set the custom SSL context.
             factory.setSSLContext(context);
 
-            WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
+            WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
 
             mWebSocket.addListener(new TransactionBroadcastSequence(transaction, new Asset("1.3.0"), listener));
             mWebSocket.connect();
