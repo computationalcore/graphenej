@@ -21,6 +21,10 @@ public class Optional<T extends GrapheneSerializable> implements GrapheneSeriali
             return optionalField.toBytes();
     }
 
+    public boolean isSet(){
+        return this.optionalField != null;
+    }
+
     @Override
     public String toJsonString() {
         return optionalField.toJsonString();

@@ -460,7 +460,7 @@ public class Test {
                 String suggestion = BrainKey.suggest(words);
                 brainKey = new BrainKey(suggestion, 0);
             } else {
-                System.out.println("Using brain key: " + Main.BILTHON_5_BRAIN_KEY);
+                System.out.println("Using brain key: " + Main.BILTHON_83_BRAIN_KEY);
                 brainKey = new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0);
             }
             ECKey key = brainKey.getPrivateKey();
@@ -515,9 +515,9 @@ public class Test {
         };
 
         BrainKey brainKey = new BrainKey(Main.BILTHON_83_ORIGINAL_BRAIN_KEY, 0);
-        Address address = new Address(ECKey.fromPublicOnly(brainKey.getPrivateKey().getPubKey()));
+//        Address address = new Address(ECKey.fromPublicOnly(brainKey.getPrivateKey().getPubKey()));
         try {
-//            Address address = new Address("BTS5BgjNRDeawGSc1NPk91p2BYYEhJWKgsjLZGDmFgY6uwhAYLy9G");
+            Address address = new Address("BTS5BgjNRDeawGSc1NPk91p2BYYEhJWKgsjLZGDmFgY6uwhAYLy9G");
 
             // Create a custom SSL context.
             SSLContext context = null;
@@ -537,9 +537,9 @@ public class Test {
         } catch (NoSuchAlgorithmException e) {
             System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
         }
-//        catch (MalformedAddressException e) {
-//            System.out.println("MalformedAddressException. Msg: "+e.getMessage());
-//        }
+        catch (MalformedAddressException e) {
+            System.out.println("MalformedAddressException. Msg: "+e.getMessage());
+        }
     }
 
     public void testAccountNameById() {
@@ -642,10 +642,10 @@ public class Test {
             authMap.put(address.getPublicKey(), 1);
             Authority authority = new Authority(1, authMap, null);
             AccountOptions options = new AccountOptions(address.getPublicKey());
-            BrainKey brainKey = new BrainKey(Main.BILTHON_7_BRAIN_KEY, 0);
+            BrainKey brainKey = new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0);
             Transaction transaction = new AccountUpdateTransactionBuilder(brainKey.getPrivateKey())
                     .setAccont(new UserAccount("1.2.140994"))
-                    .setOwner(authority)
+//                    .setOwner(authority)
                     .setActive(authority)
                     .setOptions(options)
                     .setBlockData(new BlockData(Main.REF_BLOCK_NUM, Main.REF_BLOCK_PREFIX, Main.RELATIVE_EXPIRATION))
@@ -676,17 +676,17 @@ public class Test {
             }
         };
 
-        String newAddress = "BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY";
+        String newAddress = "BTS5EHEfnQ4CgvTzNqE5TwWUGSLg3urcLVXrvQ2W7apxEqjczk4Ev";
         try {
             Address address = new Address(newAddress);
             HashMap<PublicKey, Integer> authMap = new HashMap<>();
             authMap.put(address.getPublicKey(), 1);
             Authority authority = new Authority(1, authMap, null);
             AccountOptions options = new AccountOptions(address.getPublicKey());
-            BrainKey brainKey = new BrainKey(Main.BILTHON_1_BRAIN_KEY, 0);
+            BrainKey brainKey = new BrainKey(Main.BILTHON_83_ORIGINAL_BRAIN_KEY, 0);
             Transaction transaction = new AccountUpdateTransactionBuilder(brainKey.getPrivateKey())
-                    .setAccont(new UserAccount("1.2.139205"))
-                    .setOwner(authority)
+                    .setAccont(new UserAccount("1.2.138632"))
+//                    .setOwner(authority)
                     .setActive(authority)
                     .setOptions(options)
                     .build();
