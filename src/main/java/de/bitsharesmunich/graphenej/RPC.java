@@ -19,4 +19,5 @@ public class RPC {
     public static final String CALL_LOOKUP_ACCOUNTS = "lookup_accounts";
     public static final String CALL_LOOKUP_ASSET_SYMBOLS = "lookup_asset_symbols";
     public static final String CALL_GET_BLOCK_HEADER = "get_block_header";
+    public static final String CALL_GET_LIMIT_ORDERS = "get_limit_orders";
 }

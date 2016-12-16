@@ -1,5 +1,4 @@
-package com.luminiasoft.bitshares;
-
+package de.bitsharesmunich.graphenej;
 
 /**
  *
@@ -15,7 +14,6 @@ public class Market {
     public Price sell_price;
     
     public class Price {
-
         public AmountPrice base;
         public AmountPrice quote;
     }
