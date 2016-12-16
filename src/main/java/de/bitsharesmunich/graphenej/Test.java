@@ -38,7 +38,7 @@ public class Test {
 
     private Transaction transaction;
 
-    public Transaction getTransaction() {
+    public Transaction GetTransaction() {
         return transaction;
     }
 
@@ -874,6 +874,49 @@ public class Test {
 
 
             mWebSocket.addListener(new GetBlockHeader(11989481, listener));
+            mWebSocket.connect();
+
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: " + e.getMessage());
+        }
+    }
+
+    void testGetLimitOrders() {
+        SSLContext context = null;
+        try {
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
+
+            mWebSocket.addListener(new GetLimitOrders("1.3.0", "1.3.562", 100, new WitnessResponseListener() {
+                @Override
+                public void onSuccess(WitnessResponse response) {
+                    List<LimitOrder> orders = (List<LimitOrder>) response.result;
+                    for(LimitOrder order : orders){
+                        double price = (((double) order.sell_price.base.getAmount().longValue()) / ((double) order.sell_price.quote.getAmount().longValue())) / 10;
+                        System.out.println(String.format("Selling %s for %s at %f %s/%s, expiration: %s",
+                                order.sell_price.base.getAsset().getObjectId(),
+                                order.sell_price.quote.getAsset().getObjectId(),
+                                price,
+                                order.sell_price.base.getAsset().getObjectId(),
+                                order.sell_price.quote.getAsset().getObjectId(),
+                                order.expiration));
+                    }
+                }
+
+                @Override
+                public void onError(BaseResponse.Error error) {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+            }));
             mWebSocket.connect();
 
         } catch (NoSuchAlgorithmException e) {

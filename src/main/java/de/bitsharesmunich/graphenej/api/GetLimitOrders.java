@@ -1,13 +1,16 @@
 package de.bitsharesmunich.graphenej.api;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFrame;
-import de.bitsharesmunich.graphenej.Market;
+import de.bitsharesmunich.graphenej.AssetAmount;
+import de.bitsharesmunich.graphenej.LimitOrder;
 import de.bitsharesmunich.graphenej.RPC;
+import de.bitsharesmunich.graphenej.UserAccount;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
 import de.bitsharesmunich.graphenej.models.ApiCall;
 import de.bitsharesmunich.graphenej.models.BaseResponse;
@@ -48,12 +51,16 @@ public class GetLimitOrders extends WebSocketAdapter {
 
     @Override
     public void onTextFrame(WebSocket websocket, WebSocketFrame frame) throws Exception {
+        if(frame.isTextFrame())
+            System.out.println("<<< "+frame.getPayloadText());
         try {
             String response = frame.getPayloadText();
-            Gson gson = new Gson();
+            GsonBuilder builder = new GsonBuilder();
 
-            Type GetLimitiOrdersResponse = new TypeToken<WitnessResponse<ArrayList<Market>>>() {}.getType();
-            WitnessResponse<ArrayList<Market>> witnessResponse = gson.fromJson(response, GetLimitiOrdersResponse);
+            Type GetLimitOrdersResponse = new TypeToken<WitnessResponse<List<LimitOrder>>>() {}.getType();
+            builder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetDeserializer());
+            builder.registerTypeAdapter(UserAccount.class, new UserAccount.UserAccountSimpleDeserializer());
+            WitnessResponse<List<LimitOrder>> witnessResponse = builder.create().fromJson(response, GetLimitOrdersResponse);
             if (witnessResponse.error != null) {
                 this.mListener.onError(witnessResponse.error);
             } else {
@@ -63,6 +70,13 @@ public class GetLimitOrders extends WebSocketAdapter {
             e.printStackTrace();
         }
         websocket.disconnect();
+    }
+
+    @Override
+    public void onFrameSent(WebSocket websocket, WebSocketFrame frame) throws Exception {
+        if(frame.isTextFrame()){
+            System.out.println(">>> "+frame.getPayloadText());
+        }
     }
 
     @Override
