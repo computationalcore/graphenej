@@ -39,12 +39,14 @@ public class GetAccountByName extends WebSocketAdapter {
     public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
         ArrayList<Serializable> accountParams = new ArrayList<>();
         accountParams.add(this.accountName);
-        ApiCall getAccountByName = new ApiCall(0, RPC.CALL_GET_ACCOUNT_BY_NAME, accountParams, "2.0", 1);
+        ApiCall getAccountByName = new ApiCall(0, RPC.CALL_GET_ACCOUNT_BY_NAME, accountParams, RPC.VERSION, 1);
         websocket.sendText(getAccountByName.toJsonString());
     }
 
     @Override
     public void onTextFrame(WebSocket websocket, WebSocketFrame frame) throws Exception {
+        if(frame.isTextFrame())
+            System.out.println("<<< "+frame.getPayloadText());
         String response = frame.getPayloadText();
         GsonBuilder builder = new GsonBuilder();
 
@@ -61,6 +63,14 @@ public class GetAccountByName extends WebSocketAdapter {
 
         websocket.disconnect();
     }
+
+    @Override
+    public void onFrameSent(WebSocket websocket, WebSocketFrame frame) throws Exception {
+        if(frame.isTextFrame()){
+            System.out.println(">>> "+frame.getPayloadText());
+        }
+    }
+
 
     @Override
     public void onError(WebSocket websocket, WebSocketException cause) throws Exception {

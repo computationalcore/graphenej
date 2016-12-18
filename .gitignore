@@ -77,3 +77,5 @@ atlassian-ide-plugin.xml
 /*.log
 
 src/main/java/com/luminiasoft/bitshares/mycelium/*
+
+bts_bilthon_20161218.bin
