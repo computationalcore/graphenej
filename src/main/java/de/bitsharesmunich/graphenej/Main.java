@@ -66,6 +66,7 @@ public class Main {
 //        test.testGetRelativeAccountHistory();
 //        test.testLookupAssetSymbols();
 //        test.testGetBlockHeader();
-        test.testGetLimitOrders();
+        //test.testGetLimitOrders();
+        test.testGetTradeHistory();
     }
 }
