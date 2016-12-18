@@ -61,12 +61,20 @@ public class Authority implements GrapheneSerializable {
         this.account_auths = accountAuthorities;
     }
 
-    public List<PublicKey> getKeyAuths(){
+    public List<PublicKey> getKeyAuthList(){
         ArrayList<PublicKey> keys = new ArrayList<>();
         for(PublicKey pk : key_auths.keySet()){
             keys.add(pk);
         }
         return keys;
+    }
+
+    public HashMap<PublicKey, Integer> getKeyAuths(){
+        return this.key_auths;
+    }
+
+    public HashMap<UserAccount, Integer> getAccountAuths(){
+        return this.account_auths;
     }
 
     @Override
@@ -136,6 +144,19 @@ public class Authority implements GrapheneSerializable {
             byteArray.add((byte) extensions.size());
         }
         return Bytes.toArray(byteArray);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        Authority authority = (Authority) obj;
+        HashMap<PublicKey, Integer> keyAuths = authority.getKeyAuths();
+        HashMap<UserAccount, Integer> accountAuths = authority.getAccountAuths();
+        System.out.println("key auths match: "+this.key_auths.equals(keyAuths));
+        System.out.println("account auths match: "+this.account_auths.equals(accountAuths));
+        System.out.println("weight threshold matches: "+(this.weight_threshold == authority.weight_threshold));
+        return this.key_auths.equals(keyAuths) &&
+                this.account_auths.equals(accountAuths) &&
+                this.weight_threshold == authority.weight_threshold;
     }
 
     /**
