@@ -20,10 +20,17 @@ public class BrainKey {
     // The size of the word dictionary
     public static final int DICT_WORD_COUNT = 49744;
 
-    // The required number of words
+    /* The required number of words */
     public static final int BRAINKEY_WORD_COUNT = 12;
 
+    /* The corresponding private key derivated from the brain key */
     private ECKey mPrivateKey;
+
+    /* The actual words from this brain key + the sequence number */
+    private String mBrainKey;
+
+    /* The sequence number */
+    private int sequenceNumber;
 
     /**
      * Method that will generate a random brain key
@@ -49,7 +56,6 @@ public class BrainKey {
             stringBuilder.append(word);
             stringBuilder.append(" ");
         }
-        System.out.println("Suggestion: '"+stringBuilder.toString().trim()+"'");
         return stringBuilder.toString().trim();
     }
     /**
@@ -60,6 +66,8 @@ public class BrainKey {
      * @param sequence Sequence number
      */
     public BrainKey(String words, int sequence) {
+        this.mBrainKey = words;
+        this.sequenceNumber = sequence;
         String encoded = String.format("%s %d", words, sequence);
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-512");
@@ -99,5 +107,13 @@ public class BrainKey {
     public String getWalletImportFormat(){
         DumpedPrivateKey wif = this.mPrivateKey.decompress().getPrivateKeyEncoded(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
         return wif.toString();
+    }
+
+    public String getBrainKey(){
+        return mBrainKey;
+    }
+
+    public int getSequenceNumber(){
+        return sequenceNumber;
     }
 }
