@@ -1,10 +1,15 @@
 package de.bitsharesmunich.graphenej;
 
+import com.google.common.primitives.Bytes;
 import com.google.common.primitives.UnsignedLong;
 import com.google.gson.*;
 import de.bitsharesmunich.graphenej.interfaces.ByteSerializable;
 import de.bitsharesmunich.graphenej.interfaces.JsonSerializable;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Type;
 
 /**
@@ -34,16 +39,22 @@ public class AssetAmount implements ByteSerializable, JsonSerializable {
     }
 
     public Asset getAsset(){ return this.asset; }
+
     @Override
     public byte[] toBytes() {
-        byte[] serialized = new byte[8 + 1];
-        byte[] amountBytes = this.amount.bigIntegerValue().toByteArray();
-        serialized[serialized.length - 1] = (byte) asset.instance;
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        DataOutput out = new DataOutputStream(byteArrayOutputStream);
+        try {
+            Varint.writeUnsignedVarLong(asset.instance, out);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // Getting asset id
+        byte[] assetId = byteArrayOutputStream.toByteArray();
+        byte[] value = Util.revertLong(this.amount.longValue());
 
-        for(int i = 0; i < amountBytes.length; i++)
-            serialized[i] = amountBytes[amountBytes.length - 1 - i];
-
-        return serialized;
+        // Concatenating and returning value + asset id
+        return Bytes.concat(value, assetId);
     }
 
     @Override
