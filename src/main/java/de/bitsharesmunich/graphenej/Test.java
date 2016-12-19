@@ -896,7 +896,7 @@ public class Test {
 
             WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
 
-            mWebSocket.addListener(new GetLimitOrders("1.3.0", "1.3.562", 100, new WitnessResponseListener() {
+            mWebSocket.addListener(new GetLimitOrders("1.3.0", "1.3.120", 100, new WitnessResponseListener() {
                 @Override
                 public void onSuccess(WitnessResponse response) {
                     List<LimitOrder> orders = (List<LimitOrder>) response.result;
@@ -915,6 +915,47 @@ public class Test {
                 @Override
                 public void onError(BaseResponse.Error error) {
                     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+            }));
+            mWebSocket.connect();
+
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: " + e.getMessage());
+        }
+    }
+
+    void testGetTradeHistory() {
+        SSLContext context = null;
+        try {
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
+
+            Calendar from = Calendar.getInstance();
+            from.roll(Calendar.DAY_OF_MONTH, false);
+            from.roll(Calendar.DAY_OF_MONTH, false);
+            Calendar to = Calendar.getInstance();
+            to.roll(Calendar.DAY_OF_MONTH, false);
+            
+            mWebSocket.addListener(new GetTradeHistory("BTS", "EUR", "20161215T0130000", "20161212T233000",100, new WitnessResponseListener() {
+                @Override
+                public void onSuccess(WitnessResponse response) {
+                    List<MarketTrade> orders = (List<MarketTrade>) response.result;
+                    for(MarketTrade markeTrade : orders){
+                        System.out.println("At " + markeTrade.date + " amount " + markeTrade.amount + " value " + markeTrade.value + " price " + markeTrade.price);
+                    }
+                }
+
+                @Override
+                public void onError(BaseResponse.Error error) {
                 }
             }));
             mWebSocket.connect();
