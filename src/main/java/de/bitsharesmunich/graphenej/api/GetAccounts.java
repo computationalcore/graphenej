@@ -29,35 +29,35 @@ import java.util.Map;
  *
  * @author henry
  */
-public class GetAccountNameById extends WebSocketAdapter {
+public class GetAccounts extends WebSocketAdapter {
 
     private String accountId;
     private List<UserAccount> userAccounts;
     private WitnessResponseListener mListener;
 
-    public GetAccountNameById(String accountId, WitnessResponseListener listener){
+    public GetAccounts(String accountId, WitnessResponseListener listener){
         this.accountId = accountId;
         this.mListener = listener;
     }
 
-    public GetAccountNameById(List<UserAccount> accounts, WitnessResponseListener listener){
+    public GetAccounts(List<UserAccount> accounts, WitnessResponseListener listener){
         this.userAccounts = accounts;
         this.mListener = listener;
     }
 
     @Override
     public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
-        ArrayList<Serializable> accountParams = new ArrayList();
-        ArrayList<Serializable> paramAddress = new ArrayList();
+        ArrayList<Serializable> params = new ArrayList();
+        ArrayList<Serializable> accountIds = new ArrayList();
         if(accountId == null){
             for(UserAccount account : userAccounts) {
-                paramAddress.add(account.getObjectId());
+                accountIds.add(account.getObjectId());
             }
         }else{
-            paramAddress.add(accountId);
+            accountIds.add(accountId);
         }
-        accountParams.add(paramAddress);
-        ApiCall getAccountByAddress = new ApiCall(0, RPC.CALL_GET_ACCOUNTS, accountParams, RPC.VERSION, 1);
+        params.add(accountIds);
+        ApiCall getAccountByAddress = new ApiCall(0, RPC.CALL_GET_ACCOUNTS, params, RPC.VERSION, 1);
         websocket.sendText(getAccountByAddress.toJsonString());
     }
 

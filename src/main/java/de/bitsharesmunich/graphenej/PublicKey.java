@@ -39,4 +39,15 @@ public class PublicKey implements ByteSerializable {
         }
         return new Address(pk).toString();
     }
+
+    @Override
+    public int hashCode() {
+        return publicKey.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        PublicKey other = (PublicKey) obj;
+        return this.publicKey.equals(other.getKey());
+    }
 }
