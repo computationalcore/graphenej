@@ -42,7 +42,7 @@ public class Main {
 //        test.testGetDynamicParams();
 //        test.testGetRequiredFeesSerialization();
 //        test.testRequiredFeesResponse();
-//        test.testTransactionBroadcastSequence();
+        test.testTransactionBroadcastSequence();
 //        test.testAccountLookupDeserialization();
 //        test.testPrivateKeyManipulations();
 //        test.testPublicKeyManipulations();
@@ -67,6 +67,7 @@ public class Main {
 //        test.testLookupAssetSymbols();
 //        test.testGetBlockHeader();
         //test.testGetLimitOrders();
-        test.testGetTradeHistory();
+//        test.testGetTradeHistory();
+//        test.testAssetSerialization();
     }
 }

@@ -6,12 +6,10 @@ import com.google.common.primitives.UnsignedLong;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import de.bitsharesmunich.graphenej.errors.MalformedAddressException;
 import de.bitsharesmunich.graphenej.errors.MalformedTransactionException;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
-import de.bitsharesmunich.graphenej.objects.MemoBuilder;
 import de.bitsharesmunich.graphenej.test.NaiveSSLContext;
 import com.neovisionaries.ws.client.*;
 import de.bitsharesmunich.graphenej.api.*;
@@ -300,15 +298,18 @@ public class Test {
         };
 
         try {
-            // Creating memo
             ECKey from = new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0).getPrivateKey();
             PublicKey to = new PublicKey(ECKey.fromPublicOnly(new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0).getPublicKey()));
-            Memo memo = new MemoBuilder().setFromKey(from).setToKey(to).setMessage("sample message").build();
+
+            // Creating memo
+            long nonce = 1;
+            byte[] encryptedMessage = Memo.encryptMessage(from, to, nonce, "another message");
+            Memo memo = new Memo(new Address(ECKey.fromPublicOnly(from.getPubKey())), new Address(to.getKey()), nonce, encryptedMessage);
 
             // Creating transaction
             Transaction transaction = new TransferTransactionBuilder()
-                    .setSource(new UserAccount("1.2.139270")) // bilthon-83
-                    .setDestination(new UserAccount("1.2.142115")) // bilthon-5
+                    .setSource(new UserAccount("1.2.138632")) // bilthon-83
+                    .setDestination(new UserAccount("1.2.139313")) // bilthon-5
                     .setAmount(new AssetAmount(UnsignedLong.valueOf(1), new Asset("1.3.0")))
                     .setFee(new AssetAmount(UnsignedLong.valueOf(264174), new Asset("1.3.0")))
                     .setPrivateKey(new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0).getPrivateKey())
@@ -458,9 +459,9 @@ public class Test {
                 String suggestion = BrainKey.suggest(words);
                 brainKey = new BrainKey(suggestion, 0);
             } else {
-                System.out.println("Using brain key: " + Main.BILTHON_83_BRAIN_KEY);
-//                brainKey = new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0);
-                brainKey = new BrainKey("AMIDIC SKELIC CARLOAD CAPSULE FACY WONNED STICH BULBULE MESOLE SEMEED STRAVE PREBORN", 0);
+                System.out.println("Using brain key: " + Main.BILTHON_5_BRAIN_KEY);
+                brainKey = new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0);
+
             }
             ECKey key = brainKey.getPrivateKey();
             System.out.println("Private key..................: " + Util.bytesToHex(key.getSecretBytes()));
@@ -761,11 +762,11 @@ public class Test {
         ECKey from = new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0).getPrivateKey();
         PublicKey to = new PublicKey(ECKey.fromPublicOnly(new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0).getPublicKey()));
         
-        Memo sendMemo = new MemoBuilder().setFromKey(from).setToKey(to).setMessage("test message").build();
+//        Memo sendMemo = new MemoBuilder().setFromKey(from).setToKey(to).setMessage("test message").build();
         
-        JsonElement memoJson = sendMemo.toJsonObject();
-        System.out.println("generated Json : " + memoJson.toString());
-//        System.out.println("Decode Memo : " + Memo.decodeMessage(from, to, memoJson.getAsJsonObject().get("message").getAsString(), memoJson.getAsJsonObject().get("nonce").getAsString()));
+//        JsonElement memoJson = sendMemo.toJsonObject();
+//        System.out.println("generated Json : " + memoJson.toString());
+//        System.out.println("Decode Memo : " + Memo.decryptMessage(from, to, memoJson.getAsJsonObject().get("message").getAsString(), memoJson.getAsJsonObject().get("nonce").getAsString()));
     }
 
     public void testGetRelativeAccountHistory(){
@@ -973,5 +974,17 @@ public class Test {
         } catch (IOException e) {
             System.out.println("IOException. Msg: " + e.getMessage());
         }
+    }
+
+    public void testAssetSerialization(){
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        DataOutput out = new DataOutputStream(byteArrayOutputStream);
+        try {
+            Varint.writeUnsignedVarLong(120, out);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        byte[] bytes = byteArrayOutputStream.toByteArray();
+        System.out.println("serialized: "+Util.bytesToHex(bytes));
     }
 }

@@ -1,6 +1,7 @@
 package de.bitsharesmunich.graphenej;
 
 import de.bitsharesmunich.graphenej.crypto.AndroidRandomSource;
+import de.bitsharesmunich.graphenej.crypto.Random;
 import de.bitsharesmunich.graphenej.crypto.SecureRandomStrengthener;
 import org.bitcoinj.core.DumpedPrivateKey;
 import org.bitcoinj.core.ECKey;
@@ -43,9 +44,7 @@ public class BrainKey {
         String[] wordArray = words.split(",");
         ArrayList<String> suggestedBrainKey = new ArrayList<String>();
         assert (wordArray.length == DICT_WORD_COUNT);
-        SecureRandomStrengthener randomStrengthener = SecureRandomStrengthener.getInstance();
-        randomStrengthener.addEntropySource(new AndroidRandomSource());
-        SecureRandom secureRandom = randomStrengthener.generateAndSeedRandomNumberGenerator();
+        SecureRandom secureRandom = Random.getSecureRandom();
         int index;
         for (int i = 0; i < BRAINKEY_WORD_COUNT; i++) {
             index = secureRandom.nextInt(DICT_WORD_COUNT - 1);

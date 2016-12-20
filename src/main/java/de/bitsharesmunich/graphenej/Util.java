@@ -33,6 +33,11 @@ public class Util {
     public static final int LZMA = 0;
     public static final int XZ = 1;
 
+    /**
+     * Converts an hexadecimal string to its corresponding byte[] value.
+     * @param s: String with hexadecimal numbers representing a byte array.
+     * @return: The actual byte array.
+     */
     public static byte[] hexToBytes(String s) {
         int len = s.length();
         byte[] data = new byte[len / 2];
@@ -43,6 +48,11 @@ public class Util {
         return data;
     }
 
+    /**
+     * Converts a byte array, into a user-friendly hexadecimal string.
+     * @param bytes: A byte array.
+     * @return: A string with the representation of the byte array.
+     */
     public static String bytesToHex(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
         for ( int j = 0; j < bytes.length; j++ ) {
@@ -51,6 +61,19 @@ public class Util {
             hexChars[j * 2 + 1] = hexArray[v & 0x0F];
         }
         return new String(hexChars);
+    }
+
+    /**
+     * Decodes an ascii string to a byte array.
+     * @param data: Arbitrary ascii-encoded string.
+     * @return: Array of bytes.
+     */
+    public static byte[] hexlify(String data){
+        ByteBuffer buffer = ByteBuffer.allocate(data.length());
+        for(char letter : data.toCharArray()){
+            buffer.put((byte) letter);
+        }
+        return buffer.array();
     }
 
     /**
@@ -168,6 +191,7 @@ public class Util {
             System.arraycopy(result, 32, ivBytes, 0, 16);
             byte[] sksBytes = new byte[32];
             System.arraycopy(result, 0, sksBytes, 0, 32);
+
             PaddedBufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESFastEngine()));
             cipher.init(true, new ParametersWithIV(new KeyParameter(sksBytes), ivBytes));
             byte[] temp = new byte[input.length + (16 - (input.length % 16))];
