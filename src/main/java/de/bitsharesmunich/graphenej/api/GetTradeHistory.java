@@ -49,7 +49,7 @@ public class GetTradeHistory extends WebSocketAdapter {
         accountParams.add(this.fromTime);
         accountParams.add(this.limit);
 
-        ApiCall getAccountByName = new ApiCall(0, "get_trade_history", accountParams, RPC.VERSION, 1);
+        ApiCall getAccountByName = new ApiCall(0, RPC.GET_TRADE_HISTORY, accountParams, RPC.VERSION, 1);
         websocket.sendText(getAccountByName.toJsonString());
     }
 
