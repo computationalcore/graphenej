@@ -30,6 +30,18 @@ public class Memo implements ByteSerializable, JsonSerializable {
     private Address to;
     private long nonce;
     private byte[] message;
+    private String plaintextMessage;
+
+    public String getPlaintextMessage() {
+        if(plaintextMessage == null)
+            return "";
+        else
+            return plaintextMessage;
+    }
+
+    public void setPlaintextMessage(String plaintextMessage) {
+        this.plaintextMessage = plaintextMessage;
+    }
 
     /**
      * Empty Constructor
@@ -60,6 +72,29 @@ public class Memo implements ByteSerializable, JsonSerializable {
      */
     public Memo(String message){
         this.message = message.getBytes();
+    }
+
+    public Address getSource(){
+        return this.from;
+    }
+
+    public Address getDestination(){
+        return this.to;
+    }
+
+    public long getNonce(){
+        return this.nonce;
+    }
+
+    public byte[] getByteMessage(){
+        return this.message;
+    }
+
+    public String getStringMessage(){
+        if(this.message != null)
+            return new String(this.message);
+        else
+            return "";
     }
 
     /**
@@ -160,7 +195,6 @@ public class Memo implements ByteSerializable, JsonSerializable {
         } catch (NoSuchAlgorithmException e) {
             System.out.println("NoSuchAlgotithmException. Msg:"+ e.getMessage());
         }
-
         return plaintext;
     }
 
@@ -221,10 +255,12 @@ public class Memo implements ByteSerializable, JsonSerializable {
         JsonObject memoObject = new JsonObject();
         if ((this.from == null) && (this.to == null)) {
             // Public memo
-            memoObject.addProperty(KEY_FROM, "");
-            memoObject.addProperty(KEY_TO, "");
-            memoObject.addProperty(KEY_NONCE, "");
-            memoObject.addProperty(KEY_MESSAGE, Util.bytesToHex(this.message));
+            // TODO: Add public memo support
+//            memoObject.addProperty(KEY_FROM, "");
+//            memoObject.addProperty(KEY_TO, "");
+//            memoObject.addProperty(KEY_NONCE, "");
+//            memoObject.addProperty(KEY_MESSAGE, Util.bytesToHex(this.message));
+            return null;
         }else{
             memoObject.addProperty(KEY_FROM, this.from.toString());
             memoObject.addProperty(KEY_TO, this.to.toString());
