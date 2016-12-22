@@ -137,12 +137,14 @@ public class GetRelativeAccountHistory extends WebSocketAdapter {
     @Override
     public void onError(WebSocket websocket, WebSocketException cause) throws Exception {
         System.out.println("onError. Msg: "+cause.getMessage());
+        mListener.onError(new BaseResponse.Error(cause.getMessage()));
         websocket.disconnect();
     }
 
     @Override
     public void handleCallbackError(WebSocket websocket, Throwable cause) throws Exception {
         System.out.println("handleCallbackError. Msg: "+cause.getMessage());
+        mListener.onError(new BaseResponse.Error(cause.getMessage()));
         websocket.disconnect();
     }
 }
