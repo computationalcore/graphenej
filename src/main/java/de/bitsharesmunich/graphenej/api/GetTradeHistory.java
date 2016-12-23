@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by nelson on 11/15/16.
+ * @author henry
  */
 public class GetTradeHistory extends WebSocketAdapter {
 
@@ -49,7 +49,7 @@ public class GetTradeHistory extends WebSocketAdapter {
         accountParams.add(this.fromTime);
         accountParams.add(this.limit);
 
-        ApiCall getAccountByName = new ApiCall(0, RPC.GET_TRADE_HISTORY, accountParams, RPC.VERSION, 1);
+        ApiCall getAccountByName = new ApiCall(0, RPC.CALL_GET_TRADE_HISTORY, accountParams, RPC.VERSION, 1);
         websocket.sendText(getAccountByName.toJsonString());
     }
 

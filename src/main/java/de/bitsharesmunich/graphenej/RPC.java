@@ -20,5 +20,6 @@ public class RPC {
     public static final String CALL_LOOKUP_ASSET_SYMBOLS = "lookup_asset_symbols";
     public static final String CALL_GET_BLOCK_HEADER = "get_block_header";
     public static final String CALL_GET_LIMIT_ORDERS = "get_limit_orders";
-    public static final String GET_TRADE_HISTORY = "get_trade_history";
+    public static final String CALL_GET_TRADE_HISTORY = "get_trade_history";
+    public static final String CALL_GET_MARKET_HISTORY = "get_market_history";
 }

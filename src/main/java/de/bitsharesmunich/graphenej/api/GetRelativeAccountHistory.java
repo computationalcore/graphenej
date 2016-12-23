@@ -116,7 +116,6 @@ public class GetRelativeAccountHistory extends WebSocketAdapter {
                 ApiCall getRelativeAccountHistoryCall = new ApiCall(apiId, RPC.CALL_GET_RELATIVE_ACCOUNT_HISTORY, params, RPC.VERSION, currentId);
                 websocket.sendText(getRelativeAccountHistoryCall.toJsonString());
             }else if(baseResponse.id == GET_HISTORY_DATA){
-                System.out.println(frame.getPayloadText());
                 Type RelativeAccountHistoryResponse = new TypeToken<WitnessResponse<List<HistoricalTransfer>>>(){}.getType();
                 GsonBuilder gsonBuilder = new GsonBuilder();
                 gsonBuilder.registerTypeAdapter(TransferOperation.class, new TransferOperation.TransferDeserializer());

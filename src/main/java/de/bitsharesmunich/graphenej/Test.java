@@ -761,9 +761,9 @@ public class Test {
 
         ECKey from = new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0).getPrivateKey();
         PublicKey to = new PublicKey(ECKey.fromPublicOnly(new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0).getPublicKey()));
-        
+
 //        Memo sendMemo = new MemoBuilder().setFromKey(from).setToKey(to).setMessage("test message").build();
-        
+
 //        JsonElement memoJson = sendMemo.toJsonObject();
 //        System.out.println("generated Json : " + memoJson.toString());
 //        System.out.println("Decode Memo : " + Memo.decryptMessage(from, to, memoJson.getAsJsonObject().get("message").getAsString(), memoJson.getAsJsonObject().get("nonce").getAsString()));
@@ -944,14 +944,14 @@ public class Test {
             // Set the custom SSL context.
             factory.setSSLContext(context);
 
-            WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
+            WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_FR);
 
             Calendar from = Calendar.getInstance();
             from.roll(Calendar.DAY_OF_MONTH, false);
             from.roll(Calendar.DAY_OF_MONTH, false);
             Calendar to = Calendar.getInstance();
             to.roll(Calendar.DAY_OF_MONTH, false);
-            
+
             mWebSocket.addListener(new GetTradeHistory("BTS", "EUR", "20161215T0130000", "20161212T233000",100, new WitnessResponseListener() {
                 @Override
                 public void onSuccess(WitnessResponse response) {
@@ -967,6 +967,56 @@ public class Test {
             }));
             mWebSocket.connect();
 
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: " + e.getMessage());
+        }
+    }
+
+    public void testGetMarketHistory(){
+        SSLContext context = null;
+
+        WitnessResponseListener listener = new WitnessResponseListener() {
+            @Override
+            public void onSuccess(WitnessResponse response) {
+                System.out.println("onSuccess");
+                List<BucketObject> bucketList = (List<BucketObject>) response.result;
+                if(bucketList.size() > 0){
+                    BucketObject bucket = bucketList.get(0);
+                    System.out.println(String.format("bucket. high_base: %d, high_quote: %d", bucket.high_base, bucket.high_quote));
+                }
+            }
+
+            @Override
+            public void onError(BaseResponse.Error error) {
+                System.out.println("onError");
+            }
+        };
+
+        try {
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_FR);
+
+            long posixInstant = 1482436057000l;
+            Calendar cal = Calendar.getInstance();
+            cal.setTimeInMillis(posixInstant);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MINUTE, 0);
+
+            Asset BTS = new Asset("1.3.0");
+            Asset USD = new Asset("1.3.121");
+            long bucket = 3600;
+
+            mWebSocket.addListener(new GetMarketHistory(USD, BTS, bucket, cal.getTime(), cal.getTime(), listener));
+            mWebSocket.connect();
         } catch (NoSuchAlgorithmException e) {
             System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
         } catch (WebSocketException e) {
