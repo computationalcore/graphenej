@@ -14,10 +14,10 @@ public class Asset extends GrapheneObject {
     public static final String KEY_ISSUER = "issuer";
     public static final String KEY_DYNAMIC_ASSET_DATA_ID = "dynamic_asset_data_id";
 
-    private String id;
     private String symbol;
     private int precision;
     private String issuer;
+    private String description;
     private String dynamic_asset_data_id;
     private AssetOptions options;
 
@@ -27,7 +27,6 @@ public class Asset extends GrapheneObject {
      */
     public Asset(String id) {
         super(id);
-        this.id = id;
     }
 
     /**
@@ -60,6 +59,14 @@ public class Asset extends GrapheneObject {
         return this.symbol;
     }
 
+    public void setSymbol(String symbol){
+        this.symbol = symbol;
+    }
+
+    public void setPrecision(int precision){
+        this.precision = precision;
+    }
+
     public int getPrecision(){
         return this.precision;
     }
@@ -67,6 +74,14 @@ public class Asset extends GrapheneObject {
     public void setIssuer(String issuer){ this.issuer = issuer; }
 
     public String getIssuer() { return this.issuer; }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 
     /**
      * Custom deserializer used to instantiate a simple version of the Asset class from the response of the
