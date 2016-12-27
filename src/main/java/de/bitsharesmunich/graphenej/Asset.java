@@ -15,7 +15,7 @@ public class Asset extends GrapheneObject {
     public static final String KEY_DYNAMIC_ASSET_DATA_ID = "dynamic_asset_data_id";
 
     private String symbol;
-    private int precision;
+    private int precision = -1;
     private String issuer;
     private String description;
     private String dynamic_asset_data_id;
@@ -81,6 +81,20 @@ public class Asset extends GrapheneObject {
 
     public String getDescription() {
         return description;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if(other instanceof Asset){
+            return this.getObjectId().equals(((Asset)other).getObjectId());
+        }else{
+            return false;
+        }
     }
 
     /**
