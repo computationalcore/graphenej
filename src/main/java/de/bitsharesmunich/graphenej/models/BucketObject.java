@@ -4,7 +4,7 @@ import com.google.gson.*;
 import de.bitsharesmunich.graphenej.Asset;
 
 import java.lang.reflect.Type;
-import java.math.BigInteger;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -31,16 +31,16 @@ public class BucketObject {
 
     public String id;
     public Key key;
-    public BigInteger high_base;
-    public BigInteger high_quote;
-    public BigInteger low_base;
-    public BigInteger low_quote;
-    public BigInteger open_base;
-    public BigInteger open_quote;
-    public BigInteger close_base;
-    public BigInteger close_quote;
-    public BigInteger base_volume;
-    public BigInteger quote_volume;
+    public BigDecimal high_base;
+    public BigDecimal high_quote;
+    public BigDecimal low_base;
+    public BigDecimal low_quote;
+    public BigDecimal open_base;
+    public BigDecimal open_quote;
+    public BigDecimal close_base;
+    public BigDecimal close_quote;
+    public BigDecimal base_volume;
+    public BigDecimal quote_volume;
 
     public static class Key {
         public Asset base;
@@ -55,16 +55,16 @@ public class BucketObject {
         public BucketObject deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject jsonBucket = json.getAsJsonObject();
             BucketObject bucket = new BucketObject();
-            bucket.high_base = jsonBucket.get(KEY_HIGH_BASE).getAsBigInteger();
-            bucket.high_quote = jsonBucket.get(KEY_HIGH_QUOTE).getAsBigInteger();
-            bucket.low_base = jsonBucket.get(KEY_LOW_BASE).getAsBigInteger();
-            bucket.low_quote = jsonBucket.get(KEY_LOW_QUOTE).getAsBigInteger();
-            bucket.open_base = jsonBucket.get(KEY_OPEN_BASE).getAsBigInteger();
-            bucket.open_quote = jsonBucket.get(KEY_OPEN_QUOTE).getAsBigInteger();
-            bucket.close_base = jsonBucket.get(KEY_CLOSE_BASE).getAsBigInteger();
-            bucket.close_quote = jsonBucket.get(KEY_CLOSE_QUOTE).getAsBigInteger();
-            bucket.base_volume = jsonBucket.get(KEY_BASE_VOLUME).getAsBigInteger();
-            bucket.quote_volume = jsonBucket.get(KEY_QUOTE_VOLUME).getAsBigInteger();
+            bucket.high_base = jsonBucket.get(KEY_HIGH_BASE).getAsBigDecimal();
+            bucket.high_quote = jsonBucket.get(KEY_HIGH_QUOTE).getAsBigDecimal();
+            bucket.low_base = jsonBucket.get(KEY_LOW_BASE).getAsBigDecimal();
+            bucket.low_quote = jsonBucket.get(KEY_LOW_QUOTE).getAsBigDecimal();
+            bucket.open_base = jsonBucket.get(KEY_OPEN_BASE).getAsBigDecimal();
+            bucket.open_quote = jsonBucket.get(KEY_OPEN_QUOTE).getAsBigDecimal();
+            bucket.close_base = jsonBucket.get(KEY_CLOSE_BASE).getAsBigDecimal();
+            bucket.close_quote = jsonBucket.get(KEY_CLOSE_QUOTE).getAsBigDecimal();
+            bucket.base_volume = jsonBucket.get(KEY_BASE_VOLUME).getAsBigDecimal();
+            bucket.quote_volume = jsonBucket.get(KEY_QUOTE_VOLUME).getAsBigDecimal();
             bucket.key = new Key();
             String baseId = jsonBucket.get(KEY_KEY).getAsJsonObject().get(KEY_BASE).getAsString();
             String quoteId = jsonBucket.get(KEY_KEY).getAsJsonObject().get(KEY_QUOTE).getAsString();

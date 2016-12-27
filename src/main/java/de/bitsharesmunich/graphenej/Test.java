@@ -986,7 +986,17 @@ public class Test {
                 List<BucketObject> bucketList = (List<BucketObject>) response.result;
                 if(bucketList.size() > 0){
                     BucketObject bucket = bucketList.get(0);
-                    System.out.println(String.format("bucket. high_base: %d, high_quote: %d", bucket.high_base, bucket.high_quote));
+                    Asset base = bucket.key.base;
+                    Asset quote = bucket.key.quote;
+                    base.setPrecision(5);
+                    quote.setPrecision(4);
+                    System.out.println(String.format("Base. symbol: %s, precision: %d", base.getObjectId(), base.getPrecision()));
+                    System.out.println(String.format("Quote. symbol: %s, precision: %d", quote.getObjectId(), quote.getPrecision()));
+                    Converter converter = new Converter(base, quote, bucket);
+                    double rate = converter.getConversionRate(Converter.CLOSE_VALUE, Converter.BASE_TO_QUOTE);
+                    System.out.println(String.format("Conversion rate is 1 base -> %f quote", rate));
+                    double rate2 = converter.getConversionRate(Converter.CLOSE_VALUE, Converter.QUOTE_TO_BASE);
+                    System.out.println(String.format("Conversion rate is 1 quote -> %f base", rate2));
                 }
             }
 
@@ -1011,11 +1021,11 @@ public class Test {
             cal.set(Calendar.SECOND, 0);
             cal.set(Calendar.MINUTE, 0);
 
-            Asset BTS = new Asset("1.3.0");
-            Asset USD = new Asset("1.3.121");
+            Asset USD = new Asset("1.3.121", "USD", 4);
+            Asset BTS = new Asset("1.3.0", "BTS", 5);
             long bucket = 3600;
 
-            mWebSocket.addListener(new GetMarketHistory(USD, BTS, bucket, cal.getTime(), cal.getTime(), listener));
+            mWebSocket.addListener(new GetMarketHistory(BTS, USD, bucket, cal.getTime(), cal.getTime(), listener));
             mWebSocket.connect();
         } catch (NoSuchAlgorithmException e) {
             System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
