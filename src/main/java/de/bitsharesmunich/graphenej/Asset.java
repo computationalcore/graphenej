@@ -1,5 +1,6 @@
 package de.bitsharesmunich.graphenej;
 
+import com.google.common.primitives.UnsignedLong;
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
@@ -12,6 +13,14 @@ public class Asset extends GrapheneObject {
     public static final String KEY_SYMBOL = "symbol";
     public static final String KEY_PRECISION = "precision";
     public static final String KEY_ISSUER = "issuer";
+    public static final String KEY_OPTIONS = "options";
+    public static final String KEY_MAX_SUPPLY = "max_supply";
+    public static final String KEY_MARKET_FEE_PERCENT = "market_fee_percent";
+    public static final String KEY_MARKET_FEE = "max_market_fee";
+    public static final String KEY_ISSUER_PERMISSIONS = "issuer_permissions";
+    public static final String KEY_FLAGS = "flags";
+    public static final String KEY_CORE_EXCHANGE_RATE = "core_exchange_rate";
+    public static final String KEY_DESCRIPTION = "description";
     public static final String KEY_DYNAMIC_ASSET_DATA_ID = "dynamic_asset_data_id";
 
     private String symbol;
@@ -83,6 +92,14 @@ public class Asset extends GrapheneObject {
         return description;
     }
 
+    public void setAssetOptions(AssetOptions options){
+        this.options = options;
+    }
+
+    public AssetOptions getAssetOptions(){
+        return this.options;
+    }
+
     @Override
     public int hashCode() {
         return super.hashCode();
@@ -98,6 +115,14 @@ public class Asset extends GrapheneObject {
     }
 
     /**
+     * Returns true if this is a witness-fed asset and all issuer permissions flags are set.
+     * @return: True if the asset is a smartcoin.
+     */
+    public boolean isSmartcoin(){
+        return this.options.getFlags() == 128 && options.getIssuerPermissions() == 511;
+    }
+
+    /**
      * Custom deserializer used to instantiate a simple version of the Asset class from the response of the
      * 'lookup_asset_symbols' API call.
      */
@@ -110,7 +135,21 @@ public class Asset extends GrapheneObject {
             String symbol = object.get(KEY_SYMBOL).getAsString();
             int precision = object.get(KEY_PRECISION).getAsInt();
             String issuer = object.get(KEY_ISSUER).getAsString();
-            return new Asset(id, symbol, precision, issuer);
+            JsonObject optionsJson = object.get(KEY_OPTIONS).getAsJsonObject();
+
+            // Deserializing asset options
+            AssetOptions options = new AssetOptions();
+            options.setMaxSupply(UnsignedLong.valueOf(optionsJson.get(KEY_MAX_SUPPLY).getAsString()));
+            options.setMarketFeePercent(optionsJson.get(KEY_MARKET_FEE_PERCENT).getAsInt());
+            options.setMaxMarketFee(UnsignedLong.valueOf(optionsJson.get(KEY_MARKET_FEE).getAsString()));
+            options.setIssuerPermissions(optionsJson.get(KEY_ISSUER_PERMISSIONS).getAsLong());
+            options.setFlags(optionsJson.get(KEY_FLAGS).getAsInt());
+
+            //TODO: Deserialize core_exchange_rate field
+
+            Asset asset = new Asset(id, symbol, precision, issuer);
+            asset.setAssetOptions(options);
+            return asset;
         }
     }
 }

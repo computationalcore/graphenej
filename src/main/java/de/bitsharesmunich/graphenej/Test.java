@@ -855,6 +855,47 @@ public class Test {
         }
     }
 
+    public void testListAssets(){
+        WitnessResponseListener listener = new WitnessResponseListener() {
+            @Override
+            public void onSuccess(WitnessResponse response) {
+                System.out.println("onSuccess");
+                List<Asset> resp = (List<Asset>) response.result;
+                System.out.println(String.format("Got %d assets", resp.size()));
+                for(Asset asset : resp){
+                    if(asset.isSmartcoin())
+                        System.out.println("Asset: "+asset.getObjectId()+", Symbol: "+asset.getSymbol());
+                }
+            }
+
+            @Override
+            public void onError(BaseResponse.Error error) {
+                System.out.println("onError");
+            }
+        };
+
+        SSLContext context = null;
+        try {
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
+
+            mWebSocket.addListener(new ListAssets("", ListAssets.LIST_ALL, listener));
+            mWebSocket.connect();
+
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: " + e.getMessage());
+        }
+    }
+
     public void testGetBlockHeader(){
         WitnessResponseListener listener = new WitnessResponseListener() {
             @Override
