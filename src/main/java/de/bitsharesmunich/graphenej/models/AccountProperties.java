@@ -5,6 +5,10 @@ import de.bitsharesmunich.graphenej.Authority;
 
 /**
  * Created by nelson on 11/15/16.
+ *
+ * Details of Dynamic Account specs can be found at
+ * https://bitshares.org/technology/dynamic-account-permissions/
+ *
  */
 public class AccountProperties {
     public String id;
