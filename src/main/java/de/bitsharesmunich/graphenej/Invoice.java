@@ -2,8 +2,10 @@ package de.bitsharesmunich.graphenej;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import de.bitsharesmunich.graphenej.interfaces.JsonSerializable;
+
 import org.bitcoinj.core.Base58;
+
+import de.bitsharesmunich.graphenej.interfaces.JsonSerializable;
 
 /**
  * Class used to handle invoice generation, compression and QR-Code data derivation,
@@ -11,17 +13,6 @@ import org.bitcoinj.core.Base58;
  * @author Nelson R. Pérez
  */
 public class Invoice implements JsonSerializable {
-    public static class LineItem {
-        private String label;
-        private int quantity;
-        private String price;
-
-        public LineItem(String label, int quantity, String price){
-            this.label = label;
-            this.quantity = quantity;
-            this.price = price;
-        }
-    }
     private String to;
     private String to_label;
     private String memo;
@@ -37,6 +28,62 @@ public class Invoice implements JsonSerializable {
         this.currency = currency;
         this.line_items = items;
         this.note = note;
+        this.callback = callback;
+    }
+
+    public String getToLabel() {
+        return to_label;
+    }
+
+    public void setToLabel(String to_label) {
+        this.to_label = to_label;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public String getTo() {
+        return to;
+    }
+
+    public void setTo(String to) {
+        this.to = to;
+    }
+
+    public String getMemo() {
+        return memo;
+    }
+
+    public void setMemo(String memo) {
+        this.memo = memo;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
+    public LineItem[] getLineItems() {
+        return line_items;
+    }
+
+    public void setLineItems(LineItem[] line_items) {
+        this.line_items = line_items;
+    }
+
+    public String getCallback() {
+        return callback;
+    }
+
+    public void setCallback(String callback) {
         this.callback = callback;
     }
 
