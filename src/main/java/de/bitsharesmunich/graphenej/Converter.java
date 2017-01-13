@@ -147,6 +147,7 @@ public class Converter {
         MathContext mathContext = new MathContext(Math.max(base.getPrecision(), quote.getPrecision()));
         BigDecimal baseValue = BigDecimal.valueOf(price.base.getAmount().longValue());
         BigDecimal quoteValue = BigDecimal.valueOf(price.quote.getAmount().doubleValue());
+//        System.out.println(String.format("base: %d, quote: %d", baseValue.longValue(), quoteValue.longValue()));
         if(direction == BASE_TO_QUOTE){
             conversionRate = quoteValue.divide(baseValue, mathContext).doubleValue();
             precisionFactor = Math.pow(10, base.getPrecision()) / Math.pow(10, quote.getPrecision());
@@ -154,6 +155,7 @@ public class Converter {
             conversionRate = baseValue.divide(quoteValue, mathContext).doubleValue();
             precisionFactor = Math.pow(10, quote.getPrecision()) / Math.pow(10, base.getPrecision());
         }
+//        System.out.println(String.format("conversion rate: %.4f, precision factor: %.2f", conversionRate, precisionFactor));
         return conversionRate * precisionFactor;
     }
 }

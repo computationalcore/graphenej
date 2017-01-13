@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -602,7 +603,7 @@ public class Test {
     }
 
     public void testingInvoiceGeneration() {
-        Invoice.LineItem[] lineItem = new Invoice.LineItem[]{new Invoice.LineItem("Apples", 2, "20 CSD")};
+        LineItem[] lineItem = new LineItem[]{new LineItem("Apples", 2, 2.00)};
         Invoice invoice = new Invoice("bilthon-83", "Bilthon's store", "Invoice #12", "BTS", lineItem, "Thank you", "");
         String qrCodeData = Invoice.toQrCode(invoice);
         System.out.println("qrCodeData");
@@ -862,10 +863,16 @@ public class Test {
                 System.out.println("onSuccess");
                 List<Asset> resp = (List<Asset>) response.result;
                 System.out.println(String.format("Got %d assets", resp.size()));
+                int count = 0;
                 for(Asset asset : resp){
-                    if(asset.isSmartcoin())
-                        System.out.println("Asset: "+asset.getObjectId()+", Symbol: "+asset.getSymbol());
+                    if(asset.getBitassetId() != null){
+                        System.out.println("Asset: " + asset.getObjectId() +
+                                ", Symbol: "+asset.getSymbol() +
+                                ", bitasset id: "+asset.getBitassetId());
+                        count++;
+                    }
                 }
+                System.out.println("Got "+count+" smartcoins");
             }
 
             @Override
@@ -887,6 +894,48 @@ public class Test {
             mWebSocket.addListener(new ListAssets("", ListAssets.LIST_ALL, listener));
             mWebSocket.connect();
 
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: " + e.getMessage());
+        }
+    }
+
+    public void testGetObjects(){
+        WitnessResponseListener listener = new WitnessResponseListener() {
+            @Override
+            public void onSuccess(WitnessResponse response) {
+                System.out.println("onSuccess");
+                List<BitAssetData> bitAssetDataArray = (List<BitAssetData>) response.result;
+                for(BitAssetData bitAssetData : bitAssetDataArray){
+//                    System.out.println(String.format("is prediction market: %b", bitAssetData.is_prediction_market));
+                    System.out.println("base: "+bitAssetData.current_feed.core_exchange_rate.base.getAmount().longValue());
+                    System.out.println("quote: "+bitAssetData.current_feed.core_exchange_rate.quote.getAmount().longValue());
+                }
+            }
+
+            @Override
+            public void onError(BaseResponse.Error error) {
+                System.out.println("onError");
+            }
+        };
+
+        SSLContext context = null;
+        try {
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
+
+            ArrayList<String> ids = new ArrayList<>();
+            ids.add("2.4.54");
+            mWebSocket.addListener(new GetObjects(ids, listener));
+            mWebSocket.connect();
         } catch (NoSuchAlgorithmException e) {
             System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
         } catch (WebSocketException e) {
@@ -943,20 +992,24 @@ public class Test {
 
             WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
 
-            mWebSocket.addListener(new GetLimitOrders("1.3.562", "1.3.0", 100, new WitnessResponseListener() {
+            Asset base = new Asset("1.3.120", "EUR", 4);
+            Asset quote = new Asset("1.3.121", "USD", 4);
+
+            mWebSocket.addListener(new GetLimitOrders(base.getObjectId(), quote.getObjectId(), 100, new WitnessResponseListener() {
                 @Override
                 public void onSuccess(WitnessResponse response) {
                     List<LimitOrder> orders = (List<LimitOrder>) response.result;
+                    Converter converter = new Converter();
+                    System.out.println();
                     for(LimitOrder order : orders){
-                        System.out.println(String.format("OBITS: %d, BTS: %d", order.sell_price.base.getAmount().longValue(), order.sell_price.quote.getAmount().longValue()));
-                        double price = (((double) order.sell_price.quote.getAmount().longValue()) / ((double) order.sell_price.base.getAmount().longValue()));
-                        System.out.println(String.format("Selling %s for %s at %f %s/%s, expiration: %s",
-                                order.sell_price.base.getAsset().getObjectId(),
-                                order.sell_price.quote.getAsset().getObjectId(),
-                                price,
-                                order.sell_price.base.getAsset().getObjectId(),
-                                order.sell_price.quote.getAsset().getObjectId(),
-                                order.expiration));
+//                        System.out.println(String.format("base: %d, quote: %d",
+//                                order.sell_price.base.getAmount().longValue(),
+//                                order.sell_price.quote.getAmount().longValue()));
+                        order.sell_price.base.getAsset().setPrecision(base.getPrecision());
+                        order.sell_price.quote.getAsset().setPrecision(quote.getPrecision());
+                        double baseToQuoteExchange = converter.getConversionRate(order.sell_price, Converter.BASE_TO_QUOTE);
+                        double quoteToBaseExchange = converter.getConversionRate(order.sell_price, Converter.QUOTE_TO_BASE);
+                        System.out.println(String.format("base to quote: %.5f, quote to base: %.5f", baseToQuoteExchange, quoteToBaseExchange));
                     }
                 }
 
@@ -1056,7 +1109,7 @@ public class Test {
 
             WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_FR);
 
-            long posixInstant = 1482436057000l;
+            long posixInstant = 1484089226000l;
             Calendar cal = Calendar.getInstance();
             cal.setTimeInMillis(posixInstant);
             cal.set(Calendar.SECOND, 0);

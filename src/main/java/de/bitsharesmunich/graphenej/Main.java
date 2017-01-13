@@ -65,9 +65,10 @@ public class Main {
 //        test.testDecodeMemo();
 //        test.testGetRelativeAccountHistory();
 //        test.testLookupAssetSymbols();
-        test.testListAssets();
+//        test.testListAssets();
+        test.testGetObjects();
 //        test.testGetBlockHeader();
-        //test.testGetLimitOrders();
+//        test.testGetLimitOrders();
 //        test.testGetTradeHistory();
 //        test.testAssetSerialization();
 //        test.testGetMarketHistory();

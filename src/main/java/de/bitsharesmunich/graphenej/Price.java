@@ -1,5 +1,12 @@
 package de.bitsharesmunich.graphenej;
 
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+
+import java.lang.reflect.Type;
+
 /**
  * The price struct stores asset prices in the Graphene system.
  *
