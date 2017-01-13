@@ -66,11 +66,12 @@ public class Main {
 //        test.testGetRelativeAccountHistory();
 //        test.testLookupAssetSymbols();
 //        test.testListAssets();
-        test.testGetObjects();
+//        test.testGetObjects();
 //        test.testGetBlockHeader();
 //        test.testGetLimitOrders();
 //        test.testGetTradeHistory();
 //        test.testAssetSerialization();
 //        test.testGetMarketHistory();
+        test.testGetAccountBalances();
     }
 }

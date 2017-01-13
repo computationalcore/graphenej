@@ -60,7 +60,7 @@ public class AssetAmount implements ByteSerializable, JsonSerializable {
     @Override
     public String toJsonString() {
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(AssetAmount.class, new AssetSerializer());
+        gsonBuilder.registerTypeAdapter(AssetAmount.class, new AssetAmountSerializer());
         return gsonBuilder.create().toJson(this);
     }
 
@@ -75,7 +75,7 @@ public class AssetAmount implements ByteSerializable, JsonSerializable {
     /**
      * Custom serializer used to translate this object into the JSON-formatted entry we need for a transaction.
      */
-    public static class AssetSerializer implements JsonSerializer<AssetAmount> {
+    public static class AssetAmountSerializer implements JsonSerializer<AssetAmount> {
 
         @Override
         public JsonElement serialize(AssetAmount assetAmount, Type type, JsonSerializationContext jsonSerializationContext) {
@@ -86,7 +86,7 @@ public class AssetAmount implements ByteSerializable, JsonSerializable {
         }
     }
 
-    public static class AssetDeserializer implements JsonDeserializer<AssetAmount> {
+    public static class AssetAmountDeserializer implements JsonDeserializer<AssetAmount> {
 
         @Override
         public AssetAmount deserialize(JsonElement json, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {

@@ -1,6 +1,5 @@
 package de.bitsharesmunich.graphenej.api;
 
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.neovisionaries.ws.client.WebSocket;
@@ -58,7 +57,7 @@ public class GetLimitOrders extends WebSocketAdapter {
             GsonBuilder builder = new GsonBuilder();
 
             Type GetLimitOrdersResponse = new TypeToken<WitnessResponse<List<LimitOrder>>>() {}.getType();
-            builder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetDeserializer());
+            builder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer());
             builder.registerTypeAdapter(UserAccount.class, new UserAccount.UserAccountSimpleDeserializer());
             WitnessResponse<List<LimitOrder>> witnessResponse = builder.create().fromJson(response, GetLimitOrdersResponse);
             if (witnessResponse.error != null) {

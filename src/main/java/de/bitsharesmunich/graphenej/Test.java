@@ -18,13 +18,13 @@ import org.spongycastle.crypto.digests.RIPEMD160Digest;
 
 import javax.net.ssl.SSLContext;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -276,7 +276,7 @@ public class Test {
         Type AccountLookupResponse = new TypeToken<WitnessResponse<List<AssetAmount>>>() {
         }.getType();
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetDeserializer());
+        gsonBuilder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer());
         WitnessResponse<List<AssetAmount>> witnessResponse = gsonBuilder.create().fromJson(response, AccountLookupResponse);
         for (AssetAmount assetAmount : witnessResponse.result) {
             System.out.println("asset : " + assetAmount.toJsonString());
@@ -1140,5 +1140,44 @@ public class Test {
         }
         byte[] bytes = byteArrayOutputStream.toByteArray();
         System.out.println("serialized: "+Util.bytesToHex(bytes));
+    }
+
+    public void testGetAccountBalances(){
+        SSLContext context = null;
+
+        WitnessResponseListener listener = new WitnessResponseListener() {
+            @Override
+            public void onSuccess(WitnessResponse response) {
+                System.out.println("onSuccess");
+            }
+
+            @Override
+            public void onError(BaseResponse.Error error) {
+                System.out.println("onError");
+            }
+        };
+
+        try {
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_FR);
+
+            UserAccount account = new UserAccount("1.2.138632");
+            Asset asset = new Asset("1.3.121"); //USD
+            ArrayList<Asset> assetList = new ArrayList<>();
+            assetList.add(asset);
+            mWebSocket.addListener(new GetAccountBalances(account, assetList, listener));
+            mWebSocket.connect();
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: " + e.getMessage());
+        }
     }
 }
