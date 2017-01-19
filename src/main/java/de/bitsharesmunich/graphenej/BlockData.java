@@ -45,25 +45,56 @@ public class BlockData implements ByteSerializable {
         for(int i = 0; i < 8; i = i + 2){
             builder.append(hashData.substring(6 - i, 8 - i));
         }
-        this.refBlockNum = ((int) head_block_number ) & 0xFFFF;
-        this.refBlockPrefix = Long.parseLong(builder.toString(), 16);
+        this.setRefBlockNum(head_block_number);
+        this.setRefBlockPrefix(head_block_id);
         this.relativeExpiration = relative_expiration;
+    }
+
+    /**
+     * Plain setter for the ref_block_num field, assuming its value is exactly the one passed in the argument.
+     * @param refBlockNum: The 'ref_block_num' field.
+     */
+    public void setRefBlockNum(int refBlockNum) {
+        this.refBlockNum = refBlockNum;
+    }
+
+    /**
+     * Setter that receives the block number, and takes the 16 lower bits of it to obtain the
+     * 'ref_block_num' value.
+     * @param blockNumber: The block number.
+     */
+    public void setRefBlockNum(long blockNumber){
+        this.refBlockNum = ((int) blockNumber ) & 0xFFFF;
+    }
+
+    /**
+     * Plain setter fot the 'ref_block_prefix' field, assumint its value is exactly the one passed in the argument.
+     * @param refBlockPrefix
+     */
+    public void setRefBlockPrefix(long refBlockPrefix) {
+        this.refBlockPrefix = refBlockPrefix;
+    }
+
+    /**
+     * Setter that receives the head block id, and turns it into the little format required for the
+     * 'ref_block_prefix' field.
+     * @param headBlockId: The head block id as obtained from the network updates.
+     */
+    public void setRefBlockPrefix(String headBlockId){
+        String hashData = headBlockId.substring(8, 16);
+        StringBuilder builder = new StringBuilder();
+        for(int i = 0; i < 8; i = i + 2){
+            builder.append(hashData.substring(6 - i, 8 - i));
+        }
+        this.refBlockPrefix = Long.parseLong(builder.toString(), 16);
     }
 
     public int getRefBlockNum() {
         return refBlockNum;
     }
 
-    public void setRefBlockNum(int refBlockNum) {
-        this.refBlockNum = refBlockNum;
-    }
-
     public long getRefBlockPrefix() {
         return refBlockPrefix;
-    }
-
-    public void setRefBlockPrefix(long refBlockPrefix) {
-        this.refBlockPrefix = refBlockPrefix;
     }
 
     public long getRelativeExpiration() {
@@ -81,7 +112,7 @@ public class BlockData implements ByteSerializable {
         // 2 bytes for the ref_block_num value
         // 4 bytes for the ref_block_prefix value
         // 4 bytes for the relative_expiration
-        
+
         byte[] result = new byte[REF_BLOCK_NUM_BYTES + REF_BLOCK_PREFIX_BYTES + REF_BLOCK_EXPIRATION_BYTES];
         for(int i = 0; i < result.length; i++){
             if(i < REF_BLOCK_NUM_BYTES){
