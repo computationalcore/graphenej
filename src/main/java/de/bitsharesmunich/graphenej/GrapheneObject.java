@@ -75,9 +75,9 @@ public class GrapheneObject {
                 }
             case IMPLEMENTATION_SPACE:
                 switch(type){
-                    case 1:
+                    case 0:
                         return ObjectType.GLOBAL_PROPERTY_OBJECT;
-                    case 2:
+                    case 1:
                         return ObjectType.DYNAMIC_GLOBAL_PROPERTY_OBJECT;
                     case 3:
                         return ObjectType.ASSET_DYNAMIC_DATA;
