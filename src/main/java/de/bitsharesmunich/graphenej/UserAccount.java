@@ -48,6 +48,7 @@ public class UserAccount extends GrapheneObject implements ByteSerializable, Jso
         return accountName;
     }
 
+
     /**
      * Setter for the account name field.
      * @param accountName: The account name.
@@ -56,6 +57,16 @@ public class UserAccount extends GrapheneObject implements ByteSerializable, Jso
         this.accountName = accountName;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        return this.getObjectId().equals(((UserAccount)o).getObjectId());
+    }
+
+    @Override
+    public int hashCode() {
+        return this.getObjectId().hashCode();
+    }
+    
     @Override
     public byte[] toBytes() {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

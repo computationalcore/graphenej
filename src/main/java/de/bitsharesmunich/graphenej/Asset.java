@@ -137,7 +137,7 @@ public class Asset extends GrapheneObject {
 
     @Override
     public int hashCode() {
-        return super.hashCode();
+        return this.getObjectId() == null ? 0 : this.getObjectId().hashCode();
     }
 
     @Override
