@@ -273,26 +273,34 @@ public class Util {
     }
 
     /**
-     * Converts a base value to an adjusted one considering the precision of the asset.
+     * Converts a base value to its standard version, considering the precision of the asset.
+     *
+     * By standard representation we mean here the value that is usually presented to the user,
+     * and which already takes into account the precision of the asset.
+     *
+     * For example, a base representation of the core token BTS would be 260000. By taking into
+     * consideration the precision, the same value when converted to the standard format will
+     * be 2.6 BTS.
+     *
      * @param assetAmount: The asset amount instance.
-     * @return: Converts the base
+     * @return: Converts from base to standard representation.
      */
-    public static float fromBase(AssetAmount assetAmount){
+    public static double fromBase(AssetAmount assetAmount){
         long value = assetAmount.getAmount().longValue();
         int precision = assetAmount.getAsset().getPrecision();
         if(precision != 0)
-            return value / precision;
+            return value / Math.pow(10, precision);
         else
             return 0;
     }
 
     /**
      * Converts a value and its corresponding precision to a base value.
-     * @param value
-     * @param precision
-     * @return
+     * @param value: The value in the standard format
+     * @param precision: The precision of the asset.
+     * @return: A value in its base representation.
      */
-    public static long toBase(long value, int precision){
+    public static long toBase(double value, int precision){
         return (long) (value * Math.pow(10, precision));
     }
 }
