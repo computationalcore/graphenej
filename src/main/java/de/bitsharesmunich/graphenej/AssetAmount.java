@@ -3,6 +3,7 @@ package de.bitsharesmunich.graphenej;
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.UnsignedLong;
 import com.google.gson.*;
+import de.bitsharesmunich.graphenej.errors.IncompatibleOperation;
 import de.bitsharesmunich.graphenej.interfaces.ByteSerializable;
 import de.bitsharesmunich.graphenej.interfaces.JsonSerializable;
 
