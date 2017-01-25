@@ -30,6 +30,29 @@ public class AssetAmount implements ByteSerializable, JsonSerializable {
         this.asset = asset;
     }
 
+    /**
+     * Adds two asset amounts. They must refer to the same Asset type.
+     * @param other: The other AssetAmount to add to this.
+     * @return: A new instance of the AssetAmount class with the combined amount.
+     */
+    public AssetAmount add(AssetAmount other){
+        if(!this.getAsset().getObjectId().equals(other.getAsset().getObjectId())){
+            throw new IncompatibleOperation("Cannot add two AssetAmount instances that refer to different assets");
+        }
+        UnsignedLong combined = this.amount.plus(other.getAmount());
+        return new AssetAmount(combined, asset);
+    }
+
+    /**
+     * Adds an aditional amount of base units to this AssetAmount.
+     * @param additional: The amount to add.
+     * @return: A new instance of the AssetAmount class with the added aditional.
+     */
+    public AssetAmount add(long additional){
+        UnsignedLong combined = this.amount.plus(UnsignedLong.valueOf(additional));
+        return new AssetAmount(combined, asset);
+    }
+
     public void setAmount(UnsignedLong amount){
         this.amount = amount;
     }
