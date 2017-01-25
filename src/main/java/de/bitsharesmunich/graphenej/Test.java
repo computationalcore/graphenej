@@ -14,6 +14,7 @@ import de.bitsharesmunich.graphenej.test.NaiveSSLContext;
 import com.neovisionaries.ws.client.*;
 import de.bitsharesmunich.graphenej.api.*;
 import org.bitcoinj.core.*;
+import org.spongycastle.asn1.x509.Holder;
 import org.spongycastle.crypto.digests.RIPEMD160Digest;
 
 import javax.net.ssl.SSLContext;
@@ -33,6 +34,7 @@ import java.util.logging.Logger;
  */
 public class Test {
 
+    public static final String AMAZON_WITNESS = "ws://54.91.97.99:8090";
     public static final String WITNESS_URL = "api://api.devling.xyz:8088";
     public static final String OPENLEDGER_WITNESS_URL = "wss://bitshares.openledger.info/api";
     public static final String BLOCK_PAY_DE = "wss://de.blockpay.ch:8089";
@@ -1171,6 +1173,45 @@ public class Test {
             ArrayList<Asset> assetList = new ArrayList<>();
             assetList.add(asset);
             mWebSocket.addListener(new GetAccountBalances(account, assetList, listener));
+            mWebSocket.connect();
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: " + e.getMessage());
+        }
+    }
+
+    public void testGetAssetHoldersCount(){
+        SSLContext context = null;
+
+        WitnessResponseListener listener = new WitnessResponseListener() {
+            @Override
+            public void onSuccess(WitnessResponse response) {
+                System.out.println("onSuccess");
+                List<HoldersCount> holdersCountList = (List<HoldersCount>) response.result;
+                for(HoldersCount holdersCount : holdersCountList){
+                    System.out.println(String.format("Asset %s has %d holders", holdersCount.asset.getObjectId(), holdersCount.count));
+                }
+            }
+
+            @Override
+            public void onError(BaseResponse.Error error) {
+                System.out.println("onError");
+            }
+        };
+
+        try {
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(AMAZON_WITNESS);
+
+            mWebSocket.addListener(new GetAllAssetHolders(listener));
             mWebSocket.connect();
         } catch (NoSuchAlgorithmException e) {
             System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());

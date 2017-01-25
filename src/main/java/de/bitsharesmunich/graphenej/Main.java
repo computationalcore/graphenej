@@ -72,6 +72,7 @@ public class Main {
 //        test.testGetTradeHistory();
 //        test.testAssetSerialization();
 //        test.testGetMarketHistory();
-        test.testGetAccountBalances();
+//        test.testGetAccountBalances();
+        test.testGetAssetHoldersCount();
     }
 }
