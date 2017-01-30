@@ -10,6 +10,7 @@ public class RPC {
     public static final String CALL_HISTORY = "history";
     public static final String CALL_DATABASE = "database";
     public static final String CALL_ASSET = "asset";
+    public static final String CALL_SET_SUBSCRIBE_CALLBACK = "set_subscribe_callback";
     public static final String CALL_GET_ACCOUNT_BY_NAME = "get_account_by_name";
     public static final String CALL_GET_ACCOUNTS = "get_accounts";
     public static final String CALL_GET_DYNAMIC_GLOBAL_PROPERTIES = "get_dynamic_global_properties";

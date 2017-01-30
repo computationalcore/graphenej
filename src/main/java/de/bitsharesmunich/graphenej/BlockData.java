@@ -12,7 +12,7 @@ public class BlockData implements ByteSerializable {
 
     private int refBlockNum;
     private long refBlockPrefix;
-    private long relativeExpiration;
+    private long expiration;
 
     /**
      * Block data constructor
@@ -22,22 +22,20 @@ public class BlockData implements ByteSerializable {
      *                        Recall that block IDs have 32 bits of block number followed by the
      *                        actual block hash, so this field should be set using the second 32 bits
      *                        in the block_id_type
-     * @param relative_expiration: This field specifies the number of block intervals after the
-     *                           reference block until this transaction becomes invalid. If this field is
-     *                           set to zero, the "ref_block_prefix" is interpreted as an absolute timestamp
-     *                           of the time the transaction becomes invalid.
+     * @param relative_expiration: Expiration time specified as a POSIX or
+     *                           <a href="https://en.wikipedia.org/wiki/Unix_time">Unix time</a>
      */
     public BlockData(int ref_block_num, long ref_block_prefix, long relative_expiration){
         this.refBlockNum = ref_block_num;
         this.refBlockPrefix = ref_block_prefix;
-        this.relativeExpiration = relative_expiration;
+        this.expiration = relative_expiration;
     }
 
     /**
      * Block data constructor that takes in raw blockchain information.
      * @param head_block_number: The last block number.
      * @param head_block_id: The last block apiId.
-     * @param relative_expiration: The relative expiration
+     * @param relative_expiration: The expiration time.
      */
     public BlockData(long head_block_number, String head_block_id, long relative_expiration){
         String hashData = head_block_id.substring(8, 16);
@@ -47,7 +45,7 @@ public class BlockData implements ByteSerializable {
         }
         this.setRefBlockNum(head_block_number);
         this.setRefBlockPrefix(head_block_id);
-        this.relativeExpiration = relative_expiration;
+        this.expiration = relative_expiration;
     }
 
     /**
@@ -97,12 +95,12 @@ public class BlockData implements ByteSerializable {
         return refBlockPrefix;
     }
 
-    public long getRelativeExpiration() {
-        return relativeExpiration;
+    public long getExpiration() {
+        return expiration;
     }
 
-    public void setRelativeExpiration(long relativeExpiration) {
-        this.relativeExpiration = relativeExpiration;
+    public void setExpiration(long expiration) {
+        this.expiration = expiration;
     }
 
 
@@ -120,7 +118,7 @@ public class BlockData implements ByteSerializable {
             }else if(i >= REF_BLOCK_NUM_BYTES && i < REF_BLOCK_NUM_BYTES + REF_BLOCK_PREFIX_BYTES){
                 result[i] = (byte) (this.refBlockPrefix >> 8 * (i - REF_BLOCK_NUM_BYTES));
             }else{
-                result[i] = (byte) (this.relativeExpiration >> 8 * (i - REF_BLOCK_NUM_BYTES + REF_BLOCK_PREFIX_BYTES));
+                result[i] = (byte) (this.expiration >> 8 * (i - REF_BLOCK_NUM_BYTES + REF_BLOCK_PREFIX_BYTES));
             }
         }
         return result;

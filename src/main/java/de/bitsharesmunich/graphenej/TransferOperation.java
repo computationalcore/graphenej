@@ -26,7 +26,7 @@ public class TransferOperation extends BaseOperation {
     private String[] extensions;
 
     public TransferOperation(UserAccount from, UserAccount to, AssetAmount transferAmount, AssetAmount fee){
-        super(OperationType.transfer_operation);
+        super(OperationType.TRANSFER_OPERATION);
         this.from = from;
         this.to = to;
         this.amount = transferAmount;
@@ -35,7 +35,7 @@ public class TransferOperation extends BaseOperation {
     }
 
     public TransferOperation(UserAccount from, UserAccount to, AssetAmount transferAmount){
-        super(OperationType.transfer_operation);
+        super(OperationType.TRANSFER_OPERATION);
         this.from = from;
         this.to = to;
         this.amount = transferAmount;
@@ -144,7 +144,7 @@ public class TransferOperation extends BaseOperation {
                 // This block is used just to check if we are in the first step of the deserialization
                 // when we are dealing with an array.
                 JsonArray serializedTransfer = json.getAsJsonArray();
-                if(serializedTransfer.get(0).getAsInt() != OperationType.transfer_operation.ordinal()){
+                if(serializedTransfer.get(0).getAsInt() != OperationType.TRANSFER_OPERATION.ordinal()){
                     // If the operation type does not correspond to a transfer operation, we return null
                     return null;
                 }else{

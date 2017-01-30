@@ -63,10 +63,10 @@ public class GetAllAssetHolders extends BaseGrapheneHandler {
                 ApiCall apiCall = new ApiCall(assetApiId, RPC.CALL_GET_ALL_ASSET_HOLDERS, emptyParams, RPC.VERSION, currentId);
                 websocket.sendText(apiCall.toJsonString());
             } else if (baseResponse.id == GET_ALL_ASSET_HOLDERS_COUNT) {
-                Type AssetTokenHolders = new TypeToken<WitnessResponse<List<HoldersCount>>>(){}.getType();
+                Type AssetTokenHolders = new TypeToken<WitnessResponse<List<AssetHolderCount>>>(){}.getType();
                 GsonBuilder builder = new GsonBuilder();
-                builder.registerTypeAdapter(HoldersCount.class, new HoldersCount.HoldersCountDeserializer());
-                WitnessResponse<List<HoldersCount>> witnessResponse = builder.create().fromJson(response, AssetTokenHolders);
+                builder.registerTypeAdapter(AssetHolderCount.class, new AssetHolderCount.HoldersCountDeserializer());
+                WitnessResponse<List<AssetHolderCount>> witnessResponse = builder.create().fromJson(response, AssetTokenHolders);
                 mListener.onSuccess(witnessResponse);
                 websocket.disconnect();
             }else{

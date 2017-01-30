@@ -8,6 +8,8 @@ package de.bitsharesmunich.graphenej;
  * Created by nelson on 11/8/16.
  */
 public class GrapheneObject {
+    public static final String KEY_ID = "id";
+
     public static final int PROTOCOL_SPACE = 1;
     public static final int IMPLEMENTATION_SPACE = 2;
 

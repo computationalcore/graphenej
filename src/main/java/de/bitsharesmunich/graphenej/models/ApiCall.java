@@ -75,19 +75,21 @@ public class ApiCall implements JsonSerializable {
             }else if(this.params.get(i) instanceof String || this.params.get(i) == null){
                 // Other times they are plain strings
                 methodParams.add((String) this.params.get(i));
-            }else if(this.params.get(i) instanceof ArrayList){
+            }else if(this.params.get(i) instanceof ArrayList) {
                 // Other times it might be an array
                 JsonArray array = new JsonArray();
                 ArrayList<Serializable> listArgument = (ArrayList<Serializable>) this.params.get(i);
-                for(int l = 0; l < listArgument.size(); l++){
+                for (int l = 0; l < listArgument.size(); l++) {
                     Serializable element = listArgument.get(l);
-                    if(element instanceof JsonSerializable)
+                    if (element instanceof JsonSerializable)
                         array.add(((JsonSerializable) element).toJsonObject());
-                    else if(element instanceof String){
+                    else if (element instanceof String) {
                         array.add((String) element);
                     }
                 }
                 methodParams.add(array);
+            }else if(this.params.get(i) instanceof Boolean){
+                methodParams.add((boolean) this.params.get(i));
             }else{
                 System.out.println("Skipping parameter of type: "+this.params.get(i).getClass());
             }

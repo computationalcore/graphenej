@@ -1,5 +1,6 @@
 package de.bitsharesmunich.graphenej;
 
+import de.bitsharesmunich.graphenej.interfaces.SubscriptionListener;
 import de.bitsharesmunich.graphenej.models.*;
 import de.bitsharesmunich.graphenej.objects.Memo;
 import com.google.common.primitives.UnsignedLong;
@@ -14,12 +15,10 @@ import de.bitsharesmunich.graphenej.test.NaiveSSLContext;
 import com.neovisionaries.ws.client.*;
 import de.bitsharesmunich.graphenej.api.*;
 import org.bitcoinj.core.*;
-import org.spongycastle.asn1.x509.Holder;
 import org.spongycastle.crypto.digests.RIPEMD160Digest;
 
 import javax.net.ssl.SSLContext;
 import java.io.*;
-import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -592,7 +591,7 @@ public class Test {
             // Set the custom SSL context.
             factory.setSSLContext(context);
 
-            WebSocket mWebSocket = factory.createSocket(OPENLEDGER_WITNESS_URL);
+            WebSocket mWebSocket = factory.createSocket(AMAZON_WITNESS);
             mWebSocket.addListener(relativeAccountHistory);
             mWebSocket.connect();
         } catch (IOException e) {
@@ -1190,8 +1189,8 @@ public class Test {
             @Override
             public void onSuccess(WitnessResponse response) {
                 System.out.println("onSuccess");
-                List<HoldersCount> holdersCountList = (List<HoldersCount>) response.result;
-                for(HoldersCount holdersCount : holdersCountList){
+                List<AssetHolderCount> holdersCountList = (List<AssetHolderCount>) response.result;
+                for(AssetHolderCount holdersCount : holdersCountList){
                     System.out.println(String.format("Asset %s has %d holders", holdersCount.asset.getObjectId(), holdersCount.count));
                 }
             }
@@ -1213,6 +1212,62 @@ public class Test {
 
             mWebSocket.addListener(new GetAllAssetHolders(listener));
             mWebSocket.connect();
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: " + e.getMessage());
+        }
+    }
+
+    public void testSubscription(WitnessResponseListener listener){
+        SSLContext context = null;
+
+        try {
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
+
+            SubscriptionMessagesHub subscriptionHub = new SubscriptionMessagesHub("", "");
+            mWebSocket.addListener(subscriptionHub);
+            mWebSocket.connect();
+            subscriptionHub.addSubscriptionListener(new SubscriptionListener() {
+                @Override
+                public ObjectType getInterestObjectType() {
+                    return ObjectType.TRANSACTION_OBJECT;
+                }
+
+                @Override
+                public void onSubscriptionUpdate(SubscriptionResponse response) {
+                    try{
+                        List<Serializable> updatedObjects = (List<Serializable>) response.params.get(1);
+                        if(updatedObjects.size() > 0){
+                            for(Serializable update : updatedObjects){
+                                if(update instanceof BroadcastedTransaction){
+                                    Transaction t = ((BroadcastedTransaction) update).getTransaction();
+                                    if(t.getOperations().size() > 0){
+                                        for(BaseOperation op : t.getOperations()){
+                                            if(op instanceof TransferOperation){
+                                                System.out.println(String.format("Got transaction from: %s, to: %s", ((TransferOperation) op).getFrom().getObjectId(), ((TransferOperation) op).getTo().getObjectId()));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }catch(Exception e){
+                        System.out.println("Exception. Msg: "+e.getMessage());
+                        for(StackTraceElement el : e.getStackTrace()){
+                            System.out.println(el.getFileName()+"#"+el.getMethodName()+":"+el.getLineNumber());
+                        }
+                    }
+                }
+            });
         } catch (NoSuchAlgorithmException e) {
             System.out.println("NoSuchAlgorithmException. Msg: " + e.getMessage());
         } catch (WebSocketException e) {
