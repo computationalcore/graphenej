@@ -11,6 +11,7 @@ import de.bitsharesmunich.graphenej.AssetAmount;
 import de.bitsharesmunich.graphenej.RPC;
 import de.bitsharesmunich.graphenej.Transaction;
 import de.bitsharesmunich.graphenej.TransferOperation;
+import de.bitsharesmunich.graphenej.interfaces.SubscriptionHub;
 import de.bitsharesmunich.graphenej.interfaces.SubscriptionListener;
 import de.bitsharesmunich.graphenej.models.ApiCall;
 import de.bitsharesmunich.graphenej.models.BaseResponse;
@@ -28,7 +29,7 @@ import java.util.Map;
  *
  * Created by nelson on 1/26/17.
  */
-public class SubscriptionMessagesHub extends WebSocketAdapter {
+public class SubscriptionMessagesHub extends WebSocketAdapter implements SubscriptionHub {
     // Sequence of message ids
     private final static int LOGIN_ID = 1;
     private final static int GET_DATABASE_ID = 2;
@@ -56,12 +57,19 @@ public class SubscriptionMessagesHub extends WebSocketAdapter {
         this.gson = builder.create();
     }
 
+    @Override
     public void addSubscriptionListener(SubscriptionListener listener){
         this.mSubscriptionDeserializer.addSubscriptionListener(listener);
     }
 
+    @Override
     public void removeSubscriptionListener(SubscriptionListener listener){
-        this.removeSubscriptionListener(listener);
+        this.mSubscriptionDeserializer.removeSubscriptionListener(listener);
+    }
+
+    @Override
+    public List<SubscriptionListener> getSubscriptionListeners() {
+        return this.mSubscriptionDeserializer.getSubscriptionListeners();
     }
 
     @Override
