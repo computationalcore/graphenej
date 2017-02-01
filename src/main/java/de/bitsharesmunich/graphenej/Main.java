@@ -17,6 +17,8 @@ public class Main {
 
     public static final String WIF = "5KMzB2GqGhnh7ufhgddmz1eKPHS72uTLeL9hHjSvPb1UywWknF5";
 
+    public static final String BILTHON_83_PASSWORD = System.getenv("BILTHON_83_PASSWORD");
+
     // Static block information used for transaction serialization tests
     public static int REF_BLOCK_NUM = 56204;
     public static int REF_BLOCK_PREFIX = 1614747814;
@@ -59,8 +61,8 @@ public class Main {
 //        test.testAccountUpdateSerialization();
 //        test.testAccountUpdateOperationBroadcast();
 //        test.testCreateBinFile();
-//        test.testImportBinFile();
-//          test.testLookupAccounts();
+        test.testImportBinFile();
+//        test.testLookupAccounts();
 //        test.testLookupAccounts();
 //        test.testDecodeMemo();
 //        test.testGetRelativeAccountHistory();
@@ -74,6 +76,6 @@ public class Main {
 //        test.testGetMarketHistory();
 //        test.testGetAccountBalances();
 //        test.testGetAssetHoldersCount();
-        test.testSubscription(null);
+//        test.testSubscription(null);
     }
 }

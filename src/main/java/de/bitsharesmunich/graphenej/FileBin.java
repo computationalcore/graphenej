@@ -4,6 +4,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import de.bitsharesmunich.graphenej.crypto.SecureRandomStrengthener;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -42,13 +46,28 @@ public abstract class FileBin {
             MessageDigest md1 = MessageDigest.getInstance("SHA-512");
             finalKey = md1.digest(finalKey);
             byte[] rawData = Util.decryptAES(rawDataEncripted, Util.byteToString(finalKey).getBytes());
-            
+
+            try {
+                FileOutputStream out = new FileOutputStream("/Users/nelson/Development/Java/Fullerene/src/main/java/de/bitsharesmunich/graphenej/decrypted.bin");
+                out.write(rawData);
+                out.close();
+            } catch (FileNotFoundException e) {
+                System.out.println("FileNotFoundException. Msg: "+e.getMessage());
+            } catch (IOException e) {
+                System.out.println("IOException. Msg: "+e.getMessage());
+            }
+
+
             byte[] checksum = new byte[4];
             System.arraycopy(rawData, 0, checksum, 0, 4);
             byte[] compressedData = new byte[rawData.length - 4];
             System.arraycopy(rawData, 4, compressedData, 0, compressedData.length);
-            
-            byte[] wallet_object_bytes = Util.decompress(compressedData, Util.XZ);
+
+            System.out.println("raw: "+Util.bytesToHex(rawData));
+            System.out.println("checksum: "+Util.bytesToHex(checksum));
+            System.out.println("compressed: "+Util.bytesToHex(compressedData));
+
+            byte[] wallet_object_bytes = Util.decompress(rawData, Util.LZMA);
             String wallet_string = new String(wallet_object_bytes, "UTF-8");
             JsonObject wallet = new JsonParser().parse(wallet_string).getAsJsonObject();
             if (wallet.get("wallet").isJsonArray()) {

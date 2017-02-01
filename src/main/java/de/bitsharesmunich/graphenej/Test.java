@@ -632,11 +632,11 @@ public class Test {
     public void testImportBinFile() {
         try {
             String current = new File(".").getCanonicalPath();
-            File file = new File(current + "/src/main/java/de/bitsharesmunich/graphenej/bts_bilthon_20161218.bin");
+            File file = new File(current + "/src/main/java/de/bitsharesmunich/graphenej/bts_bilthon-83_20170131.bin");
             Path path = Paths.get(file.getAbsolutePath());
             byte[] data = Files.readAllBytes(path);
 
-            System.out.println(FileBin.getBrainkeyFromByte(data, "123456"));
+            String brainKey = FileBin.getBrainkeyFromByte(data, Main.BILTHON_83_PASSWORD);
         } catch (IOException e) {
             System.out.println("IOException while trying to open bin file. Msg: "+e.getMessage());
         }
