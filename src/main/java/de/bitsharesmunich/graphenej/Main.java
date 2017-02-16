@@ -19,6 +19,10 @@ public class Main {
 
     public static final String BILTHON_83_PASSWORD = System.getenv("BILTHON_83_PASSWORD");
 
+    public static final String BILTHON_25_PASSWORD = System.getenv("BILTHON_25_PASSWORD");
+
+    public static final String BILTHON_11_BRAIN_KEY = System.getenv("BILTHON_11_BRAIN_KEY");
+
     // Static block information used for transaction serialization tests
     public static int REF_BLOCK_NUM = 56204;
     public static int REF_BLOCK_PREFIX = 1614747814;
@@ -61,7 +65,11 @@ public class Main {
 //        test.testAccountUpdateSerialization();
 //        test.testAccountUpdateOperationBroadcast();
 //        test.testCreateBinFile();
-        test.testImportBinFile();
+//        test.testImportBinFile();
+        test.testExportBinFile();
+//        test.testLzmaCompression();
+//        test.testLzmaDecompression();
+//        test.testSimpleDecompression();
 //        test.testLookupAccounts();
 //        test.testLookupAccounts();
 //        test.testDecodeMemo();
