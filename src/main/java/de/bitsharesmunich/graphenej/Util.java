@@ -1,11 +1,8 @@
 package de.bitsharesmunich.graphenej;
 
-import org.tukaani.xz.FinishableOutputStream;
-import org.tukaani.xz.LZMA2Options;
-import org.tukaani.xz.LZMAInputStream;
-import org.tukaani.xz.LZMAOutputStream;
-import org.tukaani.xz.XZInputStream;
-import org.tukaani.xz.XZOutputStream;
+import com.google.common.primitives.Bytes;
+import org.tukaani.xz.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -32,6 +29,17 @@ public class Util {
     private static final char[] hexArray = "0123456789abcdef".toCharArray();
     public static final int LZMA = 0;
     public static final int XZ = 1;
+
+    /**
+     * AES encryption key length in bytes
+     */
+    public static final int KEY_LENGTH = 32;
+
+    /**
+     * Time format used across the platform
+     */
+    public static final String TIME_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+
 
     /**
      * Converts an hexadecimal string to its corresponding byte[] value.
@@ -94,10 +102,10 @@ public class Util {
             }else if(which == Util.XZ){
                 out = new XZOutputStream(output, options);
             }
-            byte[] buf = new byte[inputBytes.length];
+            byte[] inputBuffer = new byte[inputBytes.length];
             int size;
-            while ((size = input.read(buf)) != -1) {
-                out.write(buf, 0, size);
+            while ((size = input.read(inputBuffer)) != -1) {
+                out.write(inputBuffer, 0, size);
             }
             out.finish();
             return output.toByteArray();
@@ -124,27 +132,51 @@ public class Util {
     public static byte[] decompress(byte[] inputBytes, int which) {
         InputStream in = null;
         try {
+            System.out.println("Bytes: "+Util.bytesToHex(inputBytes));
             ByteArrayInputStream input = new ByteArrayInputStream(inputBytes);
-            ByteArrayOutputStream output = new ByteArrayOutputStream(2048);
+            ByteArrayOutputStream output = new ByteArrayOutputStream(16*2048);
             if(which == XZ) {
                 in = new XZInputStream(input);
             }else if(which == LZMA){
                 in = new LZMAInputStream(input);
             }
             int size;
-            while ((size = in.read()) != -1) {
-                output.write(size);
+            try{
+                while ((size = in.read()) != -1) {
+                    output.write(size);
+                }
+            }catch(CorruptedInputException e){
+                // Taking property byte
+                byte[] properties = Arrays.copyOfRange(inputBytes, 0, 1);
+                // Taking dict size bytes
+                byte[] dictSize = Arrays.copyOfRange(inputBytes, 1, 5);
+                // Taking uncompressed size bytes
+                byte[] uncompressedSize = Arrays.copyOfRange(inputBytes, 5, 13);
+
+                // Reversing bytes in header
+                byte[] header = Bytes.concat(properties, Util.revertBytes(dictSize), Util.revertBytes(uncompressedSize));
+                byte[] payload = Arrays.copyOfRange(inputBytes, 13, inputBytes.length);
+
+                // Trying again
+                input = new ByteArrayInputStream(Bytes.concat(header, payload));
+                output = new ByteArrayOutputStream(2048);
+                if(which == XZ) {
+                    in = new XZInputStream(input);
+                }else if(which == LZMA){
+                    in = new LZMAInputStream(input);
+                }
+                try{
+                    while ((size = in.read()) != -1) {
+                        output.write(size);
+                    }
+                }catch(CorruptedInputException ex){
+                    System.out.println("CorruptedInputException. Msg: "+ex.getMessage());
+                }
             }
             in.close();
             return output.toByteArray();
         } catch (IOException ex) {
             Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-//            try {
-//                in.close();
-//            } catch (IOException ex) {
-//                Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
-//            }
         }
         return null;
     }
@@ -176,6 +208,14 @@ public class Util {
      */
     public static byte[] revertLong(Long input) {
         return ByteBuffer.allocate(Long.SIZE / 8).putLong(Long.reverseBytes(input)).array();
+    }
+
+    public static byte[] revertBytes(byte[] array){
+        byte[] reverted = new byte[array.length];
+        for(int i = 0; i < reverted.length; i++){
+            reverted[i] = array[array.length - i - 1];
+        }
+        return reverted;
     }
 
     /**
