@@ -33,7 +33,6 @@ public class Transaction implements ByteSerializable, JsonSerializable {
     public static final String KEY_EXTENSIONS = "extensions";
     public static final String KEY_REF_BLOCK_NUM = "ref_block_num";
     public static final String KEY_REF_BLOCK_PREFIX = "ref_block_prefix";
-    public static final String TIME_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
 
     private ECKey privateKey;
     private BlockData blockData;
@@ -205,7 +204,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
 
         // Formatting expiration time
         Date expirationTime = new Date(blockData.getExpiration() * 1000);
-        SimpleDateFormat dateFormat = new SimpleDateFormat(TIME_DATE_FORMAT);
+        SimpleDateFormat dateFormat = new SimpleDateFormat(Util.TIME_DATE_FORMAT);
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 
         // Adding expiration
@@ -260,7 +259,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
             int refBlockNum = jsonObject.get(KEY_REF_BLOCK_NUM).getAsInt();
             long refBlockPrefix = jsonObject.get(KEY_REF_BLOCK_PREFIX).getAsLong();
             String expiration = jsonObject.get(KEY_EXPIRATION).getAsString();
-            SimpleDateFormat dateFormat = new SimpleDateFormat(TIME_DATE_FORMAT);
+            SimpleDateFormat dateFormat = new SimpleDateFormat(Util.TIME_DATE_FORMAT);
             dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
             Date expirationDate = dateFormat.parse(expiration, new ParsePosition(0));
             BlockData blockData = new BlockData(refBlockNum, refBlockPrefix, expirationDate.getTime());

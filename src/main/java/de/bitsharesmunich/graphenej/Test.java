@@ -1,7 +1,12 @@
 package de.bitsharesmunich.graphenej;
 
+import com.google.common.primitives.Bytes;
 import de.bitsharesmunich.graphenej.interfaces.SubscriptionListener;
 import de.bitsharesmunich.graphenej.models.*;
+import de.bitsharesmunich.graphenej.models.backup.LinkedAccount;
+import de.bitsharesmunich.graphenej.models.backup.PrivateKeyBackup;
+import de.bitsharesmunich.graphenej.models.backup.Wallet;
+import de.bitsharesmunich.graphenej.models.backup.WalletBackup;
 import de.bitsharesmunich.graphenej.objects.Memo;
 import com.google.common.primitives.UnsignedLong;
 import com.google.gson.Gson;
@@ -16,6 +21,7 @@ import com.neovisionaries.ws.client.*;
 import de.bitsharesmunich.graphenej.api.*;
 import org.bitcoinj.core.*;
 import org.spongycastle.crypto.digests.RIPEMD160Digest;
+import org.tukaani.xz.*;
 
 import javax.net.ssl.SSLContext;
 import java.io.*;
@@ -23,6 +29,7 @@ import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.logging.Level;
@@ -632,13 +639,142 @@ public class Test {
     public void testImportBinFile() {
         try {
             String current = new File(".").getCanonicalPath();
-            File file = new File(current + "/src/main/java/de/bitsharesmunich/graphenej/bts_bilthon_20161218.bin");
+            File file = new File(current + "/src/main/java/de/bitsharesmunich/graphenej/bts_bilthon-25_20170214.bin");
             Path path = Paths.get(file.getAbsolutePath());
             byte[] data = Files.readAllBytes(path);
+            byte[] publicKey = new byte[FileBin.PUBLIC_KEY_LENGTH];
+            System.arraycopy(data, 0, publicKey, 0, FileBin.PUBLIC_KEY_LENGTH);
 
-            System.out.println(FileBin.getBrainkeyFromByte(data, "123456"));
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            ECKey randomECKey = ECKey.fromPublicOnly(publicKey);
+            byte[] finalKey = randomECKey.getPubKeyPoint().multiply(ECKey.fromPrivate(md.digest(Main.BILTHON_25_PASSWORD.getBytes("UTF-8"))).getPrivKey()).normalize().getXCoord().getEncoded();
+
+            WalletBackup walletBackup = FileBin.deserializeWalletBackup(data, Main.BILTHON_25_PASSWORD);
+            System.out.println("Number of wallets: "+walletBackup.getWalletCount());
+            String brainKeyString = walletBackup.getWallet(0).decryptBrainKey(Main.BILTHON_25_PASSWORD);
+            System.out.println("Brain key: "+brainKeyString);
+            BrainKey brainKey = new BrainKey(brainKeyString, 1);
+            byte[] privateKey = brainKey.getPrivateKey().getPrivKeyBytes();
+            System.out.println("Brainkey derived private....: " + Util.bytesToHex(privateKey));
+
+            byte[] privateKey2 = walletBackup.getPrivateKeyBackup(0).decryptPrivateKey(walletBackup.getWallet(0).getEncryptionKey(Main.BILTHON_25_PASSWORD));
+            System.out.println("Encrypted private key.......: "+Util.bytesToHex(privateKey2));
+
+            Address addr1 = new Address(ECKey.fromPublicOnly(ECKey.fromPrivate(privateKey).getPubKey()));
+            Address addr2 = new Address(ECKey.fromPublicOnly(ECKey.fromPrivate(privateKey2).getPubKey()));
+            Address addr3 = new Address(ECKey.fromPublicOnly(publicKey));
+            System.out.println("Addr1: "+addr1.toString());
+            System.out.println("Addr2: "+addr2.toString());
+            System.out.println("Addr3: "+addr3.toString());
         } catch (IOException e) {
             System.out.println("IOException while trying to open bin file. Msg: "+e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("NoSuchAlgorithmException while trying to open bin file. Msg: "+e.getMessage());
+        }
+    }
+
+    public void testExportBinFile(){
+        String password = "123456";
+        BrainKey brainKey = new BrainKey(Main.BILTHON_11_BRAIN_KEY, 0);
+        Wallet wallet = new Wallet("bilthon-11", brainKey.getBrainKey(), brainKey.getSequenceNumber(), Chains.BITSHARES.CHAIN_ID, password);
+        byte[] privateKey = brainKey.getPrivateKey().getPrivKeyBytes();
+        PrivateKeyBackup privateKeyBackup = new PrivateKeyBackup(privateKey, brainKey.getSequenceNumber(), 1, wallet.getEncryptionKey(password));
+        LinkedAccount linkedAccount = new LinkedAccount("bilthon-11", Chains.BITSHARES.CHAIN_ID);
+
+        ArrayList<Wallet> walletList = new ArrayList<>();
+        walletList.add(wallet);
+        ArrayList<PrivateKeyBackup> keyList = new ArrayList<>();
+        keyList.add(privateKeyBackup);
+        ArrayList<LinkedAccount> linkedAccounts = new ArrayList<>();
+        linkedAccounts.add(linkedAccount);
+        WalletBackup backup = new WalletBackup(walletList, keyList, linkedAccounts);
+        byte[] serialized = FileBin.serializeWalletBackup(backup, password);
+        System.out.println("Serialized: "+Util.bytesToHex(serialized));
+        try {
+            String current = new File(".").getCanonicalPath();
+            String fullPath = current + "/scwall_bithon_11.bin";
+            System.out.println("Full path: "+fullPath);
+            File file = new File(fullPath);
+            FileOutputStream out = new FileOutputStream(file);
+            out.write(serialized);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void testLzmaCompression(){
+        String data = "A long time ago in a galaxy far, far away...";
+        byte[] compressed = Util.compress(data.getBytes(), Util.LZMA);
+
+        try {
+            String current = new File(".").getCanonicalPath();
+            File file = new File(current + "/src/main/java/de/bitsharesmunich/graphenej/java_compressed_1.4.lzma");
+            FileOutputStream out = new FileOutputStream(file);
+            System.out.println("Writing "+compressed.length+" bytes");
+            out.write(compressed);
+            out.close();
+        }catch(IOException e){
+            System.out.println("IOException. Msg: "+e.getMessage());
+        }
+    }
+
+    public void testSimpleDecompression(){
+        try{
+            String current = new File(".").getCanonicalPath();
+//            File file = new File(current + "/src/main/java/de/bitsharesmunich/graphenej/node_compressed_1.2.lzma");
+            File file = new File(current + "/src/main/java/de/bitsharesmunich/graphenej/decrypted.bin");
+            Path path = Paths.get(file.getAbsolutePath());
+            byte[] data = Files.readAllBytes(path);
+            byte[] decompressed = Util.decompress(data, Util.LZMA);
+            System.out.println("Decompressed.......: "+Util.bytesToHex(decompressed));
+            String message = new String(decompressed);
+            System.out.println("Decompressed msg...: "+message);
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: "+e.getMessage());
+        }
+    }
+
+    public void testLzmaDecompression(){
+        try {
+            String current = new File(".").getCanonicalPath();
+            File file = new File(current + "/src/main/java/de/bitsharesmunich/graphenej/java_compressed_1.4.lzma");
+            Path path = Paths.get(file.getAbsolutePath());
+            byte[] data = Files.readAllBytes(path);
+            System.out.println("Compressed bytes...: " + Util.bytesToHex(data));
+
+            InputStream in = null;
+            byte[] decompressed;
+            byte[] properties = Arrays.copyOfRange(data, 0, 1);
+            byte[] dictSize = Arrays.copyOfRange(data, 1, 5);
+            byte[] uncompressedSize = Arrays.copyOfRange(data, 5, 13);
+            byte[] header = Bytes.concat(properties, Util.revertBytes(dictSize), Util.revertBytes(uncompressedSize));
+            byte[] payload = Arrays.copyOfRange(data, 13, data.length);
+            System.out.println("Header.............: "+Util.bytesToHex(header));
+            System.out.println("Payload............: "+Util.bytesToHex(payload));
+            ByteArrayInputStream input = new ByteArrayInputStream(Bytes.concat(header, payload));
+            ByteArrayOutputStream output = new ByteArrayOutputStream(2 * 2048);
+//            in = new LZMAInputStream(input, 44, (byte) 0x5d, 65536);
+            in = new LZMAInputStream(input);
+            int size;
+            try{
+                while ((size = in.read()) != -1) {
+                    output.write(size);
+                }
+            }catch(IOException e){
+                System.out.println("IOException detected. End of stream reached. Msg: "+e.getMessage());
+            }
+            in.close();
+            decompressed = output.toByteArray();
+
+            System.out.println("Decompressed bytes.: " + Util.bytesToHex(decompressed));
+            String decompressedString = new String(decompressed);
+            System.out.println("Decompressed: " + decompressedString);
+        } catch (CorruptedInputException e) {
+            System.out.println("CorruptedInputException. Msg: " + e.getMessage());
+        } catch (UnsupportedOptionsException e){
+            System.out.println("UnsupportedOptionsException. Msg: "+e.getMessage());
+        } catch(IOException e){
+            System.out.println("IOException. Msg: "+e.getMessage());
         }
     }
 

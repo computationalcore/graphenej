@@ -5,7 +5,7 @@ import java.security.SecureRandom;
 /**
  * Created by nelson on 12/20/16.
  */
-public class Random {
+public class SecureRandomGenerator {
 
     public static SecureRandom getSecureRandom(){
         SecureRandomStrengthener randomStrengthener = SecureRandomStrengthener.getInstance();
