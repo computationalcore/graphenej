@@ -8,7 +8,6 @@ import java.lang.reflect.Type;
 
 /**
  * Class used to encapsulate the TransferOperation operation related functionalities.
- * TODO: Add extensions support
  */
 public class TransferOperation extends BaseOperation {
     public static final String KEY_FEE = "fee";
@@ -86,7 +85,8 @@ public class TransferOperation extends BaseOperation {
         JsonArray array = new JsonArray();
         array.add(this.getId());
         JsonObject jsonObject = new JsonObject();
-        jsonObject.add(KEY_FEE, fee.toJsonObject());
+        if(fee != null)
+            jsonObject.add(KEY_FEE, fee.toJsonObject());
         jsonObject.addProperty(KEY_FROM, from.toJsonString());
         jsonObject.addProperty(KEY_TO, to.toJsonString());
         jsonObject.add(KEY_AMOUNT, amount.toJsonObject());
