@@ -134,6 +134,7 @@ public abstract class FileBin {
             MessageDigest md1 = MessageDigest.getInstance("SHA-512");
             finalKey = md1.digest(finalKey);
             byte[] rawData = Util.decryptAES(rawDataEncripted, Util.byteToString(finalKey).getBytes());
+            if(rawData == null) return null;
 
             byte[] checksum = new byte[4];
             System.arraycopy(rawData, 0, checksum, 0, 4);
@@ -141,6 +142,7 @@ public abstract class FileBin {
             System.arraycopy(rawData, 4, compressedData, 0, compressedData.length);
 
             byte[] wallet_object_bytes = Util.decompress(compressedData, Util.XZ);
+            if(wallet_object_bytes == null) return null;
             String wallet_string = new String(wallet_object_bytes, "UTF-8");
             JsonObject wallet = new JsonParser().parse(wallet_string).getAsJsonObject();
             if (wallet.get("wallet").isJsonArray()) {
