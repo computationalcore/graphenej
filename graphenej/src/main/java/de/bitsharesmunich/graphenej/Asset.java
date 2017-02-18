@@ -172,6 +172,8 @@ public class Asset extends GrapheneObject {
             options.setMaxMarketFee(UnsignedLong.valueOf(optionsJson.get(KEY_MARKET_FEE).getAsString()));
             options.setIssuerPermissions(optionsJson.get(KEY_ISSUER_PERMISSIONS).getAsLong());
             options.setFlags(optionsJson.get(KEY_FLAGS).getAsInt());
+            if(optionsJson.has(KEY_DESCRIPTION))
+                options.setDescription(optionsJson.get(KEY_DESCRIPTION).getAsString());
             //TODO: Deserialize core_exchange_rate field
 
             Asset asset = new Asset(id, symbol, precision, issuer);
