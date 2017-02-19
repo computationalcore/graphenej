@@ -1,3 +1,6 @@
+# Java compilation
+*.class
+
 # Mac OS X file
 .DS_Store
 
