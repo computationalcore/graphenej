@@ -41,11 +41,6 @@ public class TransferOperation extends BaseOperation {
         this.memo = new Memo();
     }
 
-    @Override
-    public void setFee(AssetAmount newFee){
-        this.fee = newFee;
-    }
-
     public UserAccount getFrom(){
         return this.from;
     }
@@ -60,6 +55,23 @@ public class TransferOperation extends BaseOperation {
 
     public AssetAmount getFee(){
         return this.fee;
+    }
+
+    public void setAssetAmount(AssetAmount assetAmount){
+        this.amount = assetAmount;
+    }
+
+    public void setFrom(UserAccount from) {
+        this.from = from;
+    }
+
+    public void setTo(UserAccount to) {
+        this.to = to;
+    }
+
+    @Override
+    public void setFee(AssetAmount newFee){
+        this.fee = newFee;
     }
 
     @Override
