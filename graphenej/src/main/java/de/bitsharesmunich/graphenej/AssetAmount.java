@@ -54,6 +54,25 @@ public class AssetAmount implements ByteSerializable, JsonSerializable {
         return new AssetAmount(combined, asset);
     }
 
+    /**
+     * Subtracts another instance of AssetAmount from this one. This method will always
+     * return absolute values.
+     * @param other: The other asset amount to subtract from this.
+     * @return: The absolute value of the subtraction of the other minus this asset amount.
+     */
+    public AssetAmount subtract(AssetAmount other){
+        if(!this.getAsset().getObjectId().equals(other.getAsset().getObjectId())){
+            throw new IncompatibleOperation("Cannot subtract two AssetAmount instances that refer to different assets");
+        }
+        UnsignedLong result = null;
+        if(this.amount.compareTo(other.getAmount()) < 0){
+            result = other.getAmount().minus(this.amount);
+        }else{
+            result = this.amount.minus(other.getAmount());
+        }
+        return new AssetAmount(result, asset);
+    }
+
     public void setAmount(UnsignedLong amount){
         this.amount = amount;
     }
