@@ -10,11 +10,10 @@ import com.neovisionaries.ws.client.WebSocketFrame;
 import de.bitsharesmunich.graphenej.AssetAmount;
 import de.bitsharesmunich.graphenej.RPC;
 import de.bitsharesmunich.graphenej.Transaction;
-import de.bitsharesmunich.graphenej.TransferOperation;
+import de.bitsharesmunich.graphenej.operations.TransferOperation;
 import de.bitsharesmunich.graphenej.interfaces.SubscriptionHub;
 import de.bitsharesmunich.graphenej.interfaces.SubscriptionListener;
 import de.bitsharesmunich.graphenej.models.ApiCall;
-import de.bitsharesmunich.graphenej.models.BaseResponse;
 import de.bitsharesmunich.graphenej.models.SubscriptionResponse;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 

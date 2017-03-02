@@ -1,6 +1,7 @@
 package de.bitsharesmunich.graphenej;
 
 import de.bitsharesmunich.graphenej.errors.MalformedTransactionException;
+import de.bitsharesmunich.graphenej.operations.AccountUpdateOperation;
 import org.bitcoinj.core.ECKey;
 
 import java.util.ArrayList;

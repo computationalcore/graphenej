@@ -1,4 +1,4 @@
-package de.bitsharesmunich.graphenej;
+package de.bitsharesmunich.graphenej.operations;
 
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.UnsignedLong;
@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import de.bitsharesmunich.graphenej.*;
 
 /**
  * Class used to encapsulate operations related to the ACCOUNT_UPDATE_OPERATION.

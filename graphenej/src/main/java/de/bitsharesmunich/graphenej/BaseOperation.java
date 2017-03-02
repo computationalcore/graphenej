@@ -9,9 +9,11 @@ import de.bitsharesmunich.graphenej.interfaces.JsonSerializable;
 public abstract class BaseOperation implements ByteSerializable, JsonSerializable {
 
     protected OperationType type;
+    protected Extensions extensions;
 
     public BaseOperation(OperationType type){
         this.type = type;
+        this.extensions = new Extensions();
     }
 
     public byte getId() {

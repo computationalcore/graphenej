@@ -1,6 +1,7 @@
 package de.bitsharesmunich.graphenej;
 
 import com.google.common.primitives.Bytes;
+import de.bitsharesmunich.graphenej.errors.MalformedOperationException;
 import de.bitsharesmunich.graphenej.interfaces.SubscriptionListener;
 import de.bitsharesmunich.graphenej.models.*;
 import de.bitsharesmunich.graphenej.models.backup.LinkedAccount;
@@ -16,6 +17,10 @@ import com.google.gson.reflect.TypeToken;
 import de.bitsharesmunich.graphenej.errors.MalformedAddressException;
 import de.bitsharesmunich.graphenej.errors.MalformedTransactionException;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
+import de.bitsharesmunich.graphenej.operations.AccountUpdateOperation;
+import de.bitsharesmunich.graphenej.operations.AccountUpdateOperationBuilder;
+import de.bitsharesmunich.graphenej.operations.TransferOperation;
+import de.bitsharesmunich.graphenej.operations.TransferOperationBuilder;
 import de.bitsharesmunich.graphenej.test.NaiveSSLContext;
 import com.neovisionaries.ws.client.*;
 import de.bitsharesmunich.graphenej.api.*;
@@ -43,8 +48,8 @@ public class Test {
     public static final String AMAZON_WITNESS = "ws://54.91.97.99:8090";
     public static final String WITNESS_URL = "api://api.devling.xyz:8088";
     public static final String OPENLEDGER_WITNESS_URL = "wss://bitshares.openledger.info/api";
-    public static final String BLOCK_PAY_DE = "wss://de.blockpay.ch:8089";
-    public static final String BLOCK_PAY_FR = "wss://fr.blockpay.ch:8089";
+    public static final String BLOCK_PAY_DE = "wss://de.blockpay.ch/node";
+    public static final String BLOCK_PAY_FR = "wss://fr.blockpay.ch/node";
 
     private Transaction transaction;
 
@@ -220,31 +225,6 @@ public class Test {
         System.out.println(Util.bytesToHex(account.toBytes()));
     }
 
-    public void testTransactionSerialization() {
-        try {
-            Transaction transaction = new TransferTransactionBuilder()
-                    .setSource(new UserAccount("1.2.138632"))
-                    .setDestination(new UserAccount("1.2.129848"))
-                    .setAmount(new AssetAmount(UnsignedLong.valueOf(100), new Asset("1.3.120")))
-                    .setFee(new AssetAmount(UnsignedLong.valueOf(264174), new Asset("1.3.0")))
-                    .setPrivateKey(DumpedPrivateKey.fromBase58(null, Main.WIF).getKey())
-                    .setBlockData(new BlockData(Main.REF_BLOCK_NUM, Main.REF_BLOCK_PREFIX, Main.RELATIVE_EXPIRATION))
-                    .build();
-
-            ArrayList<Serializable> transactionList = new ArrayList<>();
-            transactionList.add(transaction);
-
-            byte[] signature = transaction.getGrapheneSignature();
-            System.out.println(Util.bytesToHex(signature));
-            ApiCall call = new ApiCall(4, "call", "broadcast_transaction", transactionList, "2.0", 1);
-            String jsonCall = call.toJsonString();
-            System.out.println("json call");
-            System.out.println(jsonCall);
-        } catch (MalformedTransactionException e) {
-            System.out.println("MalformedTransactionException. Msg: " + e.getMessage());
-        }
-    }
-
     public void testLoginSerialization() {
         ArrayList<Serializable> loginParams = new ArrayList<>();
 //        loginParams.add("nelson");
@@ -292,7 +272,6 @@ public class Test {
     }
 
     public void testTransactionBroadcastSequence() {
-        String url = Test.OPENLEDGER_WITNESS_URL;
         WitnessResponseListener listener = new WitnessResponseListener() {
             @Override
             public void onSuccess(WitnessResponse response) {
@@ -307,26 +286,38 @@ public class Test {
         };
 
         try {
-            ECKey from = new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0).getPrivateKey();
-            PublicKey to = new PublicKey(ECKey.fromPublicOnly(new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0).getPublicKey()));
+            ECKey sourcePrivateKey = new BrainKey(Main.BILTHON_15_BRAIN_KEY, 0).getPrivateKey();
+            PublicKey to1 = new PublicKey(ECKey.fromPublicOnly(new BrainKey(Main.BILTHON_5_BRAIN_KEY, 0).getPublicKey()));
+            PublicKey to2 = new PublicKey(ECKey.fromPublicOnly(new BrainKey(Main.BILTHON_16_BRAIN_KEY, 0).getPublicKey()));
 
             // Creating memo
             long nonce = 1;
-            byte[] encryptedMessage = Memo.encryptMessage(from, to, nonce, "another message");
-            Memo memo = new Memo(new Address(ECKey.fromPublicOnly(from.getPubKey())), new Address(to.getKey()), nonce, encryptedMessage);
+            byte[] encryptedMessage = Memo.encryptMessage(sourcePrivateKey, to1, nonce, "another message");
+            Memo memo = new Memo(new Address(ECKey.fromPublicOnly(sourcePrivateKey.getPubKey())), new Address(to1.getKey()), nonce, encryptedMessage);
 
-            // Creating transaction
-            Transaction transaction = new TransferTransactionBuilder()
-                    .setSource(new UserAccount("1.2.138632")) // bilthon-83
+            // Creating operation 1
+            TransferOperation transferOperation1 = new TransferOperationBuilder()
+                    .setTransferAmount(new AssetAmount(UnsignedLong.valueOf(1), new Asset("1.3.0")))
+                    .setSource(new UserAccount("1.2.143563")) // bilthon-15
                     .setDestination(new UserAccount("1.2.139313")) // bilthon-5
-                    .setAmount(new AssetAmount(UnsignedLong.valueOf(1), new Asset("1.3.0")))
                     .setFee(new AssetAmount(UnsignedLong.valueOf(264174), new Asset("1.3.0")))
-                    .setPrivateKey(new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0).getPrivateKey())
-                    .setMemo(memo)
                     .build();
 
-            ArrayList<Serializable> transactionList = new ArrayList<>();
-            transactionList.add(transaction);
+            // Creating operation 2
+            TransferOperation transferOperation2 = new TransferOperationBuilder()
+                    .setTransferAmount(new AssetAmount(UnsignedLong.valueOf(1), new Asset("1.3.0")))
+                    .setSource(new UserAccount("1.2.143563")) // bilthon-15
+                    .setDestination(new UserAccount("1.2.143569")) // bilthon-16
+                    .setFee(new AssetAmount(UnsignedLong.valueOf(264174), new Asset("1.3.0")))
+                    .build();
+
+
+            // Adding operations to the operation list
+            ArrayList<BaseOperation> operationList = new ArrayList<>();
+            operationList.add(transferOperation1);
+            operationList.add(transferOperation2);
+
+            Transaction transaction = new Transaction(sourcePrivateKey, null, operationList);
 
             SSLContext context = null;
             context = NaiveSSLContext.getInstance("TLS");
@@ -340,7 +331,7 @@ public class Test {
             mWebSocket.addListener(new TransactionBroadcastSequence(transaction, new Asset("1.3.0"), listener));
             mWebSocket.connect();
 
-        } catch (MalformedTransactionException e) {
+        } catch (MalformedOperationException e) {
             System.out.println("MalformedTransactionException. Msg: " + e.getMessage());
         } catch (IOException e) {
             System.out.println("IOException. Msg: " + e.getMessage());
@@ -363,15 +354,17 @@ public class Test {
     }
 
     public void testPrivateKeyManipulations() {
-        String brainKeyWords = "PUMPER ISOTOME SERE STAINER CLINGER MOONLIT CHAETA UPBRIM AEDILIC BERTHER NIT SHAP SAID SHADING JUNCOUS CHOUGH";
+        String brainKeyWords = Main.BILTHON_15_BRAIN_KEY;
+
         BrainKey brainKey = new BrainKey(brainKeyWords, 0);
 
         ECKey privateKey = DumpedPrivateKey.fromBase58(null, brainKey.getWalletImportFormat()).getKey();
-        System.out.println("private key..............: " + Util.bytesToHex(privateKey.getSecretBytes()));
-        System.out.println("public key uncompressed..: " + Util.bytesToHex(privateKey.getPubKey()));
-        System.out.println("public key compressed....: " + Util.bytesToHex(privateKey.getPubKeyPoint().getEncoded(true)));
-        System.out.println("base58...................: " + Base58.encode(privateKey.getPubKeyPoint().getEncoded(true)));
-        System.out.println("base58...................: " + Base58.encode(privateKey.getPubKey()));
+        Address address = new Address(ECKey.fromPublicOnly(privateKey.getPubKey()));
+        System.out.println("Raw private key..........: " + Util.bytesToHex(privateKey.getSecretBytes()));
+        System.out.println("WIF private key..........: " + brainKey.getWalletImportFormat());
+        System.out.println("Public key uncompressed..: " + Util.bytesToHex(privateKey.getPubKey()));
+        System.out.println("Public key compressed....: " + Util.bytesToHex(privateKey.getPubKeyPoint().getEncoded(true)));
+        System.out.println("Address..................: " + address.toString());
     }
 
     public void testPublicKeyManipulations() {
@@ -637,9 +630,10 @@ public class Test {
     }
 
     public void testImportBinFile() {
+        String password = Main.GENERIC_PASSWORD;
         try {
             String current = new File(".").getCanonicalPath();
-            File file = new File(current + "/src/main/java/de/bitsharesmunich/graphenej/bts_bilthon-25_20170214.bin");
+            File file = new File(current + "/bts_vinicius_default_20170218_20170219.bin");
             Path path = Paths.get(file.getAbsolutePath());
             byte[] data = Files.readAllBytes(path);
             byte[] publicKey = new byte[FileBin.PUBLIC_KEY_LENGTH];
@@ -647,22 +641,27 @@ public class Test {
 
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             ECKey randomECKey = ECKey.fromPublicOnly(publicKey);
-            byte[] finalKey = randomECKey.getPubKeyPoint().multiply(ECKey.fromPrivate(md.digest(Main.BILTHON_25_PASSWORD.getBytes("UTF-8"))).getPrivKey()).normalize().getXCoord().getEncoded();
+            byte[] finalKey = randomECKey.getPubKeyPoint().multiply(ECKey.fromPrivate(md.digest(password.getBytes("UTF-8"))).getPrivKey()).normalize().getXCoord().getEncoded();
+            System.out.println("final key : "+Util.bytesToHex(finalKey));
+            Address address = new Address(ECKey.fromPublicOnly(ECKey.fromPrivate(finalKey).getPubKey()));
+            System.out.println("address   : "+address.toString());
 
-            WalletBackup walletBackup = FileBin.deserializeWalletBackup(data, Main.BILTHON_25_PASSWORD);
-            System.out.println("Number of wallets: "+walletBackup.getWalletCount());
-            String brainKeyString = walletBackup.getWallet(0).decryptBrainKey(Main.BILTHON_25_PASSWORD);
+            WalletBackup walletBackup = FileBin.deserializeWalletBackup(data, password);
+            String brainKeyString = walletBackup.getWallet(0).decryptBrainKey(password);
             System.out.println("Brain key: "+brainKeyString);
             BrainKey brainKey = new BrainKey(brainKeyString, 1);
-            byte[] privateKey = brainKey.getPrivateKey().getPrivKeyBytes();
-            System.out.println("Brainkey derived private....: " + Util.bytesToHex(privateKey));
+            byte[] brainKeyDerivedPrivateKey = brainKey.getPrivateKey().getPrivKeyBytes();
+            System.out.println("Brainkey derived private....: " + Util.bytesToHex(brainKeyDerivedPrivateKey));
 
-            byte[] privateKey2 = walletBackup.getPrivateKeyBackup(0).decryptPrivateKey(walletBackup.getWallet(0).getEncryptionKey(Main.BILTHON_25_PASSWORD));
-            System.out.println("Encrypted private key.......: "+Util.bytesToHex(privateKey2));
+            byte[] encryptionKey = walletBackup.getWallet(0).getEncryptionKey(password);
+            byte[] privateKey0 = walletBackup.getPrivateKeyBackup(0).decryptPrivateKey(encryptionKey);
+            byte[] privateKey1 = walletBackup.getPrivateKeyBackup(1).decryptPrivateKey(encryptionKey);
+            System.out.println("Encrypted private key 1.....: "+Util.bytesToHex(privateKey0));
+            System.out.println("Encrypted private key 2.....: "+Util.bytesToHex(privateKey1));
 
-            Address addr1 = new Address(ECKey.fromPublicOnly(ECKey.fromPrivate(privateKey).getPubKey()));
-            Address addr2 = new Address(ECKey.fromPublicOnly(ECKey.fromPrivate(privateKey2).getPubKey()));
-            Address addr3 = new Address(ECKey.fromPublicOnly(publicKey));
+            Address addr1 = new Address(ECKey.fromPublicOnly(ECKey.fromPrivate(brainKeyDerivedPrivateKey).getPubKey()));
+            Address addr2 = new Address(ECKey.fromPublicOnly(ECKey.fromPrivate(privateKey0).getPubKey()));
+            Address addr3 = new Address(ECKey.fromPublicOnly(ECKey.fromPrivate(privateKey1).getPubKey()));
             System.out.println("Addr1: "+addr1.toString());
             System.out.println("Addr2: "+addr2.toString());
             System.out.println("Addr3: "+addr3.toString());
@@ -674,7 +673,7 @@ public class Test {
     }
 
     public void testExportBinFile(){
-        String password = "123456";
+        String password = Main.GENERIC_PASSWORD;
         BrainKey brainKey = new BrainKey(Main.BILTHON_11_BRAIN_KEY, 0);
         Wallet wallet = new Wallet("bilthon-11", brainKey.getBrainKey(), brainKey.getSequenceNumber(), Chains.BITSHARES.CHAIN_ID, password);
         byte[] privateKey = brainKey.getPrivateKey().getPrivKeyBytes();
@@ -692,7 +691,7 @@ public class Test {
         System.out.println("Serialized: "+Util.bytesToHex(serialized));
         try {
             String current = new File(".").getCanonicalPath();
-            String fullPath = current + "/scwall_bithon_11.bin";
+            String fullPath = current + "/scwall_bilthon_11.bin";
             System.out.println("Full path: "+fullPath);
             File file = new File(fullPath);
             FileOutputStream out = new FileOutputStream(file);
@@ -787,13 +786,19 @@ public class Test {
             Authority authority = new Authority(1, authMap, null);
             AccountOptions options = new AccountOptions(address.getPublicKey());
             BrainKey brainKey = new BrainKey(Main.BILTHON_83_BRAIN_KEY, 0);
-            Transaction transaction = new AccountUpdateTransactionBuilder(brainKey.getPrivateKey())
-                    .setAccont(new UserAccount("1.2.140994"))
-//                    .setOwner(authority)
+
+            AccountUpdateOperation operation = new AccountUpdateOperationBuilder()
+                    .setAccount(new UserAccount("1.2.140994"))
                     .setActive(authority)
                     .setOptions(options)
-                    .setBlockData(new BlockData(Main.REF_BLOCK_NUM, Main.REF_BLOCK_PREFIX, Main.RELATIVE_EXPIRATION))
                     .build();
+
+            ArrayList<BaseOperation> opList = new ArrayList<>();
+            opList.add(operation);
+
+            BlockData blockData = new BlockData(Main.REF_BLOCK_NUM, Main.REF_BLOCK_PREFIX, Main.RELATIVE_EXPIRATION);
+            ECKey privateKey = brainKey.getPrivateKey();
+            Transaction transaction = new Transaction(privateKey, blockData, opList);
 
             System.out.println("Json object");
             System.out.println(transaction.toJsonString());
@@ -801,7 +806,7 @@ public class Test {
             System.out.println(Util.bytesToHex(transaction.toBytes()));
         } catch (MalformedAddressException e) {
             System.out.println("MalformedAddressException. Msg: " + e.getMessage());
-        } catch (MalformedTransactionException e) {
+        } catch (MalformedOperationException e) {
             System.out.println("MalformedTransactionException. Msg: " + e.getMessage());
         }
     }

@@ -1,5 +1,9 @@
-package de.bitsharesmunich.graphenej;
+package de.bitsharesmunich.graphenej.operations;
 
+import de.bitsharesmunich.graphenej.AssetAmount;
+import de.bitsharesmunich.graphenej.BaseOperation;
+import de.bitsharesmunich.graphenej.OperationType;
+import de.bitsharesmunich.graphenej.UserAccount;
 import de.bitsharesmunich.graphenej.objects.Memo;
 import com.google.common.primitives.Bytes;
 import com.google.gson.*;
@@ -22,7 +26,6 @@ public class TransferOperation extends BaseOperation {
     private UserAccount from;
     private UserAccount to;
     private Memo memo;
-    private String[] extensions;
 
     public TransferOperation(UserAccount from, UserAccount to, AssetAmount transferAmount, AssetAmount fee){
         super(OperationType.TRANSFER_OPERATION);
@@ -81,7 +84,8 @@ public class TransferOperation extends BaseOperation {
         byte[] toBytes = to.toBytes();
         byte[] amountBytes = amount.toBytes();
         byte[] memoBytes = memo.toBytes();
-        return Bytes.concat(feeBytes, fromBytes, toBytes, amountBytes, memoBytes);
+        byte[] extensions = this.extensions.toBytes();
+        return Bytes.concat(feeBytes, fromBytes, toBytes, amountBytes, memoBytes, extensions);
     }
 
     @Override

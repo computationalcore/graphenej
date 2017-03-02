@@ -1,6 +1,6 @@
 package de.bitsharesmunich.graphenej.models;
 
-import de.bitsharesmunich.graphenej.TransferOperation;
+import de.bitsharesmunich.graphenej.operations.TransferOperation;
 
 
 /**

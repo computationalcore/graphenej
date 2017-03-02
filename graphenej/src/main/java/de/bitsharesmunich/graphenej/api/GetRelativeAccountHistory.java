@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import de.bitsharesmunich.graphenej.AssetAmount;
 import de.bitsharesmunich.graphenej.RPC;
-import de.bitsharesmunich.graphenej.TransferOperation;
+import de.bitsharesmunich.graphenej.operations.TransferOperation;
 import de.bitsharesmunich.graphenej.UserAccount;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
 import de.bitsharesmunich.graphenej.models.ApiCall;

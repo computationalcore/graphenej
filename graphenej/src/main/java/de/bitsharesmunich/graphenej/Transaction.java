@@ -5,6 +5,7 @@ import com.google.gson.*;
 import de.bitsharesmunich.graphenej.interfaces.ByteSerializable;
 import de.bitsharesmunich.graphenej.interfaces.JsonSerializable;
 
+import de.bitsharesmunich.graphenej.operations.TransferOperation;
 import org.bitcoinj.core.DumpedPrivateKey;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.Sha256Hash;
@@ -37,7 +38,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
     private ECKey privateKey;
     private BlockData blockData;
     private List<BaseOperation> operations;
-    private List<Extensions> extensions;
+    private Extensions extensions;
 
     /**
      * Transaction constructor.
@@ -49,7 +50,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
         this.privateKey = privateKey;
         this.blockData = blockData;
         this.operations = operationList;
-        this.extensions = new ArrayList<Extensions>();
+        this.extensions = new Extensions();
     }
 
     /**
@@ -172,17 +173,8 @@ public class Transaction implements ByteSerializable, JsonSerializable {
             byteArray.addAll(Bytes.asList(operation.toBytes()));
         }
 
-        //Adding the number of extensions
-        byteArray.add((byte) this.extensions.size());
-
-        for(Extensions extensions : this.extensions){
-            //TODO: Implement the extensions serialization
-        }
-        // Adding a last zero byte to match the result obtained by the python-graphenelib code
-        // I'm not exactly sure what's the meaning of this last zero byte, but for now I'll just
-        // leave it here and work on signing the transaction.
-        //TODO: Investigate the origin and meaning of this last byte.
-        byteArray.add((byte) 0 );
+        // Adding extensions byte
+        byteArray.addAll(Bytes.asList(this.extensions.toBytes()));
 
         return Bytes.toArray(byteArray);
     }
