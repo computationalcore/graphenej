@@ -51,7 +51,7 @@ public class Wallet {
         byte[] decryptedKey = new byte[Util.KEY_LENGTH];
         secureRandom.nextBytes(decryptedKey);
         this.encryption_key = Util.bytesToHex(Util.encryptAES(decryptedKey, password.getBytes()));
-        this.encrypted_brainkey = Util.bytesToHex(Util.encryptAES(decryptedKey, brainKey.getBytes()));
+        this.encrypted_brainkey = Util.bytesToHex(Util.encryptAES(brainKey.getBytes(), decryptedKey));
         this.brainkey_sequence = brainkeySequence;
         this.chain_id = chainId;
 
