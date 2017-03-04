@@ -136,7 +136,7 @@ public class SubscriptionResponse {
                             secondArgument.add(dynamicGlobal);
                         }else if(grapheneObject.getObjectType() == ObjectType.TRANSACTION_OBJECT){
                             BroadcastedTransaction broadcastedTransaction = new BroadcastedTransaction(grapheneObject.getObjectId());
-                            broadcastedTransaction.setTransaction(context.deserialize(jsonObject.get(BroadcastedTransaction.KEY_TRX), Transaction.class));
+                            broadcastedTransaction.setTransaction((Transaction) context.deserialize(jsonObject.get(BroadcastedTransaction.KEY_TRX), Transaction.class));
                             broadcastedTransaction.setTransactionId(jsonObject.get(BroadcastedTransaction.KEY_TRX_ID).getAsString());
                             secondArgument.add(broadcastedTransaction);
                         }else{

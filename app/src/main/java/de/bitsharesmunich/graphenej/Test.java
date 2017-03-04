@@ -633,7 +633,7 @@ public class Test {
         String password = Main.GENERIC_PASSWORD;
         try {
             String current = new File(".").getCanonicalPath();
-            File file = new File(current + "/bts_vinicius_default_20170218_20170219.bin");
+            File file = new File(current + "/bilthon-36.bin");
             Path path = Paths.get(file.getAbsolutePath());
             byte[] data = Files.readAllBytes(path);
             byte[] publicKey = new byte[FileBin.PUBLIC_KEY_LENGTH];
@@ -673,12 +673,13 @@ public class Test {
     }
 
     public void testExportBinFile(){
-        String password = Main.GENERIC_PASSWORD;
-        BrainKey brainKey = new BrainKey(Main.BILTHON_11_BRAIN_KEY, 0);
-        Wallet wallet = new Wallet("bilthon-11", brainKey.getBrainKey(), brainKey.getSequenceNumber(), Chains.BITSHARES.CHAIN_ID, password);
+        String password = Main.DISCLOSABLE_PASSWORD;
+        BrainKey brainKey = new BrainKey(Main.BILTHON_36_BRAIN_KEY, 0);
+        String accountName = "bilthon-36";
+        Wallet wallet = new Wallet(accountName, brainKey.getBrainKey(), brainKey.getSequenceNumber(), Chains.BITSHARES.CHAIN_ID, password);
         byte[] privateKey = brainKey.getPrivateKey().getPrivKeyBytes();
         PrivateKeyBackup privateKeyBackup = new PrivateKeyBackup(privateKey, brainKey.getSequenceNumber(), 1, wallet.getEncryptionKey(password));
-        LinkedAccount linkedAccount = new LinkedAccount("bilthon-11", Chains.BITSHARES.CHAIN_ID);
+        LinkedAccount linkedAccount = new LinkedAccount(accountName, Chains.BITSHARES.CHAIN_ID);
 
         ArrayList<Wallet> walletList = new ArrayList<>();
         walletList.add(wallet);
@@ -691,7 +692,7 @@ public class Test {
         System.out.println("Serialized: "+Util.bytesToHex(serialized));
         try {
             String current = new File(".").getCanonicalPath();
-            String fullPath = current + "/scwall_bilthon_11.bin";
+            String fullPath = current + "/scwall_"+accountName+".bin";
             System.out.println("Full path: "+fullPath);
             File file = new File(fullPath);
             FileOutputStream out = new FileOutputStream(file);

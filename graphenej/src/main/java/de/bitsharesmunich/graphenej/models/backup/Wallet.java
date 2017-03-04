@@ -1,9 +1,13 @@
 package de.bitsharesmunich.graphenej.models.backup;
 
-import de.bitsharesmunich.graphenej.Chains;
+import de.bitsharesmunich.graphenej.Address;
 import de.bitsharesmunich.graphenej.Util;
 import de.bitsharesmunich.graphenej.crypto.SecureRandomGenerator;
+import org.bitcoinj.core.ECKey;
+import org.bitcoinj.core.Sha256Hash;
+import org.spongycastle.crypto.digests.SHA256Digest;
 
+import java.io.UnsupportedEncodingException;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -55,7 +59,18 @@ public class Wallet {
         this.brainkey_sequence = brainkeySequence;
         this.chain_id = chainId;
 
-        //TODO: Find out how to fill "password_pubkey" and "brainkey_pubkey" fields.
+        try {
+            byte[] passwordHash = Sha256Hash.hash(password.getBytes("UTF8"));
+            this.password_pubkey = new Address(ECKey.fromPublicOnly(ECKey.fromPrivate(passwordHash).getPubKey())).toString();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        try{
+            byte[] brainkeyHash = Sha256Hash.hash(brainKey.getBytes("UTF8"));
+            this.brainkey_pubkey = new Address(ECKey.fromPublicOnly(ECKey.fromPrivate(brainkeyHash).getPubKey())).toString();
+        } catch(UnsupportedEncodingException e){
+            e.printStackTrace();
+        }
 
         Date now = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat(Util.TIME_DATE_FORMAT);
