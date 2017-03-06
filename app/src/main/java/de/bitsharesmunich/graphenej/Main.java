@@ -50,7 +50,7 @@ public class Main {
 //            e.printStackTrace();
 //        }
 //        test.testCustomSerializer();
-//        test.testUserAccountSerialization();
+        test.testUserAccountSerialization();
 //        test.testTransactionSerialization();
 //        test.testLoginSerialization();
 //        test.testNetworkBroadcastSerialization();
@@ -76,7 +76,7 @@ public class Main {
 //        test.testAccountUpdateOperationBroadcast();
 //        test.testCreateBinFile();
 //        test.testImportBinFile();
-        test.testExportBinFile();
+//        test.testExportBinFile();
 //        test.testLzmaCompression();
 //        test.testLzmaDecompression();
 //        test.testSimpleDecompression();

@@ -8,6 +8,9 @@ import de.bitsharesmunich.graphenej.interfaces.JsonSerializable;
  */
 public abstract class BaseOperation implements ByteSerializable, JsonSerializable {
 
+    public static final String KEY_FEE = "fee";
+    public static final String KEY_EXTENSIONS = "extensions";
+
     protected OperationType type;
     protected Extensions extensions;
 

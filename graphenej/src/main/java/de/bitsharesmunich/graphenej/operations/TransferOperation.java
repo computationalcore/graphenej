@@ -14,9 +14,7 @@ import java.lang.reflect.Type;
  * Class used to encapsulate the TransferOperation operation related functionalities.
  */
 public class TransferOperation extends BaseOperation {
-    public static final String KEY_FEE = "fee";
     public static final String KEY_AMOUNT = "amount";
-    public static final String KEY_EXTENSIONS = "extensions";
     public static final String KEY_FROM = "from";
     public static final String KEY_TO = "to";
     public static final String KEY_MEMO = "memo";
