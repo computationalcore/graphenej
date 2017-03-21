@@ -133,7 +133,7 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
                 websocket.sendText(call.toJsonString());
             }else if(baseResponse.id >= BROADCAST_TRANSACTION){
                 Type WitnessResponseType = new TypeToken<WitnessResponse<String>>(){}.getType();
-                WitnessResponse<WitnessResponse<String>> witnessResponse = gson.fromJson(response, WitnessResponseType);
+                WitnessResponse<String> witnessResponse = gson.fromJson(response, WitnessResponseType);
                 mListener.onSuccess(witnessResponse);
                 websocket.disconnect();
             }

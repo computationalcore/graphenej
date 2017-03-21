@@ -276,12 +276,14 @@ public class Test {
             @Override
             public void onSuccess(WitnessResponse response) {
                 System.out.println("onSuccess");
+                System.out.println("Callback.Thread. name: "+Thread.currentThread().getName()+", id: "+Thread.currentThread().getId());
             }
 
             @Override
             public void onError(BaseResponse.Error error) {
                 System.out.println("onError");
                 System.out.println(error.data.message);
+                System.out.println("Callback.Thread. name: "+Thread.currentThread().getName()+", id: "+Thread.currentThread().getId());
             }
         };
 
@@ -330,7 +332,7 @@ public class Test {
 
             mWebSocket.addListener(new TransactionBroadcastSequence(transaction, new Asset("1.3.0"), listener));
             mWebSocket.connect();
-
+            System.out.println("Main.Thread. name: "+Thread.currentThread().getName()+", id: "+Thread.currentThread().getId());
         } catch (MalformedOperationException e) {
             System.out.println("MalformedTransactionException. Msg: " + e.getMessage());
         } catch (IOException e) {
@@ -1189,7 +1191,7 @@ public class Test {
             Calendar to = Calendar.getInstance();
             to.roll(Calendar.DAY_OF_MONTH, false);
 
-            mWebSocket.addListener(new GetTradeHistory("BTS", "EUR", "20161215T0130000", "20161212T233000",100, new WitnessResponseListener() {
+            mWebSocket.addListener(new GetTradeHistory("BTS", "EUR", "20170309T0130000", "20161212T233000",100, new WitnessResponseListener() {
                 @Override
                 public void onSuccess(WitnessResponse response) {
                     List<MarketTrade> orders = (List<MarketTrade>) response.result;

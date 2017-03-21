@@ -50,7 +50,7 @@ public class Main {
 //            e.printStackTrace();
 //        }
 //        test.testCustomSerializer();
-        test.testUserAccountSerialization();
+//        test.testUserAccountSerialization();
 //        test.testTransactionSerialization();
 //        test.testLoginSerialization();
 //        test.testNetworkBroadcastSerialization();
@@ -89,7 +89,7 @@ public class Main {
 //        test.testGetObjects();
 //        test.testGetBlockHeader();
 //        test.testGetLimitOrders();
-//        test.testGetTradeHistory();
+        test.testGetTradeHistory();
 //        test.testAssetSerialization();
 //        test.testGetMarketHistory();
 //        test.testGetAccountBalances();

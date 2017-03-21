@@ -17,11 +17,11 @@ import static org.junit.Assert.*;
  * Created by nelson on 3/6/17.
  */
 public class LimitOrderCreateOperationTest {
-    private final int AMOUNT_TO_SELL = 25000000;
-    private final int MIN_TO_RECEIVE = 1;
-    private final Asset CORE_ASSET = new Asset("1.3.0");
-    private final Asset BIT_USD = new Asset("1.3.121");
-    private final int DEFAULT_EXPIRATION = 1488831620; // 2017-03-06T20:20:20
+    private static final int AMOUNT_TO_SELL = 25000000;
+    private static final int MIN_TO_RECEIVE = 1;
+    private static final Asset CORE_ASSET = new Asset("1.3.0");
+    private static final Asset BIT_USD = new Asset("1.3.121");
+    private static final int DEFAULT_EXPIRATION = 1488831620; // 2017-03-06T20:20:20
 
     private UserAccount seller;
     private AssetAmount amountToSell;
@@ -43,14 +43,14 @@ public class LimitOrderCreateOperationTest {
         LimitOrderCreateOperation operation = new LimitOrderCreateOperation(seller, amountToSell, minToReceive, expiration, true);
         operation.setFee(new AssetAmount(UnsignedLong.valueOf(2), CORE_ASSET));
         byte[] serialized = operation.toBytes();
-        Assert.assertArrayEquals("Correct serialization", serialized, Util.hexToBytes("020000000000000000cbe10840787d01000000000001000000000000007984c4bd5801"));
-        Assert.assertThat("Incorrect serialization", serialized, IsNot.not(IsEqual.equalTo("020000000000000000cbe10840787d01000000000001000000000000007984c4bd5800")));
+        Assert.assertArrayEquals("Correct serialization", serialized, Util.hexToBytes("020000000000000000cbe10840787d01000000000001000000000000007984c4bd580100"));
+        Assert.assertThat("Incorrect serialization", serialized, IsNot.not(IsEqual.equalTo("020000000000000000cbe10840787d01000000000001000000000000007984c4bd580000")));
 
         // Testing serialization of operation with fillOrKill parameter == false
         operation = new LimitOrderCreateOperation(seller, amountToSell, minToReceive, expiration, false);
         operation.setFee(new AssetAmount(UnsignedLong.valueOf(2), CORE_ASSET));
         serialized = operation.toBytes();
-        Assert.assertArrayEquals("Correct serialization", serialized, Util.hexToBytes("020000000000000000cbe10840787d01000000000001000000000000007984c4bd5800"));
-        Assert.assertThat("Incorrect serialization", serialized, IsNot.not(IsEqual.equalTo("020000000000000000cbe10840787d01000000000001000000000000007984c4bd5801")));
+        Assert.assertArrayEquals("Correct serialization", serialized, Util.hexToBytes("020000000000000000cbe10840787d01000000000001000000000000007984c4bd580000"));
+        Assert.assertThat("Incorrect serialization", serialized, IsNot.not(IsEqual.equalTo("020000000000000000cbe10840787d01000000000001000000000000007984c4bd580100")));
     }
 }
