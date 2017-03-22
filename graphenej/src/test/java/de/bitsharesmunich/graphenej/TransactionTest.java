@@ -48,8 +48,12 @@ public class TransactionTest {
     private AssetAmount minToReceive = new AssetAmount(UnsignedLong.valueOf(520), BIT_USD);
     private long expiration;
 
+    // Lock object
     private static final class Lock { }
     private final Object lockObject = new Lock();
+
+    // Response
+    private BaseResponse baseResponse;
 
     /**
      * Generic witness response listener that will just release the lock created in
@@ -60,8 +64,7 @@ public class TransactionTest {
         @Override
         public void onSuccess(WitnessResponse response) {
             System.out.println("onSuccess");
-            WitnessResponse<String> witnessResponse = response;
-            Assert.assertNull(witnessResponse.result);
+            baseResponse = response;
             synchronized (this){
                 this.notifyAll();
             }
@@ -69,9 +72,7 @@ public class TransactionTest {
 
         @Override
         public void onError(BaseResponse.Error error) {
-            System.out.println("onError");
-            System.out.println(error.data.message);
-            Assert.assertNull(error);
+            System.out.println("onError. Msg: "+error.data.message);
             synchronized (this){
                 notifyAll();
             }
@@ -112,10 +113,12 @@ public class TransactionTest {
                 }
             }else{
                 // Otherwise we just use this listener as the lock
-                synchronized (this){
-                    this.wait();
+                synchronized (responseListener){
+                    responseListener.wait();
                 }
             }
+            Assert.assertNotNull(baseResponse);
+            Assert.assertNull(baseResponse.error);
         }catch(NoSuchAlgorithmException e){
             System.out.println("NoSuchAlgoritmException. Msg: " + e.getMessage());
         } catch (InterruptedException e) {
@@ -255,7 +258,7 @@ public class TransactionTest {
                                         @Override
                                         public void onSuccess(WitnessResponse response) {
                                             System.out.println("onSuccess.2");
-                                            Assert.assertNull(response.result);
+                                            baseResponse = response;
                                             synchronized (this){
                                                 notifyAll();
                                             }
@@ -267,7 +270,6 @@ public class TransactionTest {
                                         @Override
                                         public void onError(BaseResponse.Error error) {
                                             System.out.println("onError.2");
-                                            Assert.assertNull(error);
                                             synchronized (this){
                                                 notifyAll();
                                             }
