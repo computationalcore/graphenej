@@ -1137,7 +1137,7 @@ public class Test {
 
             WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
 
-            Asset base = new Asset("1.3.120", "EUR", 4);
+            Asset base = new Asset("1.3.0", "BTS", 4);
             Asset quote = new Asset("1.3.121", "USD", 4);
 
             mWebSocket.addListener(new GetLimitOrders(base.getObjectId(), quote.getObjectId(), 100, new WitnessResponseListener() {
@@ -1150,10 +1150,10 @@ public class Test {
 //                        System.out.println(String.format("base: %d, quote: %d",
 //                                order.sell_price.base.getAmount().longValue(),
 //                                order.sell_price.quote.getAmount().longValue()));
-                        order.sell_price.base.getAsset().setPrecision(base.getPrecision());
-                        order.sell_price.quote.getAsset().setPrecision(quote.getPrecision());
-                        double baseToQuoteExchange = converter.getConversionRate(order.sell_price, Converter.BASE_TO_QUOTE);
-                        double quoteToBaseExchange = converter.getConversionRate(order.sell_price, Converter.QUOTE_TO_BASE);
+                        order.getSellPrice().base.getAsset().setPrecision(base.getPrecision());
+                        order.getSellPrice().quote.getAsset().setPrecision(quote.getPrecision());
+                        double baseToQuoteExchange = converter.getConversionRate(order.getSellPrice(), Converter.BASE_TO_QUOTE);
+                        double quoteToBaseExchange = converter.getConversionRate(order.getSellPrice(), Converter.QUOTE_TO_BASE);
                         System.out.println(String.format("base to quote: %.5f, quote to base: %.5f", baseToQuoteExchange, quoteToBaseExchange));
                     }
                 }

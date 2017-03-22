@@ -4,15 +4,13 @@ import com.google.common.primitives.UnsignedLong;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFactory;
+import de.bitsharesmunich.graphenej.api.GetLimitOrders;
 import de.bitsharesmunich.graphenej.api.TransactionBroadcastSequence;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
 import de.bitsharesmunich.graphenej.models.BaseResponse;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 import de.bitsharesmunich.graphenej.objects.Memo;
-import de.bitsharesmunich.graphenej.operations.LimitOrderCreateOperation;
-import de.bitsharesmunich.graphenej.operations.LimitOrderCreateOperationTest;
-import de.bitsharesmunich.graphenej.operations.TransferOperation;
-import de.bitsharesmunich.graphenej.operations.TransferOperationBuilder;
+import de.bitsharesmunich.graphenej.operations.*;
 import de.bitsharesmunich.graphenej.test.NaiveSSLContext;
 import org.bitcoinj.core.ECKey;
 import org.junit.Assert;
@@ -50,14 +48,22 @@ public class TransactionTest {
     private AssetAmount minToReceive = new AssetAmount(UnsignedLong.valueOf(520), BIT_USD);
     private long expiration;
 
+    private static final class Lock { }
+    private final Object lockObject = new Lock();
+
+    /**
+     * Generic witness response listener that will just release the lock created in
+     * main thread.
+     */
     WitnessResponseListener listener = new WitnessResponseListener() {
+
         @Override
         public void onSuccess(WitnessResponse response) {
             System.out.println("onSuccess");
             WitnessResponse<String> witnessResponse = response;
             Assert.assertNull(witnessResponse.result);
             synchronized (this){
-                notifyAll();
+                this.notifyAll();
             }
         }
 
@@ -74,7 +80,6 @@ public class TransactionTest {
 
     @Before
     public void setup(){
-
     }
 
     /**
@@ -82,8 +87,9 @@ public class TransactionTest {
      * @param privateKey: The private key used to sign the transaction.
      * @param operationList: The list of operations to include
      * @param responseListener: The response listener.
+     * @param lockObject: Optional object to use as a lock
      */
-    private void broadcastTransaction(ECKey privateKey, List<BaseOperation> operationList, WitnessResponseListener responseListener) {
+    private void broadcastTransaction(ECKey privateKey, List<BaseOperation> operationList, WitnessResponseListener responseListener, Object lockObject) {
         try{
             Transaction transaction = new Transaction(privateKey, null, operationList);
 
@@ -96,11 +102,19 @@ public class TransactionTest {
 
             WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
 
-            mWebSocket.addListener(new TransactionBroadcastSequence(transaction, CORE_ASSET, listener));
+            mWebSocket.addListener(new TransactionBroadcastSequence(transaction, CORE_ASSET, responseListener));
             mWebSocket.connect();
-            synchronized (responseListener){
-                responseListener.wait();
-                System.out.println("Wait released");
+
+            // If a lock object is specified, we use it
+            if(lockObject != null){
+                synchronized (lockObject){
+                    lockObject.wait();
+                }
+            }else{
+                // Otherwise we just use this listener as the lock
+                synchronized (this){
+                    this.wait();
+                }
             }
         }catch(NoSuchAlgorithmException e){
             System.out.println("NoSuchAlgoritmException. Msg: " + e.getMessage());
@@ -147,7 +161,7 @@ public class TransactionTest {
         operationList.add(transferOperation2);
 
         // Broadcasting transaction
-        broadcastTransaction(sourcePrivateKey, operationList, listener);
+        broadcastTransaction(sourcePrivateKey, operationList, listener, null);
     }
 
     @Test
@@ -163,6 +177,138 @@ public class TransactionTest {
         operationList.add(operation);
 
         // Broadcasting transaction
-        broadcastTransaction(privateKey, operationList, listener);
+        broadcastTransaction(privateKey, operationList, listener, null);
+    }
+
+    /**
+     * Since tests should be independent of each other, in order to be able to test the cancellation of an
+     * existing order we must first proceed to create one. And after creating one, we must also retrieve
+     * its id in a separate call.
+     *
+     * All of this just makes this test a bit more complex, since we have 3 clearly defined tasks that require
+     * network communication
+     *
+     * 1- Create order
+     * 2- Retrieve order id
+     * 3- Send order cancellation tx
+     *
+     * Only the last one is what we actually want to test
+     *
+     * @throws NoSuchAlgorithmException
+     * @throws IOException
+     * @throws WebSocketException
+     */
+    @Test
+    public void testLimitOrderCancelTransaction() throws NoSuchAlgorithmException, IOException, WebSocketException {
+
+        // We first must create a limit order for this test
+        ECKey privateKey = new BrainKey(BILTHON_15_BRAIN_KEY, 0).getPrivateKey();
+        expiration = (System.currentTimeMillis() / 1000) + 60 * 5;
+
+        // Creating limit order creation operation
+        LimitOrderCreateOperation operation = new LimitOrderCreateOperation(seller, amountToSell, minToReceive, (int) expiration, false);
+        operation.setFee(new AssetAmount(UnsignedLong.valueOf(2), CORE_ASSET));
+
+        ArrayList<BaseOperation> operationList = new ArrayList<>();
+        operationList.add(operation);
+
+        // Broadcasting transaction (Task 1)
+        broadcastTransaction(privateKey, operationList, new WitnessResponseListener() {
+
+            @Override
+            public void onSuccess(WitnessResponse response) {
+
+                System.out.println("onSuccess.0");
+                try{
+                    // Setting up the assets
+                    Asset base = amountToSell.getAsset();
+                    Asset quote = minToReceive.getAsset();
+
+                    SSLContext context = NaiveSSLContext.getInstance("TLS");
+                    WebSocketFactory factory = new WebSocketFactory();
+
+                    // Set the custom SSL context.
+                    factory.setSSLContext(context);
+                    WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
+
+                    // Requesting limit order to cancel (Task 2)
+                    mWebSocket.addListener(new GetLimitOrders(base.getObjectId(), quote.getObjectId(), 100, new WitnessResponseListener() {
+
+                        @Override
+                        public void onSuccess(WitnessResponse response) {
+                            System.out.println("onSuccess.1");
+                            List<LimitOrder> orders = (List<LimitOrder>) response.result;
+                            for(LimitOrder order : orders){
+                                if(order.getSeller().getObjectId().equals(bilthon_15.getObjectId())){
+
+                                    // Instantiating a private key for bilthon-15
+                                    ECKey privateKey = new BrainKey(BILTHON_15_BRAIN_KEY, 0).getPrivateKey();
+
+                                    // Creating limit order cancellation operation
+                                    LimitOrderCancelOperation operation = new LimitOrderCancelOperation(order, bilthon_15);
+                                    ArrayList<BaseOperation> operationList = new ArrayList<>();
+                                    operationList.add(operation);
+
+                                    // Broadcasting order cancellation tx (Task 3)
+                                    broadcastTransaction(privateKey, operationList, new WitnessResponseListener() {
+
+                                        @Override
+                                        public void onSuccess(WitnessResponse response) {
+                                            System.out.println("onSuccess.2");
+                                            Assert.assertNull(response.result);
+                                            synchronized (this){
+                                                notifyAll();
+                                            }
+                                            synchronized (lockObject){
+                                                lockObject.notifyAll();
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onError(BaseResponse.Error error) {
+                                            System.out.println("onError.2");
+                                            Assert.assertNull(error);
+                                            synchronized (this){
+                                                notifyAll();
+                                            }
+                                            synchronized (lockObject){
+                                                lockObject.notifyAll();
+                                            }
+                                        }
+                                    }, null);
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onError(BaseResponse.Error error) {
+                            System.out.println("onError.1");
+                            System.out.println(error.data.message);
+                            Assert.assertNull(error);
+                            synchronized (lockObject){
+                                lockObject.notifyAll();
+                            }
+                        }
+                    }));
+
+                    mWebSocket.connect();
+
+                }catch(NoSuchAlgorithmException e){
+                    System.out.println("NoSuchAlgorithmException. Msg: "+e.getMessage());
+                } catch (WebSocketException e) {
+                    System.out.println("WebSocketException. Msg: "+e.getMessage());
+                } catch (IOException e) {
+                    System.out.println("IOException. Msg: "+e.getMessage());
+                }
+            }
+
+            @Override
+            public void onError(BaseResponse.Error error) {
+                System.out.println("OnError. Msg: "+error.message);
+                synchronized (this){
+                    notifyAll();
+                }
+            }
+        }, lockObject);
     }
 }

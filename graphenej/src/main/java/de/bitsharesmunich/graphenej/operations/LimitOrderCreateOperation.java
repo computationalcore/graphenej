@@ -65,8 +65,7 @@ public class LimitOrderCreateOperation extends BaseOperation {
 
     @Override
     public JsonElement toJsonObject() {
-        JsonArray array = new JsonArray();
-        array.add(this.getId());
+        JsonArray array = (JsonArray) super.toJsonObject();
         JsonObject jsonObject = new JsonObject();
         if(fee != null)
             jsonObject.add(KEY_FEE, fee.toJsonObject());
