@@ -1,17 +1,8 @@
 group 'de.bitsharesmunich'
 version '0.1-SNAPSHOT'
 
-//apply plugin: 'java'
-//
-//model {
-//    components {
-//        main(JvmLibrarySpec)
-//    }
-//}
-//
-//repositories {
-//    mavenCentral()
-//}
+apply plugin: 'com.android.library'
+apply from: 'maven-push.gradle'
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
