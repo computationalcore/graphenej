@@ -7,6 +7,9 @@
 # Gradle
 # ------
 .gradle
+gradle
+gradlew
+gradlew.bat
 /build
 /buildSrc/build
 /subprojects/*/build
@@ -79,7 +82,24 @@ atlassian-ide-plugin.xml
 # ----
 /*.log
 
-src/main/java/com/luminiasoft/bitshares/mycelium/*
-
 # Ignore bin backups
 *.bin
+
+# [Maven]
+# -------
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# Build dir
+graphenej/build
+
+local.properties
