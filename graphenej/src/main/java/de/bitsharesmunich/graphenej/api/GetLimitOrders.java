@@ -59,6 +59,7 @@ public class GetLimitOrders extends WebSocketAdapter {
             Type GetLimitOrdersResponse = new TypeToken<WitnessResponse<List<LimitOrder>>>() {}.getType();
             builder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer());
             builder.registerTypeAdapter(UserAccount.class, new UserAccount.UserAccountSimpleDeserializer());
+            builder.registerTypeAdapter(LimitOrder.class, new LimitOrder.LimitOrderDeserializer());
             WitnessResponse<List<LimitOrder>> witnessResponse = builder.create().fromJson(response, GetLimitOrdersResponse);
             if (witnessResponse.error != null) {
                 this.mListener.onError(witnessResponse.error);

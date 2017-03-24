@@ -129,6 +129,9 @@ public class AssetAmount implements ByteSerializable, JsonSerializable {
         }
     }
 
+    /**
+     * Custom deserializer used for this class
+     */
     public static class AssetAmountDeserializer implements JsonDeserializer<AssetAmount> {
 
         @Override
