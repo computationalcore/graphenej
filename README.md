@@ -1,8 +1,9 @@
 # graphenej
 A Java library for mobile app Developers; Graphene/Bitshares blockchain.
 
-#Sample use
-##Very simple funds transfer
+## Sample use
+
+### Very simple funds transfer
 
 This is a simple transfer operation of 1 BTS from account **bilthon-15** to **bilthon-5**
 ```java
