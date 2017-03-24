@@ -1,17 +1,17 @@
 package de.bitsharesmunich.graphenej.operations;
 
 import com.google.common.primitives.UnsignedLong;
-import de.bitsharesmunich.graphenej.Asset;
-import de.bitsharesmunich.graphenej.AssetAmount;
-import de.bitsharesmunich.graphenej.UserAccount;
-import de.bitsharesmunich.graphenej.Util;
+
 import org.hamcrest.core.IsEqual;
 import org.hamcrest.core.IsNot;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import de.bitsharesmunich.graphenej.Asset;
+import de.bitsharesmunich.graphenej.AssetAmount;
+import de.bitsharesmunich.graphenej.UserAccount;
+import de.bitsharesmunich.graphenej.Util;
 
 /**
  * Created by nelson on 3/6/17.
@@ -44,13 +44,13 @@ public class LimitOrderCreateOperationTest {
         operation.setFee(new AssetAmount(UnsignedLong.valueOf(2), CORE_ASSET));
         byte[] serialized = operation.toBytes();
         Assert.assertArrayEquals("Correct serialization", serialized, Util.hexToBytes("020000000000000000cbe10840787d01000000000001000000000000007984c4bd580100"));
-        Assert.assertThat("Incorrect serialization", serialized, IsNot.not(IsEqual.equalTo("020000000000000000cbe10840787d01000000000001000000000000007984c4bd580000")));
+        Assert.assertThat("Incorrect serialization", serialized, IsNot.not(IsEqual.equalTo(Util.hexToBytes("020000000000000000cbe10840787d01000000000001000000000000007984c4bd580000"))));
 
         // Testing serialization of operation with fillOrKill parameter == false
         operation = new LimitOrderCreateOperation(seller, amountToSell, minToReceive, expiration, false);
         operation.setFee(new AssetAmount(UnsignedLong.valueOf(2), CORE_ASSET));
         serialized = operation.toBytes();
         Assert.assertArrayEquals("Correct serialization", serialized, Util.hexToBytes("020000000000000000cbe10840787d01000000000001000000000000007984c4bd580000"));
-        Assert.assertThat("Incorrect serialization", serialized, IsNot.not(IsEqual.equalTo("020000000000000000cbe10840787d01000000000001000000000000007984c4bd580100")));
+        Assert.assertThat("Incorrect serialization", serialized, IsNot.not(IsEqual.equalTo(Util.hexToBytes("020000000000000000cbe10840787d01000000000001000000000000007984c4bd580100"))));
     }
 }
