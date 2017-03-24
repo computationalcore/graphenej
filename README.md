@@ -1,7 +1,27 @@
 # graphenej
 A Java library for mobile app Developers; Graphene/Bitshares blockchain.
 
-## Sample use
+## Usage
+
+In your root build.gradle, add this if you don't already have it.
+
+```Groovy
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+```
+
+In yout app module, add the following dependency:
+
+```Groovy
+dependencies {
+    compile 'com.github.kenCode-de:graphenej:0.4.1'
+}
+```
+
+## Example
 
 ### Very simple funds transfer
 
