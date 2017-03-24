@@ -1,13 +1,18 @@
 package de.bitsharesmunich.graphenej;
 
-import com.google.gson.*;
-import de.bitsharesmunich.graphenej.interfaces.ByteSerializable;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Type;
+
+import de.bitsharesmunich.graphenej.interfaces.ByteSerializable;
 
 /**
  *
@@ -19,7 +24,7 @@ public class LimitOrder extends GrapheneObject implements ByteSerializable {
     public static final String KEY_SELLER = "seller";
     public static final String KEY_FOR_SALE = "for_sale";
     public static final String KEY_DEFERRED_FEE = "deferred_fee";
-    public static final String KEY_PRICE = "key_price";
+    public static final String KEY_PRICE = "sell_price";
 
     private String expiration;
     private UserAccount seller;
