@@ -3,7 +3,6 @@ package de.bitsharesmunich.graphenej;
 import java.math.BigDecimal;
 import java.math.MathContext;
 
-import com.google.common.primitives.UnsignedLong;
 import de.bitsharesmunich.graphenej.errors.IncompleteAssetError;
 import de.bitsharesmunich.graphenej.models.BucketObject;
 

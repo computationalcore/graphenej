@@ -4,12 +4,17 @@ import com.google.common.primitives.Bytes;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import de.bitsharesmunich.graphenej.*;
 
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+
+import de.bitsharesmunich.graphenej.AssetAmount;
+import de.bitsharesmunich.graphenej.BaseOperation;
+import de.bitsharesmunich.graphenej.OperationType;
+import de.bitsharesmunich.graphenej.UserAccount;
+import de.bitsharesmunich.graphenej.Util;
 
 /**
  * Operation used to denote the creation of a limit order on the blockchain.
@@ -41,6 +46,14 @@ public class LimitOrderCreateOperation extends BaseOperation {
     private AssetAmount minToReceive;
     private int expiration;
     private boolean fillOrKill;
+
+    public LimitOrderCreateOperation(UserAccount seller, AssetAmount toSell, AssetAmount minToReceive, boolean fillOrKill){
+        super(OperationType.LIMIT_ORDER_CREATE_OPERATION);
+        this.seller = seller;
+        this.amountToSell = toSell;
+        this.minToReceive = minToReceive;
+        this.fillOrKill = fillOrKill;
+    }
 
     /**
      * @param seller: Id of the seller
