@@ -122,7 +122,8 @@ public class GetLimitOrdersTest {
                     OrderBook orderBook = new OrderBook(orders);
 
                     AssetAmount toBuy = new AssetAmount(UnsignedLong.valueOf(9850000), quote);
-                    LimitOrderCreateOperation operation = orderBook.exchange(seller, base, toBuy);
+                    int expiration = (int) ((System.currentTimeMillis() + 60000) / 1000);
+                    LimitOrderCreateOperation operation = orderBook.exchange(seller, base, toBuy, expiration);
 
                     // Testing the successfull creation of a limit order create operation
                     Assert.assertTrue(operation != null);

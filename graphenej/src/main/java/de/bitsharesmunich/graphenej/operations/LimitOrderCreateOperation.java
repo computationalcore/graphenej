@@ -47,14 +47,6 @@ public class LimitOrderCreateOperation extends BaseOperation {
     private int expiration;
     private boolean fillOrKill;
 
-    public LimitOrderCreateOperation(UserAccount seller, AssetAmount toSell, AssetAmount minToReceive, boolean fillOrKill){
-        super(OperationType.LIMIT_ORDER_CREATE_OPERATION);
-        this.seller = seller;
-        this.amountToSell = toSell;
-        this.minToReceive = minToReceive;
-        this.fillOrKill = fillOrKill;
-    }
-
     /**
      * @param seller: Id of the seller
      * @param toSell: Id of the asset to sell
@@ -99,6 +91,48 @@ public class LimitOrderCreateOperation extends BaseOperation {
     @Override
     public void setFee(AssetAmount assetAmount) {
         this.fee = assetAmount;
+    }
+
+    public AssetAmount getFee(){ return this.fee; }
+
+    public UserAccount getSeller() {
+        return seller;
+    }
+
+    public void setSeller(UserAccount seller) {
+        this.seller = seller;
+    }
+
+    public AssetAmount getAmountToSell() {
+        return amountToSell;
+    }
+
+    public void setAmountToSell(AssetAmount amountToSell) {
+        this.amountToSell = amountToSell;
+    }
+
+    public AssetAmount getMinToReceive() {
+        return minToReceive;
+    }
+
+    public void setMinToReceive(AssetAmount minToReceive) {
+        this.minToReceive = minToReceive;
+    }
+
+    public int getExpiration() {
+        return expiration;
+    }
+
+    public void setExpiration(int expiration) {
+        this.expiration = expiration;
+    }
+
+    public boolean isFillOrKill() {
+        return fillOrKill;
+    }
+
+    public void setFillOrKill(boolean fillOrKill) {
+        this.fillOrKill = fillOrKill;
     }
 
     @Override

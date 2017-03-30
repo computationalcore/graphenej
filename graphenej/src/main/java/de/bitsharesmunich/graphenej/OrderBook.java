@@ -36,7 +36,8 @@ public class OrderBook {
     }
 
     /**
-     * Method used to exchange a specific amount of an asset (The base) for another one (The quote) at market value.
+     * High level method used to exchange a specific amount of an asset (The base) for another
+     * one (The quote) at market value.
      *
      * It should analyze the order book and figure out the optimal amount of the base asset to give
      * away in order to obtain the desired amount of the quote asset.
@@ -44,22 +45,37 @@ public class OrderBook {
      * @param seller: User account of the seller, used to build the limit order create operation
      * @param myBaseAsset: The asset the user is willing to give away
      * @param myQuoteAmount: The amount of a given asset the user wants
+     * @param expiration: The expiration time of the limit order
      *
      * @return An instance of the LimitOrderCreateOperation class, which is ready to be broadcasted.
      */
-    public LimitOrderCreateOperation exchange(UserAccount seller, Asset myBaseAsset, AssetAmount myQuoteAmount){
+    public LimitOrderCreateOperation exchange(UserAccount seller, Asset myBaseAsset, AssetAmount myQuoteAmount, int expiration){
+        AssetAmount toSell = new AssetAmount(UnsignedLong.valueOf(calculateRequiredBase(myQuoteAmount)), myBaseAsset);
+        AssetAmount toReceive = myQuoteAmount;
+        LimitOrderCreateOperation buyOrder = new LimitOrderCreateOperation(seller, toSell, toReceive, expiration, true);
+
+        return buyOrder;
+    }
+
+    /**
+     * Given a specific amount of a desired asset, this method will calculate how much of the corresponding
+     * asset we need to offer to perform a successful transaction with the current order book.
+     * @param quoteAmount: The amount of the desired asset.
+     * @return: The minimum amount of the base asset that we need to give away
+     */
+    public long calculateRequiredBase(AssetAmount quoteAmount){
         long totalBought = 0;
         long totalSold = 0;
-        for(int i = 0; i < this.limitOrders.size() && totalBought < myQuoteAmount.getAmount().longValue(); i++){
+        for(int i = 0; i < this.limitOrders.size() && totalBought < quoteAmount.getAmount().longValue(); i++){
             LimitOrder order = this.limitOrders.get(i);
 
             // If the base asset is the same as our quote asset, we have a match
-            if(order.getSellPrice().base.getAsset().getObjectId().equals(myQuoteAmount.getAsset().getObjectId())){
+            if(order.getSellPrice().base.getAsset().getObjectId().equals(quoteAmount.getAsset().getObjectId())){
                 // My quote amount, is the order's base amount
                 long orderAmount = order.getSellPrice().base.getAmount().longValue();
 
                 // The amount of the quote asset we still need
-                long stillNeed = myQuoteAmount.getAmount().longValue() - totalBought;
+                long stillNeed = quoteAmount.getAmount().longValue() - totalBought;
 
                 // If the offered amount is greater than what we still need, we exchange just what we need
                 if(orderAmount >= stillNeed) {
@@ -72,10 +88,6 @@ public class OrderBook {
                 }
             }
         }
-        AssetAmount toSell = new AssetAmount(UnsignedLong.valueOf(totalSold), myBaseAsset);
-        AssetAmount toReceive = myQuoteAmount;
-        LimitOrderCreateOperation buyOrder = new LimitOrderCreateOperation(seller, toSell, toReceive, true);
-
-        return buyOrder;
+        return totalSold;
     }
 }
