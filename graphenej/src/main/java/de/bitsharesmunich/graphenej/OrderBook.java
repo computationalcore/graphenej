@@ -72,7 +72,7 @@ public class OrderBook {
             // If the base asset is the same as our quote asset, we have a match
             if(order.getSellPrice().base.getAsset().getObjectId().equals(quoteAmount.getAsset().getObjectId())){
                 // My quote amount, is the order's base amount
-                long orderAmount = order.getSellPrice().base.getAmount().longValue();
+                long orderAmount = order.getForSale();
 
                 // The amount of the quote asset we still need
                 long stillNeed = quoteAmount.getAmount().longValue() - totalBought;

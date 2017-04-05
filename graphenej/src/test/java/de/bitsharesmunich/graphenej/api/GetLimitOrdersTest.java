@@ -35,7 +35,7 @@ public class GetLimitOrdersTest {
     private String BLOCK_PAY_DE = System.getenv("BLOCKPAY_DE");
     private UserAccount seller = new UserAccount("1.2.143563");
     private final Asset base = new Asset("1.3.0", "BTS", 5);
-    private final Asset quote = new Asset("1.3.121", "USD", 4);
+    private final Asset quote = new Asset("1.3.120", "EUR", 4);
 
     private SSLContext context;
     private WebSocket mWebSocket;
