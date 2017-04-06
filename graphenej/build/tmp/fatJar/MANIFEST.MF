@@ -1,5 +1,0 @@
-Manifest-Version: 1.0
-Implementation-Title: Graphenej test
-Implementation-Version: 0.1-SNAPSHOT
-Main-Class: de.bitsharesmunich.graphenej.Main
-
