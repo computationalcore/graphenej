@@ -34,8 +34,8 @@ import static org.hamcrest.CoreMatchers.is;
 public class GetLimitOrdersTest {
     private String BLOCK_PAY_DE = System.getenv("BLOCKPAY_DE");
     private UserAccount seller = new UserAccount("1.2.143563");
-    private final Asset base = new Asset("1.3.0", "BTS", 5);
-    private final Asset quote = new Asset("1.3.120", "EUR", 4);
+    private final Asset base = new Asset("1.3.121", "USD", 4);
+    private final Asset quote = new Asset("1.3.0", "BTS", 5);
 
     private SSLContext context;
     private WebSocket mWebSocket;
@@ -121,13 +121,14 @@ public class GetLimitOrdersTest {
                     List<LimitOrder> orders = (List<LimitOrder>) response.result;
                     OrderBook orderBook = new OrderBook(orders);
 
-                    AssetAmount toBuy = new AssetAmount(UnsignedLong.valueOf(9850000), quote);
+                    AssetAmount toBuy = new AssetAmount(UnsignedLong.valueOf(100000), quote);
                     int expiration = (int) ((System.currentTimeMillis() + 60000) / 1000);
                     LimitOrderCreateOperation operation = orderBook.exchange(seller, base, toBuy, expiration);
 
                     // Testing the successfull creation of a limit order create operation
                     Assert.assertTrue(operation != null);
-
+                    double price = (double) Math.pow(10, base.getPrecision() - quote.getPrecision()) * operation.getMinToReceive().getAmount().longValue() / operation.getAmountToSell().getAmount().longValue();
+                    System.out.println("price: "+price);
                     synchronized (GetLimitOrdersTest.this){
                         GetLimitOrdersTest.this.notifyAll();
                     }

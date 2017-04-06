@@ -1,7 +1,9 @@
 package de.bitsharesmunich.graphenej;
 
+import com.google.common.math.DoubleMath;
 import com.google.common.primitives.UnsignedLong;
 
+import java.math.RoundingMode;
 import java.util.List;
 
 import de.bitsharesmunich.graphenej.operations.LimitOrderCreateOperation;
@@ -80,7 +82,10 @@ public class OrderBook {
                 // If the offered amount is greater than what we still need, we exchange just what we need
                 if(orderAmount >= stillNeed) {
                     totalBought += stillNeed;
-                    totalSold += (order.getSellPrice().quote.getAmount().longValue() * stillNeed) / order.getSellPrice().base.getAmount().longValue();;
+                    double additionalRatio = (double) stillNeed / (double) order.getSellPrice().base.getAmount().longValue();
+                    double additionalAmount = order.getSellPrice().quote.getAmount().longValue() * additionalRatio;
+                    long longAdditional = DoubleMath.roundToLong(additionalAmount, RoundingMode.HALF_UP);
+                    totalSold += longAdditional;
                 }else{
                     // If the offered amount is less than what we need, we exchange the whole order
                     totalBought += orderAmount;
