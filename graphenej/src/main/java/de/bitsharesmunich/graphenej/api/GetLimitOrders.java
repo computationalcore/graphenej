@@ -3,9 +3,15 @@ package de.bitsharesmunich.graphenej.api;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.neovisionaries.ws.client.WebSocket;
-import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFrame;
+
+import java.io.Serializable;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import de.bitsharesmunich.graphenej.AssetAmount;
 import de.bitsharesmunich.graphenej.LimitOrder;
 import de.bitsharesmunich.graphenej.RPC;
@@ -15,16 +21,10 @@ import de.bitsharesmunich.graphenej.models.ApiCall;
 import de.bitsharesmunich.graphenej.models.BaseResponse;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 
-import java.io.Serializable;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 /**
  * Created by nelson on 11/15/16.
  */
-public class GetLimitOrders extends WebSocketAdapter {
+public class GetLimitOrders extends BaseGrapheneHandler {
 
     private String a;
     private String b;
@@ -32,6 +32,7 @@ public class GetLimitOrders extends WebSocketAdapter {
     private WitnessResponseListener mListener;
 
     public GetLimitOrders(String a, String b, int limit, WitnessResponseListener mListener) {
+        super(mListener);
         this.a = a;
         this.b = b;
         this.limit = limit;

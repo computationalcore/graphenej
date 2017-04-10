@@ -1,27 +1,36 @@
 package de.bitsharesmunich.graphenej.api;
 
-import java.io.Serializable;
-import java.lang.reflect.Type;
-import java.text.SimpleDateFormat;
-import java.util.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import de.bitsharesmunich.graphenej.*;
+import com.neovisionaries.ws.client.WebSocket;
+import com.neovisionaries.ws.client.WebSocketException;
+import com.neovisionaries.ws.client.WebSocketFrame;
+
+import java.io.Serializable;
+import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
+
+import de.bitsharesmunich.graphenej.Asset;
+import de.bitsharesmunich.graphenej.AssetAmount;
+import de.bitsharesmunich.graphenej.BlockData;
+import de.bitsharesmunich.graphenej.RPC;
+import de.bitsharesmunich.graphenej.Transaction;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
 import de.bitsharesmunich.graphenej.models.ApiCall;
 import de.bitsharesmunich.graphenej.models.BaseResponse;
 import de.bitsharesmunich.graphenej.models.DynamicGlobalProperties;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
-import com.neovisionaries.ws.client.WebSocket;
-import com.neovisionaries.ws.client.WebSocketAdapter;
-import com.neovisionaries.ws.client.WebSocketException;
-import com.neovisionaries.ws.client.WebSocketFrame;
 
 /**
  * Class that will handle the transaction publication procedure.
  */
-public class TransactionBroadcastSequence extends WebSocketAdapter {
+public class TransactionBroadcastSequence extends BaseGrapheneHandler {
     private final String TAG = this.getClass().getName();
 
     private final static int LOGIN_ID = 1;
@@ -45,6 +54,7 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
      *                of the transaction broadcast operation.
      */
     public TransactionBroadcastSequence(Transaction transaction, Asset feeAsset, WitnessResponseListener listener){
+        super(listener);
         this.transaction = transaction;
         this.feeAsset = feeAsset;
         this.mListener = listener;
