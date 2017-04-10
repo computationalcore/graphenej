@@ -3,15 +3,7 @@ package de.bitsharesmunich.graphenej.api;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.neovisionaries.ws.client.WebSocket;
-import com.neovisionaries.ws.client.WebSocketAdapter;
-import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFrame;
-import de.bitsharesmunich.graphenej.Asset;
-import de.bitsharesmunich.graphenej.RPC;
-import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
-import de.bitsharesmunich.graphenej.models.ApiCall;
-import de.bitsharesmunich.graphenej.models.BaseResponse;
-import de.bitsharesmunich.graphenej.models.WitnessResponse;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
@@ -19,14 +11,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import de.bitsharesmunich.graphenej.Asset;
+import de.bitsharesmunich.graphenej.RPC;
+import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
+import de.bitsharesmunich.graphenej.models.ApiCall;
+import de.bitsharesmunich.graphenej.models.WitnessResponse;
+
 /**
  * Created by nelson on 12/12/16.
  */
-public class LookupAssetSymbols extends WebSocketAdapter {
+public class LookupAssetSymbols extends BaseGrapheneHandler {
     private WitnessResponseListener mListener;
     private List<Asset> assets;
 
     public LookupAssetSymbols(List<Asset> assets, WitnessResponseListener listener){
+        super(listener);
         this.assets = assets;
         this.mListener = listener;
     }
@@ -58,22 +57,5 @@ public class LookupAssetSymbols extends WebSocketAdapter {
     public void onFrameSent(WebSocket websocket, WebSocketFrame frame) throws Exception {
         if(frame.isTextFrame())
             System.out.println(">>> "+frame.getPayloadText());
-    }
-
-    @Override
-    public void onError(WebSocket websocket, WebSocketException cause) throws Exception {
-        System.out.println("onError. cause: "+cause.getMessage());
-        mListener.onError(new BaseResponse.Error(cause.getMessage()));
-        websocket.disconnect();
-    }
-
-    @Override
-    public void handleCallbackError(WebSocket websocket, Throwable cause) throws Exception {
-        System.out.println("handleCallbackError. cause: "+cause.getMessage()+", error: "+cause.getClass());
-        for (StackTraceElement element : cause.getStackTrace()){
-            System.out.println(element.getFileName()+"#"+element.getClassName()+":"+element.getLineNumber());
-        }
-        mListener.onError(new BaseResponse.Error(cause.getMessage()));
-        websocket.disconnect();
     }
 }

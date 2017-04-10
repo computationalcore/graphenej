@@ -3,18 +3,7 @@ package de.bitsharesmunich.graphenej.api;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import de.bitsharesmunich.graphenej.AssetAmount;
-import de.bitsharesmunich.graphenej.RPC;
-import de.bitsharesmunich.graphenej.operations.TransferOperation;
-import de.bitsharesmunich.graphenej.UserAccount;
-import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
-import de.bitsharesmunich.graphenej.models.ApiCall;
-import de.bitsharesmunich.graphenej.models.BaseResponse;
-import de.bitsharesmunich.graphenej.models.HistoricalTransfer;
-import de.bitsharesmunich.graphenej.models.WitnessResponse;
 import com.neovisionaries.ws.client.WebSocket;
-import com.neovisionaries.ws.client.WebSocketAdapter;
-import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFrame;
 
 import java.io.Serializable;
@@ -23,11 +12,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import de.bitsharesmunich.graphenej.AssetAmount;
+import de.bitsharesmunich.graphenej.RPC;
+import de.bitsharesmunich.graphenej.UserAccount;
+import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
+import de.bitsharesmunich.graphenej.models.ApiCall;
+import de.bitsharesmunich.graphenej.models.BaseResponse;
+import de.bitsharesmunich.graphenej.models.HistoricalTransfer;
+import de.bitsharesmunich.graphenej.models.WitnessResponse;
+import de.bitsharesmunich.graphenej.operations.TransferOperation;
+
 /**
  * Class used to encapsulate the communication sequence used to retrieve the transaction history of
  * a given user.
  */
-public class GetRelativeAccountHistory extends WebSocketAdapter {
+public class GetRelativeAccountHistory extends BaseGrapheneHandler {
     // Sequence of message ids
     private final static int LOGIN_ID = 1;
     private final static int GET_HISTORY_ID = 2;
@@ -57,6 +56,7 @@ public class GetRelativeAccountHistory extends WebSocketAdapter {
      * @param listener Listener to be notified with the result of this query
      */
     public GetRelativeAccountHistory(UserAccount userAccount, int stop, int limit, int start, WitnessResponseListener listener){
+        super(listener);
         if(limit > MAX_LIMIT) limit = MAX_LIMIT;
         this.mUserAccount = userAccount;
         this.stop = stop;
@@ -71,6 +71,7 @@ public class GetRelativeAccountHistory extends WebSocketAdapter {
      * @param listener Listener to be notified with the result of this query
      */
     public GetRelativeAccountHistory(UserAccount userAccount, WitnessResponseListener listener){
+        super(listener);
         this.mUserAccount = userAccount;
         this.stop = DEFAULT_STOP;
         this.limit = MAX_LIMIT;
@@ -131,19 +132,5 @@ public class GetRelativeAccountHistory extends WebSocketAdapter {
     public void onFrameSent(WebSocket websocket, WebSocketFrame frame) throws Exception {
         if(frame.isTextFrame())
             System.out.println(">>> "+frame.getPayloadText());
-    }
-
-    @Override
-    public void onError(WebSocket websocket, WebSocketException cause) throws Exception {
-        System.out.println("onError. Msg: "+cause.getMessage());
-        mListener.onError(new BaseResponse.Error(cause.getMessage()));
-        websocket.disconnect();
-    }
-
-    @Override
-    public void handleCallbackError(WebSocket websocket, Throwable cause) throws Exception {
-        System.out.println("handleCallbackError. Msg: "+cause.getMessage());
-        mListener.onError(new BaseResponse.Error(cause.getMessage()));
-        websocket.disconnect();
     }
 }
