@@ -23,12 +23,13 @@ import java.util.Map;
 /**
  * Created by nelson on 11/15/16.
  */
-public class GetAccountsByAddress extends WebSocketAdapter {
+public class GetAccountsByAddress extends BaseGrapheneHandler {
 
     private Address address;
     private WitnessResponseListener mListener;
 
     public GetAccountsByAddress(Address address, WitnessResponseListener listener) {
+        super(listener);
         this.address = address;
         this.mListener = listener;
     }
