@@ -43,6 +43,7 @@ public class GetRelativeAccountHistory extends BaseGrapheneHandler {
     private int limit;
     private int start;
     private WitnessResponseListener mListener;
+    private WebSocket mWebsocket;
 
     private int currentId = 1;
     private int apiId = -1;
@@ -81,6 +82,7 @@ public class GetRelativeAccountHistory extends BaseGrapheneHandler {
 
     @Override
     public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
+        mWebsocket = websocket;
         ArrayList<Serializable> loginParams = new ArrayList<>();
         loginParams.add(null);
         loginParams.add(null);
@@ -108,23 +110,51 @@ public class GetRelativeAccountHistory extends BaseGrapheneHandler {
                 WitnessResponse<Integer> witnessResponse = gson.fromJson(response, ApiIdResponse);
                 apiId = witnessResponse.result.intValue();
 
-                ArrayList<Serializable> params = new ArrayList<>();
-                params.add(mUserAccount.toJsonString());
-                params.add(this.stop);
-                params.add(this.limit);
-                params.add(this.start);
-
-                ApiCall getRelativeAccountHistoryCall = new ApiCall(apiId, RPC.CALL_GET_RELATIVE_ACCOUNT_HISTORY, params, RPC.VERSION, currentId);
-                websocket.sendText(getRelativeAccountHistoryCall.toJsonString());
-            }else if(baseResponse.id == GET_HISTORY_DATA){
+                sendRelativeAccountHistoryRequest();
+            }else if(baseResponse.id >= GET_HISTORY_DATA){
                 Type RelativeAccountHistoryResponse = new TypeToken<WitnessResponse<List<HistoricalTransfer>>>(){}.getType();
                 GsonBuilder gsonBuilder = new GsonBuilder();
                 gsonBuilder.registerTypeAdapter(TransferOperation.class, new TransferOperation.TransferDeserializer());
                 gsonBuilder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer());
                 WitnessResponse<List<HistoricalTransfer>> transfersResponse = gsonBuilder.create().fromJson(response, RelativeAccountHistoryResponse);
                 mListener.onSuccess(transfersResponse);
-                websocket.disconnect();
             }
+        }
+    }
+
+    /**
+     * Sends the actual get_relative_account_history request.
+     */
+    private void sendRelativeAccountHistoryRequest(){
+        ArrayList<Serializable> params = new ArrayList<>();
+        params.add(mUserAccount.toJsonString());
+        params.add(this.stop);
+        params.add(this.limit);
+        params.add(this.start);
+
+        ApiCall getRelativeAccountHistoryCall = new ApiCall(apiId, RPC.CALL_GET_RELATIVE_ACCOUNT_HISTORY, params, RPC.VERSION, currentId);
+        mWebsocket.sendText(getRelativeAccountHistoryCall.toJsonString());
+    }
+
+    /**
+     * Updates the arguments and makes a new call to the get_relative_account_history API
+     * @param stop Sequence number of earliest operation
+     * @param limit Maximum number of operations to retrieve (must not exceed 100)
+     * @param start Sequence number of the most recent operation to retrieve
+     */
+    public void retry(int stop, int limit, int start){
+        this.stop = stop;
+        this.limit = limit;
+        this.start = start;
+        sendRelativeAccountHistoryRequest();
+    }
+
+    /**
+     * Disconnects the websocket
+     */
+    public void disconnect(){
+        if(mWebsocket != null && mWebsocket.isOpen()){
+            mWebsocket.disconnect();
         }
     }
 
