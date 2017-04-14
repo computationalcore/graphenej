@@ -1,6 +1,5 @@
 package de.bitsharesmunich.graphenej;
 
-import de.bitsharesmunich.graphenej.crypto.SecureRandomGenerator;
 import org.bitcoinj.core.DumpedPrivateKey;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.NetworkParameters;
@@ -10,6 +9,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+
+import de.bitsharesmunich.graphenej.crypto.SecureRandomGenerator;
 
 /**
  * Class used to encapsulate all BrainKey-related operations.
@@ -21,6 +22,9 @@ public class BrainKey {
 
     /* The required number of words */
     public static final int BRAINKEY_WORD_COUNT = 12;
+
+    /* The default sequence number is zero */
+    public static final int DEFAULT_SEQUENCE_NUMBER = 0;
 
     /* The corresponding private key derivated from the brain key */
     private ECKey mPrivateKey;
