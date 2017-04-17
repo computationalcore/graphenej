@@ -23,21 +23,29 @@ import de.bitsharesmunich.graphenej.models.WitnessResponse;
  */
 public class GetKeyReferences extends BaseGrapheneHandler {
 
-    private Address address;
-    private WitnessResponseListener mListener;
+    private List<Address> addresses;
 
-    public GetKeyReferences(Address address, WitnessResponseListener listener) {
+    public GetKeyReferences(Address address, WitnessResponseListener listener){
         super(listener);
-        this.address = address;
+        addresses = new ArrayList<>();
+        addresses.add(address);
+
+    }
+
+    public GetKeyReferences(List<Address> addresses, WitnessResponseListener listener) {
+        super(listener);
+        this.addresses = addresses;
         this.mListener = listener;
     }
 
     @Override
     public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
-        ArrayList<Serializable> params = new ArrayList();
-        ArrayList<Serializable> addresses = new ArrayList();
-        addresses.add(address.toString());
-        params.add(addresses);
+        ArrayList<Serializable> inner = new ArrayList();
+        for(Address addr : addresses){
+            inner.add(addr.toString());
+        }
+        ArrayList<Serializable> params = new ArrayList<>();
+        params.add(inner);
         ApiCall getAccountByAddress = new ApiCall(0, RPC.CALL_GET_KEY_REFERENCES, params, RPC.VERSION, 1);
         websocket.sendText(getAccountByAddress.toJsonString());
     }
