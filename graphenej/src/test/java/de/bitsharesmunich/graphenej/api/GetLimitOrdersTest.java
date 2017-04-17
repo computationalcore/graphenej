@@ -1,18 +1,13 @@
 package de.bitsharesmunich.graphenej.api;
 
 import com.google.common.primitives.UnsignedLong;
-import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketException;
-import com.neovisionaries.ws.client.WebSocketFactory;
 
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
-
-import javax.net.ssl.SSLContext;
 
 import de.bitsharesmunich.graphenej.Asset;
 import de.bitsharesmunich.graphenej.AssetAmount;
@@ -24,32 +19,16 @@ import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
 import de.bitsharesmunich.graphenej.models.BaseResponse;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 import de.bitsharesmunich.graphenej.operations.LimitOrderCreateOperation;
-import de.bitsharesmunich.graphenej.test.NaiveSSLContext;
 
 import static org.hamcrest.CoreMatchers.is;
 
 /**
  * Created by nelson on 3/24/17.
  */
-public class GetLimitOrdersTest {
-    private String BLOCK_PAY_DE = System.getenv("BLOCKPAY_DE");
+public class GetLimitOrdersTest extends BaseApiTest {
     private UserAccount seller = new UserAccount("1.2.143563");
     private final Asset base = new Asset("1.3.121", "USD", 4);
     private final Asset quote = new Asset("1.3.0", "BTS", 5);
-
-    private SSLContext context;
-    private WebSocket mWebSocket;
-
-    @Before
-    public void setUp() throws Exception {
-        context = NaiveSSLContext.getInstance("TLS");
-        WebSocketFactory factory = new WebSocketFactory();
-
-        // Set the custom SSL context.
-        factory.setSSLContext(context);
-
-        mWebSocket = factory.createSocket(BLOCK_PAY_DE);
-    }
 
     @Test
     public void testGetLimitOrders(){
