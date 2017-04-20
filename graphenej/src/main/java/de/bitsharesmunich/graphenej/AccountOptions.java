@@ -1,13 +1,19 @@
 package de.bitsharesmunich.graphenej;
 
 import com.google.common.primitives.Bytes;
-import com.google.gson.*;
-import de.bitsharesmunich.graphenej.errors.MalformedAddressException;
-import de.bitsharesmunich.graphenej.interfaces.GrapheneSerializable;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+
+import de.bitsharesmunich.graphenej.errors.MalformedAddressException;
+import de.bitsharesmunich.graphenej.interfaces.GrapheneSerializable;
 
 /**
  * Created by nelson on 12/5/16.
@@ -107,6 +113,9 @@ public class AccountOptions implements GrapheneSerializable {
                 //TODO: Check this serialization
                 byteArray.addAll(Bytes.asList(vote.toBytes()));
             }
+
+            // Account options's extensions
+            byteArray.addAll(Bytes.asList(extensions.toBytes()));
         }else{
             byteArray.add((byte) 0);
         }

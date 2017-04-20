@@ -110,10 +110,28 @@ public class BrainKey {
         return wif.toString();
     }
 
+    /**
+     * Returns the public address derived from this brain key
+     * @param prefix: The prefix to use in this address.
+     * @return An instance of the {@link Address} class
+     */
+    public Address getPublicAddress(String prefix){
+        return new Address(ECKey.fromPublicOnly(getPublicKey()), prefix);
+    }
+
+    /**
+     * Brain key words getter
+     * @return: The word sequence that comprises this brain key
+     */
     public String getBrainKey(){
         return mBrainKey;
     }
 
+    /**
+     * Sequence number getter
+     * @return: The sequence number used alongside with the brain key words in order
+     * to derive the private key
+     */
     public int getSequenceNumber(){
         return sequenceNumber;
     }

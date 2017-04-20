@@ -1,10 +1,19 @@
 package de.bitsharesmunich.graphenej;
 
 import com.google.gson.JsonElement;
+
+import de.bitsharesmunich.graphenej.interfaces.ByteSerializable;
 import de.bitsharesmunich.graphenej.interfaces.GrapheneSerializable;
 
 /**
- * Used whenever we have an optional field.
+ * Container template class used whenever we have an optional field.
+ *
+ * The idea here is that the binary serialization of this field should be performed
+ * in a specific way determined by the field implementing the {@link ByteSerializable}
+ * interface, more specifically using the {@link ByteSerializable#toBytes()} method.
+ *
+ * However, if the field is missing, the Optional class should be able to know how
+ * to serialize it, as this is always done by placing an zero byte.
  */
 public class Optional<T extends GrapheneSerializable> implements GrapheneSerializable {
     private T optionalField;
