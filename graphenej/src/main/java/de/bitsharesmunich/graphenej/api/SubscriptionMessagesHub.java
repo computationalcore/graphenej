@@ -4,18 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.neovisionaries.ws.client.WebSocket;
-import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFrame;
-import de.bitsharesmunich.graphenej.AssetAmount;
-import de.bitsharesmunich.graphenej.RPC;
-import de.bitsharesmunich.graphenej.Transaction;
-import de.bitsharesmunich.graphenej.operations.TransferOperation;
-import de.bitsharesmunich.graphenej.interfaces.SubscriptionHub;
-import de.bitsharesmunich.graphenej.interfaces.SubscriptionListener;
-import de.bitsharesmunich.graphenej.models.ApiCall;
-import de.bitsharesmunich.graphenej.models.SubscriptionResponse;
-import de.bitsharesmunich.graphenej.models.WitnessResponse;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
@@ -23,12 +13,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import de.bitsharesmunich.graphenej.AssetAmount;
+import de.bitsharesmunich.graphenej.RPC;
+import de.bitsharesmunich.graphenej.Transaction;
+import de.bitsharesmunich.graphenej.interfaces.SubscriptionHub;
+import de.bitsharesmunich.graphenej.interfaces.SubscriptionListener;
+import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
+import de.bitsharesmunich.graphenej.models.ApiCall;
+import de.bitsharesmunich.graphenej.models.SubscriptionResponse;
+import de.bitsharesmunich.graphenej.models.WitnessResponse;
+import de.bitsharesmunich.graphenej.operations.TransferOperation;
+
 /**
  * A websocket adapter prepared to be used as a basic dispatch hub for subscription messages.
  *
  * Created by nelson on 1/26/17.
  */
-public class SubscriptionMessagesHub extends WebSocketAdapter implements SubscriptionHub {
+public class SubscriptionMessagesHub extends BaseGrapheneHandler implements SubscriptionHub {
     // Sequence of message ids
     private final static int LOGIN_ID = 1;
     private final static int GET_DATABASE_ID = 2;
@@ -44,7 +45,8 @@ public class SubscriptionMessagesHub extends WebSocketAdapter implements Subscri
     private int currentId = LOGIN_ID;
     private int databaseApiId = -1;
 
-    public SubscriptionMessagesHub(String user, String password){
+    public SubscriptionMessagesHub(String user, String password, WitnessResponseListener errorListener){
+        super(errorListener);
         this.user = user;
         this.password = password;
         this.mSubscriptionDeserializer = new SubscriptionResponse.SubscriptionResponseDeserializer();
