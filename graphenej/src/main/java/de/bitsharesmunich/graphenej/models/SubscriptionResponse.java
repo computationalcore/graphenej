@@ -9,9 +9,14 @@ import com.google.gson.JsonParseException;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
-import de.bitsharesmunich.graphenej.*;
+import de.bitsharesmunich.graphenej.GrapheneObject;
+import de.bitsharesmunich.graphenej.ObjectType;
+import de.bitsharesmunich.graphenej.Transaction;
 import de.bitsharesmunich.graphenej.interfaces.SubscriptionListener;
 
 /**
@@ -57,7 +62,14 @@ public class SubscriptionResponse {
      * objects that might come once the are subscribed to the witness notifications.
      */
     public static class SubscriptionResponseDeserializer implements JsonDeserializer<SubscriptionResponse> {
+        /**
+         * Map of ObjectType to Integer used to keep track of the current amount of listener per type
+         */
         private HashMap<ObjectType, Integer> listenerTypeCount;
+
+        /**
+         * List of listeners
+         */
         private LinkedList<SubscriptionListener> mListeners;
 
         /**
@@ -128,12 +140,8 @@ public class SubscriptionResponse {
                             balanceObject.balance = jsonObject.get(AccountBalanceUpdate.KEY_BALANCE).getAsLong();
                             secondArgument.add(balanceObject);
                         }else if(grapheneObject.getObjectType() == ObjectType.DYNAMIC_GLOBAL_PROPERTY_OBJECT){
-                            DynamicGlobalProperties dynamicGlobal = new DynamicGlobalProperties(grapheneObject.getObjectId());
-                            dynamicGlobal.head_block_number = jsonObject.get(DynamicGlobalProperties.KEY_HEAD_BLOCK_NUMBER).getAsLong();
-                            dynamicGlobal.head_block_id = jsonObject.get(DynamicGlobalProperties.KEY_HEAD_BLOCK_ID).getAsString();
-                            dynamicGlobal.time = jsonObject.get(DynamicGlobalProperties.KEY_TIME).getAsString();
-                            //TODO: Deserialize all other attributes
-                            secondArgument.add(dynamicGlobal);
+                            DynamicGlobalProperties dynamicGlobalProperties = context.deserialize(object, DynamicGlobalProperties.class);
+                            secondArgument.add(dynamicGlobalProperties);
                         }else if(grapheneObject.getObjectType() == ObjectType.TRANSACTION_OBJECT){
                             BroadcastedTransaction broadcastedTransaction = new BroadcastedTransaction(grapheneObject.getObjectId());
                             broadcastedTransaction.setTransaction((Transaction) context.deserialize(jsonObject.get(BroadcastedTransaction.KEY_TRX), Transaction.class));

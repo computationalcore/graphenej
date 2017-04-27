@@ -9,12 +9,9 @@ import com.neovisionaries.ws.client.WebSocketFrame;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
 import de.bitsharesmunich.graphenej.Asset;
 import de.bitsharesmunich.graphenej.AssetAmount;
@@ -74,7 +71,9 @@ public class TransactionBroadcastSequence extends BaseGrapheneHandler {
         if(frame.isTextFrame())
             System.out.println("<<< "+frame.getPayloadText());
         String response = frame.getPayloadText();
-        Gson gson = new Gson();
+        GsonBuilder builder = new GsonBuilder();
+        builder.registerTypeAdapter(DynamicGlobalProperties.class, new DynamicGlobalProperties.DynamicGlobalPropertiesDeserializer());
+        Gson gson = builder.create();
         BaseResponse baseResponse = gson.fromJson(response, BaseResponse.class);
         if(baseResponse.error != null){
             mListener.onError(baseResponse.error);
@@ -104,12 +103,8 @@ public class TransactionBroadcastSequence extends BaseGrapheneHandler {
                 WitnessResponse<DynamicGlobalProperties> witnessResponse = gson.fromJson(response, DynamicGlobalPropertiesResponse);
                 DynamicGlobalProperties dynamicProperties = witnessResponse.result;
 
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-                Date date = dateFormat.parse(dynamicProperties.time);
-
                 // Adjusting dynamic block data to every transaction
-                long expirationTime = (date.getTime() / 1000) + Transaction.DEFAULT_EXPIRATION_TIME;
+                long expirationTime = (dynamicProperties.time.getTime() / 1000) + Transaction.DEFAULT_EXPIRATION_TIME;
                 String headBlockId = dynamicProperties.head_block_id;
                 long headBlockNumber = dynamicProperties.head_block_number;
                 transaction.setBlockData(new BlockData(headBlockNumber, headBlockId, expirationTime));

@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.neovisionaries.ws.client.WebSocket;
-import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFrame;
 
 import java.io.Serializable;
@@ -20,6 +19,7 @@ import de.bitsharesmunich.graphenej.interfaces.SubscriptionHub;
 import de.bitsharesmunich.graphenej.interfaces.SubscriptionListener;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
 import de.bitsharesmunich.graphenej.models.ApiCall;
+import de.bitsharesmunich.graphenej.models.DynamicGlobalProperties;
 import de.bitsharesmunich.graphenej.models.SubscriptionResponse;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 import de.bitsharesmunich.graphenej.operations.TransferOperation;
@@ -55,6 +55,7 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
         builder.registerTypeAdapter(Transaction.class, new Transaction.TransactionDeserializer());
         builder.registerTypeAdapter(TransferOperation.class, new TransferOperation.TransferDeserializer());
         builder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer());
+        builder.registerTypeAdapter(DynamicGlobalProperties.class, new DynamicGlobalProperties.DynamicGlobalPropertiesDeserializer());
         this.gson = builder.create();
     }
 
@@ -101,7 +102,7 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
             ApiCall getDatabaseId = new ApiCall(databaseApiId, RPC.CALL_SET_SUBSCRIBE_CALLBACK, subscriptionParams, RPC.VERSION, currentId);
             websocket.sendText(getDatabaseId.toJsonString());
         }else if(currentId == SUBCRIPTION_REQUEST){
-            // Listeners are called from within the SubscriptionResponseDeserializer, so there's nothing to handle here.
+            // There's nothing to handle here.
         }else{
             SubscriptionResponse subscriptionResponse = gson.fromJson(message, SubscriptionResponse.class);
         }
@@ -111,15 +112,5 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
     @Override
     public void onFrameSent(WebSocket websocket, WebSocketFrame frame) throws Exception {
         System.out.println(">> "+frame.getPayloadText());
-    }
-
-    @Override
-    public void onError(WebSocket websocket, WebSocketException cause) throws Exception {
-        super.onError(websocket, cause);
-    }
-
-    @Override
-    public void handleCallbackError(WebSocket websocket, Throwable cause) throws Exception {
-        super.handleCallbackError(websocket, cause);
     }
 }
