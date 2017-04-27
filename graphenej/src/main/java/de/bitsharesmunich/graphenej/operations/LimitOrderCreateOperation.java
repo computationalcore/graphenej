@@ -2,10 +2,15 @@ package de.bitsharesmunich.graphenej.operations;
 
 import com.google.common.primitives.Bytes;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 
+import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -150,5 +155,79 @@ public class LimitOrderCreateOperation extends BaseOperation {
         byte[] extensions = this.extensions.toBytes();
 
         return Bytes.concat(feeBytes, sellerBytes, amountBytes, minAmountBytes, expirationBytes, fillOrKill, extensions);
+    }
+
+    /**
+     * Deserializer used to convert the JSON-formatted representation of a limit_order_create_operation
+     * into its java object version.
+     *
+     * The following is an example of the serialized form of this operation:
+     *
+     *   [
+     *       1,
+     *        {
+     *            "fee": {
+     *            "amount": 14676,
+     *            "asset_id": "1.3.0"
+     *        },
+     *        "seller": "1.2.36449",
+     *        "amount_to_sell": {
+     *            "amount": 945472,
+     *            "asset_id": "1.3.850"
+     *        },
+     *        "min_to_receive": {
+     *            "amount": 4354658,
+     *            "asset_id": "1.3.861"
+     *        },
+     *        "expiration": "1963-11-25T06:31:44",
+     *        "fill_or_kill": false,
+     *        "extensions": []
+     *        }
+     *    ]
+     *
+     *
+     */
+    public static class LimitOrderCreateDeserializer implements JsonDeserializer<LimitOrderCreateOperation> {
+
+        @Override
+        public LimitOrderCreateOperation deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            if(json.isJsonArray()){
+                // This block is used just to check if we are in the first step of the deserialization
+                // when we are dealing with an array.
+                JsonArray serializedTransfer = json.getAsJsonArray();
+                if(serializedTransfer.get(0).getAsInt() != OperationType.LIMIT_ORDER_CREATE_OPERATION.ordinal()){
+                    // If the operation type does not correspond to a transfer operation, we return null
+                    return null;
+                }else{
+                    // Calling itself recursively, this is only done once, so there will be no problems.
+                    return context.deserialize(serializedTransfer.get(1), LimitOrderCreateOperation.class);
+                }
+            }else{
+                // This block is called in the second recursion and takes care of deserializing the
+                // limit order data itself.
+                JsonObject jsonObject = json.getAsJsonObject();
+
+                AssetAmount fee = context.deserialize(jsonObject.get(KEY_FEE), AssetAmount.class);
+                UserAccount seller = context.deserialize(jsonObject.get(KEY_SELLER), UserAccount.class);
+                AssetAmount amountToSell = context.deserialize(jsonObject.get(KEY_AMOUNT_TO_SELL), AssetAmount.class);
+                AssetAmount minToReceive = context.deserialize(jsonObject.get(KEY_MIN_TO_RECEIVE), AssetAmount.class);
+                String expiration = jsonObject.get(KEY_EXPIRATION).getAsString();
+                boolean fillOrKill = jsonObject.get(KEY_FILL_OR_KILL).getAsBoolean();
+
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat(Util.TIME_DATE_FORMAT);
+                int expirationPosix = 0;
+                try {
+                    Date expirationDate = simpleDateFormat.parse(expiration);
+                    expirationPosix = (int) (expirationDate.getTime() / 1000);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                // Creating an instance of the LimitOrderCreateOperation and setting the fee
+                LimitOrderCreateOperation operation = new LimitOrderCreateOperation(seller, amountToSell, minToReceive, expirationPosix, fillOrKill);
+                operation.setFee(fee);
+                return operation;
+            }
+        }
     }
 }

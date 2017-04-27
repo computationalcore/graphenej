@@ -120,8 +120,8 @@ public class SubscriptionResponse {
             JsonArray subArray = paramsArray.get(1).getAsJsonArray().get(0).getAsJsonArray();
             for(JsonElement object : subArray){
                 if(object.isJsonObject()){
-
                     GrapheneObject grapheneObject = new GrapheneObject(object.getAsJsonObject().get(KEY_ID).getAsString());
+
                     int listenerTypeCount = 0;
                     if(this.listenerTypeCount.containsKey(grapheneObject.getObjectType())){
                         listenerTypeCount = this.listenerTypeCount.get(grapheneObject.getObjectType());

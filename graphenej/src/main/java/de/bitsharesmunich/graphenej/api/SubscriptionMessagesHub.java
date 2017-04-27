@@ -15,6 +15,7 @@ import java.util.Map;
 import de.bitsharesmunich.graphenej.AssetAmount;
 import de.bitsharesmunich.graphenej.RPC;
 import de.bitsharesmunich.graphenej.Transaction;
+import de.bitsharesmunich.graphenej.UserAccount;
 import de.bitsharesmunich.graphenej.interfaces.SubscriptionHub;
 import de.bitsharesmunich.graphenej.interfaces.SubscriptionListener;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
@@ -22,6 +23,7 @@ import de.bitsharesmunich.graphenej.models.ApiCall;
 import de.bitsharesmunich.graphenej.models.DynamicGlobalProperties;
 import de.bitsharesmunich.graphenej.models.SubscriptionResponse;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
+import de.bitsharesmunich.graphenej.operations.LimitOrderCreateOperation;
 import de.bitsharesmunich.graphenej.operations.TransferOperation;
 
 /**
@@ -54,7 +56,9 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
         builder.registerTypeAdapter(SubscriptionResponse.class, mSubscriptionDeserializer);
         builder.registerTypeAdapter(Transaction.class, new Transaction.TransactionDeserializer());
         builder.registerTypeAdapter(TransferOperation.class, new TransferOperation.TransferDeserializer());
+        builder.registerTypeAdapter(LimitOrderCreateOperation.class, new LimitOrderCreateOperation.LimitOrderCreateDeserializer());
         builder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer());
+        builder.registerTypeAdapter(UserAccount.class, new UserAccount.UserAccountSimpleDeserializer());
         builder.registerTypeAdapter(DynamicGlobalProperties.class, new DynamicGlobalProperties.DynamicGlobalPropertiesDeserializer());
         this.gson = builder.create();
     }
@@ -104,7 +108,7 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
         }else if(currentId == SUBCRIPTION_REQUEST){
             // There's nothing to handle here.
         }else{
-            SubscriptionResponse subscriptionResponse = gson.fromJson(message, SubscriptionResponse.class);
+            gson.fromJson(message, SubscriptionResponse.class);
         }
         currentId++;
     }
