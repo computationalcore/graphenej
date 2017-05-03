@@ -11,6 +11,7 @@ import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 import de.bitsharesmunich.graphenej.GrapheneObject;
 import de.bitsharesmunich.graphenej.Util;
@@ -70,6 +71,7 @@ public class DynamicGlobalProperties extends GrapheneObject implements Serializa
             dynamicGlobal.head_block_id = jsonObject.get(DynamicGlobalProperties.KEY_HEAD_BLOCK_ID).getAsString();
 
             SimpleDateFormat dateFormat = new SimpleDateFormat(Util.TIME_DATE_FORMAT);
+            dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
             try {
                 dynamicGlobal.time = dateFormat.parse(jsonObject.get(DynamicGlobalProperties.KEY_TIME).getAsString());
             } catch (ParseException e) {
