@@ -5,6 +5,7 @@ import com.neovisionaries.ws.client.WebSocketException;
 import org.junit.Test;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import de.bitsharesmunich.graphenej.ObjectType;
@@ -37,10 +38,13 @@ public class SubscriptionMessagesHubTest extends BaseApiTest {
 
     @Test
     public void testGlobalPropertiesDeserializer(){
+        ArrayList<ObjectType> interestingObjects = new ArrayList();
+        interestingObjects.add(ObjectType.TRANSACTION_OBJECT);
+        interestingObjects.add(ObjectType.DYNAMIC_GLOBAL_PROPERTY_OBJECT);
         try{
-            mMessagesHub = new SubscriptionMessagesHub("", "", mErrorListener);
+            mMessagesHub = new SubscriptionMessagesHub("", "", interestingObjects, mErrorListener);
             mMessagesHub.addSubscriptionListener(new SubscriptionListener() {
-                private int MAX_MESSAGES = 5;
+                private int MAX_MESSAGES = 10;
                 private int messageCounter = 0;
 
                 @Override
@@ -50,14 +54,15 @@ public class SubscriptionMessagesHubTest extends BaseApiTest {
 
                 @Override
                 public void onSubscriptionUpdate(SubscriptionResponse response) {
+                    System.out.println("On block");
                     if(response.params.size() == 2){
                         try{
                             List<Object> payload = (List) response.params.get(1);
                             if(payload.size() > 0 && payload.get(0) instanceof DynamicGlobalProperties){
                                 DynamicGlobalProperties globalProperties = (DynamicGlobalProperties) payload.get(0);
-                                System.out.println("time.....................: "+globalProperties.time);
-                                System.out.println("next_maintenance_time....: "+globalProperties.next_maintenance_time);
-                                System.out.println("recent_slots_filled......: "+globalProperties.recent_slots_filled);
+//                                System.out.println("time.....................: "+globalProperties.time);
+//                                System.out.println("next_maintenance_time....: "+globalProperties.next_maintenance_time);
+//                                System.out.println("recent_slots_filled......: "+globalProperties.recent_slots_filled);
                             }
                         }catch(Exception e){
                             System.out.println("Exception");
@@ -72,6 +77,18 @@ public class SubscriptionMessagesHubTest extends BaseApiTest {
                             SubscriptionMessagesHubTest.this.notifyAll();
                         }
                     }
+                }
+            });
+
+            mMessagesHub.addSubscriptionListener(new SubscriptionListener() {
+                @Override
+                public ObjectType getInterestObjectType() {
+                    return ObjectType.TRANSACTION_OBJECT;
+                }
+
+                @Override
+                public void onSubscriptionUpdate(SubscriptionResponse response) {
+                    System.out.println("onTx");
                 }
             });
             mWebSocket.addListener(mMessagesHub);

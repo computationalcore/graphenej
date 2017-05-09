@@ -14,7 +14,7 @@ import de.bitsharesmunich.graphenej.test.NaiveSSLContext;
  */
 
 public class BaseApiTest {
-    protected String BLOCK_PAY_DE = System.getenv("BLOCKPAY_DE");
+    protected String BLOCK_PAY_DE = System.getenv("OPENLEDGER_EU");
 
     protected SSLContext context;
     protected WebSocket mWebSocket;
