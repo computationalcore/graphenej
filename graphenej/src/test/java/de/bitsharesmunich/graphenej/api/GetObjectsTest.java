@@ -25,6 +25,7 @@ import de.bitsharesmunich.graphenej.models.WitnessResponse;
 public class GetObjectsTest extends BaseApiTest{
     private final Asset asset = new Asset("1.3.0", "BTS", 5);
     private final UserAccount account = new UserAccount("1.2.116354");
+    private final UserAccount bilthon_25 = new UserAccount("1.2.151069");
     private final String bitAssetId = "2.4.13";
 
     @Test
@@ -68,7 +69,7 @@ public class GetObjectsTest extends BaseApiTest{
     public void testGetAccount(){
         try{
             ArrayList<String> ids = new ArrayList<>();
-            ids.add(account.getObjectId());
+            ids.add(bilthon_25.getObjectId());
             mWebSocket.addListener(new GetObjects(ids, new WitnessResponseListener() {
 
                 @Override
@@ -76,10 +77,11 @@ public class GetObjectsTest extends BaseApiTest{
                     System.out.println("onSuccess");
                     List<GrapheneObject> result = (List<GrapheneObject>) response.result;
                     UserAccount userAccount = (UserAccount) result.get(0);
-                    System.out.println("Account name: "+userAccount.getName());
-                    System.out.println("json string: "+userAccount.toJsonString());
-                    System.out.println("owner: "+userAccount.getOwner().getKeyAuthList().get(0).getAddress());
-                    System.out.println("active: "+userAccount.getActive().getKeyAuthList().get(0).getAddress());
+                    System.out.println("Account name.....: "+userAccount.getName());
+                    System.out.println("json string......: "+userAccount.toJsonString());
+                    System.out.println("owner............: "+userAccount.getOwner().getKeyAuthList().get(0).getAddress());
+                    System.out.println("active key.......: "+userAccount.getActive().getKeyAuthList().get(0).getAddress());
+                    System.out.println("active account...: "+userAccount.getActive().getAccountAuthList().get(0).getObjectId());
                     System.out.println("memo: "+userAccount.getOptions().getMemoKey().getAddress());
                     synchronized (GetObjectsTest.this){
                         GetObjectsTest.this.notifyAll();

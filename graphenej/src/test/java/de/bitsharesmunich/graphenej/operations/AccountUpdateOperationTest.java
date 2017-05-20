@@ -39,8 +39,8 @@ public class AccountUpdateOperationTest {
     @Before
     public void setup(){
         try{
-            HashMap<Address, Integer> keyAuth = new HashMap<>();
-            keyAuth.put(new Address(ADDRESS), 1);
+            HashMap<Address, Long> keyAuth = new HashMap<>();
+            keyAuth.put(new Address(ADDRESS), 1l);
             active = new Authority();
             active.setKeyAuthorities(keyAuth);
 

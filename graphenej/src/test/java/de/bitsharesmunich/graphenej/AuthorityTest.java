@@ -1,15 +1,12 @@
 package de.bitsharesmunich.graphenej;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
-import java.util.InputMismatchException;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
 /**
  * Created by nelson on 12/16/16.
@@ -25,19 +22,19 @@ public class AuthorityTest {
     public void setUp() throws Exception {
         authority = new Authority();
         sameAuthority = new Authority();
-        HashMap<UserAccount, Integer> accountAuthorityMap = new HashMap<>();
+        HashMap<UserAccount, Long> accountAuthorityMap = new HashMap<>();
         UserAccount userAccount = new UserAccount("1.2.20000");
-        accountAuthorityMap.put(userAccount, 1);
+        accountAuthorityMap.put(userAccount, 1l);
         differentAuthority = new Authority(1, null, accountAuthorityMap);
 
         Address address1 = new Address("BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY");
         Address address2 = new Address("BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY");
         PublicKey publicKey = address1.getPublicKey();
         PublicKey samePublicKey = address2.getPublicKey();
-        HashMap<PublicKey, Integer> keyMap1 = new HashMap<>();
-        HashMap<PublicKey, Integer> keyMap2 = new HashMap<>();
-        keyMap1.put(publicKey, 1);
-        keyMap2.put(samePublicKey, 1);
+        HashMap<PublicKey, Long> keyMap1 = new HashMap<>();
+        HashMap<PublicKey, Long> keyMap2 = new HashMap<>();
+        keyMap1.put(publicKey, 1l);
+        keyMap2.put(samePublicKey, 1l);
         keyAuthority1 = new Authority(1, keyMap1, null);
         keyAuthority2 = new Authority(1, keyMap2, null);
 
