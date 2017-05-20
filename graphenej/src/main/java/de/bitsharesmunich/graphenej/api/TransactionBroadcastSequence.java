@@ -1,27 +1,33 @@
 package de.bitsharesmunich.graphenej.api;
 
-import java.io.Serializable;
-import java.lang.reflect.Type;
-import java.text.SimpleDateFormat;
-import java.util.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import de.bitsharesmunich.graphenej.*;
+import com.neovisionaries.ws.client.WebSocket;
+import com.neovisionaries.ws.client.WebSocketException;
+import com.neovisionaries.ws.client.WebSocketFrame;
+
+import java.io.Serializable;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import de.bitsharesmunich.graphenej.Asset;
+import de.bitsharesmunich.graphenej.AssetAmount;
+import de.bitsharesmunich.graphenej.BlockData;
+import de.bitsharesmunich.graphenej.RPC;
+import de.bitsharesmunich.graphenej.Transaction;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
 import de.bitsharesmunich.graphenej.models.ApiCall;
 import de.bitsharesmunich.graphenej.models.BaseResponse;
 import de.bitsharesmunich.graphenej.models.DynamicGlobalProperties;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
-import com.neovisionaries.ws.client.WebSocket;
-import com.neovisionaries.ws.client.WebSocketAdapter;
-import com.neovisionaries.ws.client.WebSocketException;
-import com.neovisionaries.ws.client.WebSocketFrame;
 
 /**
  * Class that will handle the transaction publication procedure.
  */
-public class TransactionBroadcastSequence extends WebSocketAdapter {
+public class TransactionBroadcastSequence extends BaseGrapheneHandler {
     private final String TAG = this.getClass().getName();
 
     private final static int LOGIN_ID = 1;
@@ -45,6 +51,7 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
      *                of the transaction broadcast operation.
      */
     public TransactionBroadcastSequence(Transaction transaction, Asset feeAsset, WitnessResponseListener listener){
+        super(listener);
         this.transaction = transaction;
         this.feeAsset = feeAsset;
         this.mListener = listener;
@@ -64,7 +71,9 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
         if(frame.isTextFrame())
             System.out.println("<<< "+frame.getPayloadText());
         String response = frame.getPayloadText();
-        Gson gson = new Gson();
+        GsonBuilder builder = new GsonBuilder();
+        builder.registerTypeAdapter(DynamicGlobalProperties.class, new DynamicGlobalProperties.DynamicGlobalPropertiesDeserializer());
+        Gson gson = builder.create();
         BaseResponse baseResponse = gson.fromJson(response, BaseResponse.class);
         if(baseResponse.error != null){
             mListener.onError(baseResponse.error);
@@ -94,12 +103,8 @@ public class TransactionBroadcastSequence extends WebSocketAdapter {
                 WitnessResponse<DynamicGlobalProperties> witnessResponse = gson.fromJson(response, DynamicGlobalPropertiesResponse);
                 DynamicGlobalProperties dynamicProperties = witnessResponse.result;
 
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-                Date date = dateFormat.parse(dynamicProperties.time);
-
                 // Adjusting dynamic block data to every transaction
-                long expirationTime = (date.getTime() / 1000) + Transaction.DEFAULT_EXPIRATION_TIME;
+                long expirationTime = (dynamicProperties.time.getTime() / 1000) + Transaction.DEFAULT_EXPIRATION_TIME;
                 String headBlockId = dynamicProperties.head_block_id;
                 long headBlockNumber = dynamicProperties.head_block_number;
                 transaction.setBlockData(new BlockData(headBlockNumber, headBlockId, expirationTime));

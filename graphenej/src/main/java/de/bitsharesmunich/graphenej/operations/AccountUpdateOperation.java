@@ -24,7 +24,6 @@ public class AccountUpdateOperation extends BaseOperation {
     private Optional<Authority> owner;
     private Optional<Authority> active;
     private Optional<AccountOptions> new_options;
-    private Extensions extensions;
 
     /**
      * Account update operation constructor.

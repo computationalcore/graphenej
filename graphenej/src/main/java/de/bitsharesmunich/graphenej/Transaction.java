@@ -1,11 +1,16 @@
 package de.bitsharesmunich.graphenej;
 
 import com.google.common.primitives.Bytes;
-import com.google.gson.*;
-import de.bitsharesmunich.graphenej.interfaces.ByteSerializable;
-import de.bitsharesmunich.graphenej.interfaces.JsonSerializable;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
-import de.bitsharesmunich.graphenej.operations.TransferOperation;
 import org.bitcoinj.core.DumpedPrivateKey;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.Sha256Hash;
@@ -18,6 +23,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+
+import de.bitsharesmunich.graphenej.interfaces.ByteSerializable;
+import de.bitsharesmunich.graphenej.interfaces.JsonSerializable;
+import de.bitsharesmunich.graphenej.operations.LimitOrderCreateOperation;
+import de.bitsharesmunich.graphenej.operations.TransferOperation;
 
 /**
  * Class used to represent a generic Graphene transaction.
@@ -263,10 +273,9 @@ public class Transaction implements ByteSerializable, JsonSerializable {
                 for (JsonElement jsonOperation : jsonObject.get(KEY_OPERATIONS).getAsJsonArray()) {
                     int operationId = jsonOperation.getAsJsonArray().get(0).getAsInt();
                     if (operationId == OperationType.TRANSFER_OPERATION.ordinal()) {
-                        System.out.println("Transfer operation detected!");
                         operation = context.deserialize(jsonOperation, TransferOperation.class);
                     } else if (operationId == OperationType.LIMIT_ORDER_CREATE_OPERATION.ordinal()) {
-                        //TODO: Add operation deserialization support
+                        operation = context.deserialize(jsonOperation, LimitOrderCreateOperation.class);
                     } else if (operationId == OperationType.LIMIT_ORDER_CANCEL_OPERATION.ordinal()) {
                         //TODO: Add operation deserialization support
                     } else if (operationId == OperationType.CALL_ORDER_UPDATE_OPERATION.ordinal()) {

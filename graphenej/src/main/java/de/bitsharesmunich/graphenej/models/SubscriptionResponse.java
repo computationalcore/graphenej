@@ -9,9 +9,14 @@ import com.google.gson.JsonParseException;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
-import de.bitsharesmunich.graphenej.*;
+import de.bitsharesmunich.graphenej.GrapheneObject;
+import de.bitsharesmunich.graphenej.ObjectType;
+import de.bitsharesmunich.graphenej.Transaction;
 import de.bitsharesmunich.graphenej.interfaces.SubscriptionListener;
 
 /**
@@ -57,7 +62,14 @@ public class SubscriptionResponse {
      * objects that might come once the are subscribed to the witness notifications.
      */
     public static class SubscriptionResponseDeserializer implements JsonDeserializer<SubscriptionResponse> {
+        /**
+         * Map of ObjectType to Integer used to keep track of the current amount of listener per type
+         */
         private HashMap<ObjectType, Integer> listenerTypeCount;
+
+        /**
+         * List of listeners
+         */
         private LinkedList<SubscriptionListener> mListeners;
 
         /**
@@ -97,6 +109,9 @@ public class SubscriptionResponse {
         public SubscriptionResponse deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             SubscriptionResponse response = new SubscriptionResponse();
             JsonObject responseObject = json.getAsJsonObject();
+            if(!responseObject.has(KEY_METHOD)){
+                return response;
+            }
             response.method = responseObject.get(KEY_METHOD).getAsString();
 
             JsonArray paramsArray = responseObject.get(KEY_PARAMS).getAsJsonArray();
@@ -105,11 +120,15 @@ public class SubscriptionResponse {
             ArrayList<Serializable> secondArgument = new ArrayList<>();
             response.params.add(secondArgument);
 
+            // Hash map used to record the type of objects present in this subscription message
+            // and only alert listeners that might be interested
+            HashMap<ObjectType, Boolean> objectMap = new HashMap<>();
+
             JsonArray subArray = paramsArray.get(1).getAsJsonArray().get(0).getAsJsonArray();
             for(JsonElement object : subArray){
                 if(object.isJsonObject()){
-
                     GrapheneObject grapheneObject = new GrapheneObject(object.getAsJsonObject().get(KEY_ID).getAsString());
+
                     int listenerTypeCount = 0;
                     if(this.listenerTypeCount.containsKey(grapheneObject.getObjectType())){
                         listenerTypeCount = this.listenerTypeCount.get(grapheneObject.getObjectType());
@@ -126,18 +145,17 @@ public class SubscriptionResponse {
                             balanceObject.owner = jsonObject.get(AccountBalanceUpdate.KEY_OWNER).getAsString();
                             balanceObject.asset_type = jsonObject.get(AccountBalanceUpdate.KEY_ASSET_TYPE).getAsString();
                             balanceObject.balance = jsonObject.get(AccountBalanceUpdate.KEY_BALANCE).getAsLong();
+                            objectMap.put(ObjectType.ACCOUNT_BALANCE_OBJECT, true);
                             secondArgument.add(balanceObject);
                         }else if(grapheneObject.getObjectType() == ObjectType.DYNAMIC_GLOBAL_PROPERTY_OBJECT){
-                            DynamicGlobalProperties dynamicGlobal = new DynamicGlobalProperties(grapheneObject.getObjectId());
-                            dynamicGlobal.head_block_number = jsonObject.get(DynamicGlobalProperties.KEY_HEAD_BLOCK_NUMBER).getAsLong();
-                            dynamicGlobal.head_block_id = jsonObject.get(DynamicGlobalProperties.KEY_HEAD_BLOCK_ID).getAsString();
-                            dynamicGlobal.time = jsonObject.get(DynamicGlobalProperties.KEY_TIME).getAsString();
-                            //TODO: Deserialize all other attributes
-                            secondArgument.add(dynamicGlobal);
+                            DynamicGlobalProperties dynamicGlobalProperties = context.deserialize(object, DynamicGlobalProperties.class);
+                            objectMap.put(ObjectType.DYNAMIC_GLOBAL_PROPERTY_OBJECT, true);
+                            secondArgument.add(dynamicGlobalProperties);
                         }else if(grapheneObject.getObjectType() == ObjectType.TRANSACTION_OBJECT){
                             BroadcastedTransaction broadcastedTransaction = new BroadcastedTransaction(grapheneObject.getObjectId());
                             broadcastedTransaction.setTransaction((Transaction) context.deserialize(jsonObject.get(BroadcastedTransaction.KEY_TRX), Transaction.class));
                             broadcastedTransaction.setTransactionId(jsonObject.get(BroadcastedTransaction.KEY_TRX_ID).getAsString());
+                            objectMap.put(ObjectType.TRANSACTION_OBJECT, true);
                             secondArgument.add(broadcastedTransaction);
                         }else{
                             //TODO: Add support for other types of objects
@@ -148,7 +166,11 @@ public class SubscriptionResponse {
                 }
             }
             for(SubscriptionListener listener : mListeners){
-                listener.onSubscriptionUpdate(response);
+                // Only notify the listener if there is an object of interest in
+                // this notification
+                if(objectMap.containsKey(listener.getInterestObjectType())){
+                    listener.onSubscriptionUpdate(response);
+                }
             }
             return response;
         }

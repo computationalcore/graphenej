@@ -2,15 +2,7 @@ package de.bitsharesmunich.graphenej.api;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import de.bitsharesmunich.graphenej.RPC;
-import de.bitsharesmunich.graphenej.UserAccount;
-import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
-import de.bitsharesmunich.graphenej.models.ApiCall;
-import de.bitsharesmunich.graphenej.models.BaseResponse;
-import de.bitsharesmunich.graphenej.models.WitnessResponse;
 import com.neovisionaries.ws.client.WebSocket;
-import com.neovisionaries.ws.client.WebSocketAdapter;
-import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFrame;
 
 import java.io.Serializable;
@@ -19,10 +11,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import de.bitsharesmunich.graphenej.RPC;
+import de.bitsharesmunich.graphenej.UserAccount;
+import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
+import de.bitsharesmunich.graphenej.models.ApiCall;
+import de.bitsharesmunich.graphenej.models.WitnessResponse;
+
 /**
  * Created by henry on 07/12/16.
  */
-public class LookupAccounts extends WebSocketAdapter {
+public class LookupAccounts extends BaseGrapheneHandler {
 
     public static final int DEFAULT_MAX = 1000;
     private final String accountName;
@@ -30,12 +28,14 @@ public class LookupAccounts extends WebSocketAdapter {
     private final WitnessResponseListener mListener;
 
     public LookupAccounts(String accountName, WitnessResponseListener listener){
+        super(listener);
         this.accountName = accountName;
         this.maxAccounts = DEFAULT_MAX;
         this.mListener = listener;
     }
 
     public LookupAccounts(String accountName, int maxAccounts, WitnessResponseListener listener){
+        super(listener);
         this.accountName = accountName;
         this.maxAccounts  = maxAccounts;
         this.mListener = listener;
@@ -72,17 +72,5 @@ public class LookupAccounts extends WebSocketAdapter {
     public void onFrameSent(WebSocket websocket, WebSocketFrame frame) throws Exception {
         if(frame.isTextFrame())
             System.out.println(">>> "+frame.getPayloadText());
-    }
-
-    @Override
-    public void onError(WebSocket websocket, WebSocketException cause) throws Exception {
-        mListener.onError(new BaseResponse.Error(cause.getMessage()));
-        websocket.disconnect();
-    }
-
-    @Override
-    public void handleCallbackError(WebSocket websocket, Throwable cause) throws Exception {
-        mListener.onError(new BaseResponse.Error(cause.getMessage()));
-        websocket.disconnect();
     }
 }

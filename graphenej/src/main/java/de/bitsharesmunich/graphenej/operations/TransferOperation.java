@@ -1,14 +1,23 @@
 package de.bitsharesmunich.graphenej.operations;
 
+import com.google.common.primitives.Bytes;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+
+import java.lang.reflect.Type;
+
 import de.bitsharesmunich.graphenej.AssetAmount;
 import de.bitsharesmunich.graphenej.BaseOperation;
 import de.bitsharesmunich.graphenej.OperationType;
 import de.bitsharesmunich.graphenej.UserAccount;
 import de.bitsharesmunich.graphenej.objects.Memo;
-import com.google.common.primitives.Bytes;
-import com.google.gson.*;
-
-import java.lang.reflect.Type;
 
 /**
  * Class used to encapsulate the TransferOperation operation related functionalities.
@@ -70,6 +79,14 @@ public class TransferOperation extends BaseOperation {
         this.to = to;
     }
 
+    public void setMemo(Memo memo) {
+        this.memo = memo;
+    }
+
+    public Memo getMemo() {
+        return this.memo;
+    }
+
     @Override
     public void setFee(AssetAmount newFee){
         this.fee = newFee;
@@ -108,10 +125,6 @@ public class TransferOperation extends BaseOperation {
         jsonObject.add(KEY_EXTENSIONS, new JsonArray());
         array.add(jsonObject);
         return array;
-    }
-
-    public void setMemo(Memo memo) {
-        this.memo = memo;
     }
 
     public static class TransferSerializer implements JsonSerializer<TransferOperation> {

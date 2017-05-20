@@ -1,23 +1,9 @@
 package de.bitsharesmunich.graphenej.api;
 
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
-import de.bitsharesmunich.graphenej.AccountOptions;
-import de.bitsharesmunich.graphenej.Authority;
-import de.bitsharesmunich.graphenej.RPC;
-import de.bitsharesmunich.graphenej.UserAccount;
-import de.bitsharesmunich.graphenej.interfaces.JsonSerializable;
-import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
-import de.bitsharesmunich.graphenej.models.AccountProperties;
-import de.bitsharesmunich.graphenej.models.BaseResponse;
 import com.neovisionaries.ws.client.WebSocket;
-import com.neovisionaries.ws.client.WebSocketAdapter;
-import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFrame;
-import de.bitsharesmunich.graphenej.models.ApiCall;
-import de.bitsharesmunich.graphenej.models.WitnessResponse;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
@@ -25,22 +11,33 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import de.bitsharesmunich.graphenej.AccountOptions;
+import de.bitsharesmunich.graphenej.Authority;
+import de.bitsharesmunich.graphenej.RPC;
+import de.bitsharesmunich.graphenej.UserAccount;
+import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
+import de.bitsharesmunich.graphenej.models.AccountProperties;
+import de.bitsharesmunich.graphenej.models.ApiCall;
+import de.bitsharesmunich.graphenej.models.WitnessResponse;
+
 /**
  *
  * @author henry
  */
-public class GetAccounts extends WebSocketAdapter {
+public class GetAccounts extends BaseGrapheneHandler {
 
     private String accountId;
     private List<UserAccount> userAccounts;
     private WitnessResponseListener mListener;
 
     public GetAccounts(String accountId, WitnessResponseListener listener){
+        super(listener);
         this.accountId = accountId;
         this.mListener = listener;
     }
 
     public GetAccounts(List<UserAccount> accounts, WitnessResponseListener listener){
+        super(listener);
         this.userAccounts = accounts;
         this.mListener = listener;
     }
@@ -84,23 +81,5 @@ public class GetAccounts extends WebSocketAdapter {
     public void onFrameSent(WebSocket websocket, WebSocketFrame frame) throws Exception {
         if(frame.isTextFrame())
             System.out.println(">>> "+frame.getPayloadText());
-    }
-
-    @Override
-    public void onError(WebSocket websocket, WebSocketException cause) throws Exception {
-        System.out.println("onError");
-        mListener.onError(new BaseResponse.Error(cause.getMessage()));
-        websocket.disconnect();
-    }
-
-    @Override
-    public void handleCallbackError(WebSocket websocket, Throwable cause) throws Exception {
-        System.out.println("handleCallbackError. Msg: "+cause.getMessage());
-        StackTraceElement[] stack = cause.getStackTrace();
-        for(StackTraceElement element : stack) {
-            System.out.println("> "+element.getClassName()+"."+element.getMethodName()+" : "+element.getLineNumber());
-        }
-        mListener.onError(new BaseResponse.Error(cause.getMessage()));
-        websocket.disconnect();
     }
 }

@@ -8,6 +8,7 @@
 # ------
 .gradle
 gradle
+graphenej/build
 /build
 /buildSrc/build
 /subprojects/*/build

@@ -3,15 +3,7 @@ package de.bitsharesmunich.graphenej.api;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.neovisionaries.ws.client.WebSocket;
-import com.neovisionaries.ws.client.WebSocketAdapter;
-import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFrame;
-import de.bitsharesmunich.graphenej.MarketTrade;
-import de.bitsharesmunich.graphenej.RPC;
-import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
-import de.bitsharesmunich.graphenej.models.ApiCall;
-import de.bitsharesmunich.graphenej.models.BaseResponse;
-import de.bitsharesmunich.graphenej.models.WitnessResponse;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
@@ -19,10 +11,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import de.bitsharesmunich.graphenej.MarketTrade;
+import de.bitsharesmunich.graphenej.RPC;
+import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
+import de.bitsharesmunich.graphenej.models.ApiCall;
+import de.bitsharesmunich.graphenej.models.WitnessResponse;
+
 /**
  * @author henry
  */
-public class GetTradeHistory extends WebSocketAdapter {
+public class GetTradeHistory extends BaseGrapheneHandler {
 
     private String a;
     private String b;
@@ -32,6 +30,7 @@ public class GetTradeHistory extends WebSocketAdapter {
     private WitnessResponseListener mListener;
 
     public GetTradeHistory(String a, String b, String toTime, String fromTime,int limit, WitnessResponseListener mListener) {
+        super(mListener);
         this.a = a;
         this.b = b;
         this.toTime = toTime;
@@ -81,17 +80,5 @@ public class GetTradeHistory extends WebSocketAdapter {
         if (frame.isTextFrame()) {
             System.out.println(">>> " + frame.getPayloadText());
         }
-    }
-
-    @Override
-    public void onError(WebSocket websocket, WebSocketException cause) throws Exception {
-        mListener.onError(new BaseResponse.Error(cause.getMessage()));
-        websocket.disconnect();
-    }
-
-    @Override
-    public void handleCallbackError(WebSocket websocket, Throwable cause) throws Exception {
-        mListener.onError(new BaseResponse.Error(cause.getMessage()));
-        websocket.disconnect();
     }
 }

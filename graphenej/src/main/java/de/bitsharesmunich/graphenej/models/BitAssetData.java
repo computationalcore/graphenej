@@ -1,5 +1,6 @@
 package de.bitsharesmunich.graphenej.models;
 
+import de.bitsharesmunich.graphenej.GrapheneObject;
 import de.bitsharesmunich.graphenej.Price;
 
 /**
@@ -8,8 +9,7 @@ import de.bitsharesmunich.graphenej.Price;
  *
  * Created by nelson on 1/8/17.
  */
-public class BitAssetData {
-    public String id;
+public class BitAssetData extends GrapheneObject {
     public Object[] feeds;
     public AssetFeed current_feed;
     public String current_feed_publication_time;
@@ -18,4 +18,8 @@ public class BitAssetData {
     public boolean is_prediction_market;
     public Price settlement_price;
     public long settlement_fund;
+
+    public BitAssetData(String id) {
+        super(id);
+    }
 }

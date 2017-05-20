@@ -1,17 +1,27 @@
 package de.bitsharesmunich.graphenej;
 
+import com.google.common.math.DoubleMath;
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.UnsignedLong;
-import com.google.gson.*;
-import de.bitsharesmunich.graphenej.errors.IncompatibleOperation;
-import de.bitsharesmunich.graphenej.interfaces.ByteSerializable;
-import de.bitsharesmunich.graphenej.interfaces.JsonSerializable;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.math.RoundingMode;
+
+import de.bitsharesmunich.graphenej.errors.IncompatibleOperation;
+import de.bitsharesmunich.graphenej.interfaces.ByteSerializable;
+import de.bitsharesmunich.graphenej.interfaces.JsonSerializable;
 
 /**
  * Created by nelson on 11/7/16.
@@ -71,6 +81,49 @@ public class AssetAmount implements ByteSerializable, JsonSerializable {
             result = this.amount.minus(other.getAmount());
         }
         return new AssetAmount(result, asset);
+    }
+
+    /**
+     * Multiplies the current amount by a factor provided as the first parameter. The second parameter
+     * specifies the rounding method to be used.
+     * @param factor: The multiplying factor
+     * @param roundingMode: The rounding mode as an instance of the {@link RoundingMode} class
+     * @return The same AssetAmount instance, but with the changed amount value.
+     */
+    public AssetAmount multiplyBy(double factor, RoundingMode roundingMode){
+        this.amount = UnsignedLong.valueOf(DoubleMath.roundToLong(this.amount.longValue() * factor, roundingMode));
+        return this;
+    }
+
+    /**
+     * Multiplies the current amount by a factor, using the {@link RoundingMode#HALF_DOWN} constant.
+     * @param factor: The multiplying factor
+     * @return The same AssetAmount instance, but with the changed amount value.
+     */
+    public AssetAmount multiplyBy(double factor){
+        return this.multiplyBy(factor, RoundingMode.HALF_DOWN);
+    }
+
+    /**
+     * Divides the current amount by a divisor provided as the first parameter. The second parameter
+     * specifies the rounding method to be used.
+     * @param divisor: The divisor
+     * @return: The same AssetAMount instance, but with the divided amount value
+     */
+    public AssetAmount dividedBy(double divisor, RoundingMode roundingMode){
+        this.amount = UnsignedLong.valueOf(DoubleMath.roundToLong(this.amount.longValue() / divisor, roundingMode));
+        return this;
+    }
+
+
+    /**
+     * Divides the current amount by a divisor provided as the first parameter, using
+     * the {@link RoundingMode#HALF_DOWN} constant
+     * @param divisor: The divisor
+     * @return: The same AssetAMount instance, but with the divided amount value
+     */
+    public AssetAmount dividedBy(double divisor){
+        return this.dividedBy(divisor, RoundingMode.HALF_DOWN);
     }
 
     public void setAmount(UnsignedLong amount){
