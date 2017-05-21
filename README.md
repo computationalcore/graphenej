@@ -17,7 +17,7 @@ In yout app module, add the following dependency:
 
 ```Groovy
 dependencies {
-    compile 'com.github.kenCode-de:graphenej:0.4.1'
+    compile 'com.github.bilthon:graphenej:0.4.2'
 }
 ```
 
