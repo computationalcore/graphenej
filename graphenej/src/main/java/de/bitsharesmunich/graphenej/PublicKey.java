@@ -1,13 +1,16 @@
 package de.bitsharesmunich.graphenej;
 
-import de.bitsharesmunich.graphenej.interfaces.ByteSerializable;
 import org.bitcoinj.core.ECKey;
 import org.spongycastle.math.ec.ECPoint;
+
+import java.io.Serializable;
+
+import de.bitsharesmunich.graphenej.interfaces.ByteSerializable;
 
 /**
  * Created by nelson on 11/30/16.
  */
-public class PublicKey implements ByteSerializable {
+public class PublicKey implements ByteSerializable, Serializable {
     private ECKey publicKey;
 
     public PublicKey(ECKey key) {

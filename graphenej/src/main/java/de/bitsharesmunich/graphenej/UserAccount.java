@@ -1,11 +1,14 @@
 package de.bitsharesmunich.graphenej;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.annotations.Expose;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutput;
@@ -20,8 +23,7 @@ import de.bitsharesmunich.graphenej.interfaces.ByteSerializable;
 import de.bitsharesmunich.graphenej.interfaces.JsonSerializable;
 
 /**
- * Class tha represents a graphene user account.
- * Created by nelson on 11/8/16.
+ * Class that represents a graphene user account.
  */
 public class UserAccount extends GrapheneObject implements ByteSerializable, JsonSerializable {
 
@@ -46,18 +48,42 @@ public class UserAccount extends GrapheneObject implements ByteSerializable, Jso
     public static final String KEY_ACTIVE_SPECIAL_AUTHORITY = "active_special_authority";
     public static final String KEY_N_CONTROL_FLAGS = "top_n_control_flags";
 
-    private long membershipExpirationDate;
-    private String registrar;
-    private String referrer;
-    private String lifetimeReferrer;
-    private long networkFeePercentage;
-    private long lifetimeReferrerFeePercentage;
-    private long referrerRewardsPercentage;
+    @Expose
     private String name;
+
+    @Expose
     private Authority owner;
+
+    @Expose
     private Authority active;
+
+    @Expose
     private AccountOptions options;
+
+    @Expose
     private String statistics;
+
+    @Expose
+    private long membershipExpirationDate;
+
+    @Expose
+    private String registrar;
+
+    @Expose
+    private String referrer;
+
+    @Expose
+    private String lifetimeReferrer;
+
+    @Expose
+    private long networkFeePercentage;
+
+    @Expose
+    private long lifetimeReferrerFeePercentage;
+
+    @Expose
+    private long referrerRewardsPercentage;
+
 
 
     /**
@@ -120,7 +146,8 @@ public class UserAccount extends GrapheneObject implements ByteSerializable, Jso
 
     @Override
     public String toJsonString() {
-        return this.getObjectId();
+        Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+        return gson.toJson(this);
     }
 
     @Override
