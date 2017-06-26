@@ -1,5 +1,7 @@
 package de.bitsharesmunich.graphenej;
 
+import com.google.gson.annotations.Expose;
+
 /**
  * <p>
  * Generic class used to represent a graphene object as defined in
@@ -13,7 +15,9 @@ public class GrapheneObject {
     public static final int PROTOCOL_SPACE = 1;
     public static final int IMPLEMENTATION_SPACE = 2;
 
+    @Expose
     protected String id;
+
     protected int space;
     protected int type;
     protected long instance;
