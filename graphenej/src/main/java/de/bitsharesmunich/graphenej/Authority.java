@@ -59,6 +59,14 @@ public class Authority implements GrapheneSerializable {
             this.account_auths = new HashMap<>();
     }
 
+    public long getWeightThreshold() {
+        return weight_threshold;
+    }
+
+    public void setWeightThreshold(long weight_threshold) {
+        this.weight_threshold = weight_threshold;
+    }
+
     public void setKeyAuthorities(HashMap<Address, Long> keyAuths){
         if(keyAuths != null){
             for(Address address : keyAuths.keySet()){
