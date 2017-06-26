@@ -4,7 +4,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import de.bitsharesmunich.graphenej.crypto.SecureRandomStrengthener;
+
+import org.bitcoinj.core.ECKey;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
@@ -12,8 +13,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
+import de.bitsharesmunich.graphenej.crypto.SecureRandomStrengthener;
 import de.bitsharesmunich.graphenej.models.backup.WalletBackup;
-import org.bitcoinj.core.ECKey;
 
 /**
  * Class to manage the backup files
@@ -89,9 +90,9 @@ public abstract class FileBin {
             secureRandom.nextBytes(randomKey);
             ECKey randomECKey = ECKey.fromPrivate(md.digest(randomKey));
             byte[] randPubKey = randomECKey.getPubKey();
-            byte[] finalKey = randomECKey.getPubKeyPoint().multiply(ECKey.fromPrivate(md.digest(password.getBytes("UTF-8"))).getPrivKey()).normalize().getXCoord().getEncoded();
+            byte[] sharedSecret = randomECKey.getPubKeyPoint().multiply(ECKey.fromPrivate(md.digest(password.getBytes("UTF-8"))).getPrivKey()).normalize().getXCoord().getEncoded();
             MessageDigest md1 = MessageDigest.getInstance("SHA-512");
-            finalKey = md1.digest(finalKey);
+            byte[] finalKey = md1.digest(sharedSecret);
             checksummed = Util.encryptAES(checksummed, Util.byteToString(finalKey).getBytes());
 
             byte[] finalPayload = new byte[checksummed.length + randPubKey.length];
