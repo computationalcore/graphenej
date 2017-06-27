@@ -9,14 +9,15 @@ import com.neovisionaries.ws.client.WebSocketFrame;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import de.bitsharesmunich.graphenej.AssetAmount;
-import de.bitsharesmunich.graphenej.ObjectType;
 import de.bitsharesmunich.graphenej.RPC;
 import de.bitsharesmunich.graphenej.Transaction;
 import de.bitsharesmunich.graphenej.UserAccount;
+import de.bitsharesmunich.graphenej.errors.RepeatedRequestIdException;
 import de.bitsharesmunich.graphenej.interfaces.SubscriptionHub;
 import de.bitsharesmunich.graphenej.interfaces.SubscriptionListener;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
@@ -33,23 +34,26 @@ import de.bitsharesmunich.graphenej.operations.TransferOperation;
  * Created by nelson on 1/26/17.
  */
 public class SubscriptionMessagesHub extends BaseGrapheneHandler implements SubscriptionHub {
+
+    private WebSocket mWebsocket;
+
     // Sequence of message ids
-    private final static int LOGIN_ID = 1;
-    private final static int GET_DATABASE_ID = 2;
-    private final static int SUBCRIPTION_REQUEST = 3;
+    public final static int LOGIN_ID = 1;
+    public final static int GET_DATABASE_ID = 2;
+    public final static int SUBCRIPTION_REQUEST = 3;
 
     // ID of subscription notifications
-    private final static int SUBCRIPTION_NOTIFICATION = 4;
+    public final static int SUBCRIPTION_NOTIFICATION = 4;
 
     private SubscriptionResponse.SubscriptionResponseDeserializer mSubscriptionDeserializer;
     private Gson gson;
     private String user;
     private String password;
     private boolean clearFilter;
-    private List<ObjectType> objectTypes;
     private int currentId;
     private int databaseApiId = -1;
     private int subscriptionCounter = 0;
+    private HashMap<Long, BaseGrapheneHandler> mHandlerMap = new HashMap<>();
 
     /**
      * Id used to separate requests regarding the subscriptions
@@ -65,15 +69,14 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
      *
      * @param user: User name, in case the node to which we're going to connect to requires authentication
      * @param password: Password, same as above
-     * @param objectTypes: List of objects of interest
+     * @param clearFilter: Whether to automatically subscribe of not to the notification feed.
      * @param errorListener: Callback that will be fired in case there is an error.
      */
-    public SubscriptionMessagesHub(String user, String password, List<ObjectType> objectTypes, WitnessResponseListener errorListener){
+    public SubscriptionMessagesHub(String user, String password, boolean clearFilter, WitnessResponseListener errorListener){
         super(errorListener);
-        this.objectTypes = objectTypes;
         this.user = user;
         this.password = password;
-        this.clearFilter = true;
+        this.clearFilter = clearFilter;
         this.mSubscriptionDeserializer = new SubscriptionResponse.SubscriptionResponseDeserializer();
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(SubscriptionResponse.class, mSubscriptionDeserializer);
@@ -88,15 +91,20 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
 
     /**
      * Constructor used to create a subscription message hub that will call the set_subscribe_callback
+<<<<<<< Updated upstream
      * API with the clear_filter parameter set to true, meaning that it will receive automatic updates
      * on all network events.
+=======
+     * API with the clear_filter parameter set to false, meaning that it will only receive automatic updates
+     * from objects we register.
+>>>>>>> Stashed changes
      *
      * @param user: User name, in case the node to which we're going to connect to requires authentication
      * @param password: Password, same as above
      * @param errorListener: Callback that will be fired in case there is an error.
      */
     public SubscriptionMessagesHub(String user, String password, WitnessResponseListener errorListener){
-        this(user, password, new ArrayList<ObjectType>(), errorListener);
+        this(user, password, false, errorListener);
     }
 
     @Override
@@ -116,6 +124,7 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
 
     @Override
     public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
+        this.mWebsocket = websocket;
         ArrayList<Serializable> loginParams = new ArrayList<>();
         currentId = LOGIN_ID;
         loginParams.add(user);
@@ -145,16 +154,39 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
             websocket.sendText(getDatabaseId.toJsonString());
             currentId++;
         } else if(currentId == SUBCRIPTION_REQUEST){
-            if(objectTypes != null && objectTypes.size() > 0 && subscriptionCounter < objectTypes.size()){
-                ArrayList<Serializable> objectOfInterest = new ArrayList<>();
-                objectOfInterest.add(objectTypes.get(subscriptionCounter).getGenericObjectId());
+            List<SubscriptionListener> subscriptionListeners = mSubscriptionDeserializer.getSubscriptionListeners();
+
+            // If we haven't subscribed to all requested subscription channels yet,
+            // just send one more subscription
+            if(subscriptionListeners != null &&
+                    subscriptionListeners.size() > 0 &&
+                    subscriptionCounter < subscriptionListeners.size()){
+
+                ArrayList<Serializable> objects = new ArrayList<>();
                 ArrayList<Serializable> payload = new ArrayList<>();
-                payload.add(objectOfInterest);
+                for(SubscriptionListener listener : subscriptionListeners){
+                    objects.add(listener.getInterestObjectType().getGenericObjectId());
+                }
+
+                payload.add(objects);
                 ApiCall subscribe = new ApiCall(databaseApiId, RPC.GET_OBJECTS, payload, RPC.VERSION, SUBSCRIPTION_ID);
                 websocket.sendText(subscribe.toJsonString());
                 subscriptionCounter++;
             }else{
-                gson.fromJson(message, SubscriptionResponse.class);
+                WitnessResponse witnessResponse = gson.fromJson(message, WitnessResponse.class);
+                if(witnessResponse.result != null){
+                    // This is the response to a request that was submitted to the message hub
+                    // and whose handler was stored in the "request id" -> "handler" map
+                    BaseGrapheneHandler handler = mHandlerMap.get(witnessResponse.id);
+                    handler.onTextFrame(websocket, frame);
+                    mHandlerMap.remove(witnessResponse.id);
+                }else{
+                    // If we've already subscribed to all requested subscription channels, we
+                    // just proceed to deserialize content.
+                    // The deserialization is handled by all those TypeAdapters registered in the class
+                    // constructor while building the gson instance.
+                    SubscriptionResponse response = gson.fromJson(message, SubscriptionResponse.class);
+                }
             }
         }
     }
@@ -168,5 +200,21 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
         currentId = 0;
         databaseApiId = -1;
         subscriptionCounter = 0;
+    }
+
+    public void addRequestHandler(BaseGrapheneHandler handler) throws RepeatedRequestIdException {
+        if(mHandlerMap.get(handler.getRequestId()) != null){
+            throw new RepeatedRequestIdException("Already registered handler with id: "+handler.getRequestId());
+        }
+
+        System.out.println("Registering handler with id: "+handler.getRequestId());
+        mHandlerMap.put(handler.getRequestId(), handler);
+
+        try {
+            handler.onConnected(mWebsocket, null);
+        } catch (Exception e) {
+            System.out.println("Exception. Msg: "+e.getMessage());
+            System.out.println("Exception type: "+e);
+        }
     }
 }

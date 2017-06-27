@@ -5,7 +5,6 @@ import com.neovisionaries.ws.client.WebSocketException;
 import org.junit.Test;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 import de.bitsharesmunich.graphenej.ObjectType;
@@ -38,11 +37,8 @@ public class SubscriptionMessagesHubTest extends BaseApiTest {
 
     @Test
     public void testGlobalPropertiesDeserializer(){
-        ArrayList<ObjectType> interestingObjects = new ArrayList();
-        interestingObjects.add(ObjectType.TRANSACTION_OBJECT);
-        interestingObjects.add(ObjectType.DYNAMIC_GLOBAL_PROPERTY_OBJECT);
         try{
-            mMessagesHub = new SubscriptionMessagesHub("", "", interestingObjects, mErrorListener);
+            mMessagesHub = new SubscriptionMessagesHub("", "", true, mErrorListener);
             mMessagesHub.addSubscriptionListener(new SubscriptionListener() {
                 private int MAX_MESSAGES = 10;
                 private int messageCounter = 0;

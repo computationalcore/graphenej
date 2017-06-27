@@ -51,6 +51,7 @@ public class SubscriptionResponse {
     public static final String KEY_METHOD = "method";
     public static final String KEY_PARAMS = "params";
 
+    public int id;
     public String method;
     public List<Serializable> params;
 
@@ -110,6 +111,7 @@ public class SubscriptionResponse {
             SubscriptionResponse response = new SubscriptionResponse();
             JsonObject responseObject = json.getAsJsonObject();
             if(!responseObject.has(KEY_METHOD)){
+                System.out.println("Missing method field");
                 return response;
             }
             response.method = responseObject.get(KEY_METHOD).getAsString();

@@ -25,20 +25,22 @@ import de.bitsharesmunich.graphenej.models.WitnessResponse;
  * @author henry
  */
 public class GetAccounts extends BaseGrapheneHandler {
-
     private String accountId;
     private List<UserAccount> userAccounts;
     private WitnessResponseListener mListener;
+    private boolean oneTime;
 
-    public GetAccounts(String accountId, WitnessResponseListener listener){
+    public GetAccounts(String accountId, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.accountId = accountId;
+        this.oneTime = oneTime;
         this.mListener = listener;
     }
 
-    public GetAccounts(List<UserAccount> accounts, WitnessResponseListener listener){
+    public GetAccounts(List<UserAccount> accounts, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.userAccounts = accounts;
+        this.oneTime = oneTime;
         this.mListener = listener;
     }
 
@@ -54,7 +56,7 @@ public class GetAccounts extends BaseGrapheneHandler {
             accountIds.add(accountId);
         }
         params.add(accountIds);
-        ApiCall getAccountByAddress = new ApiCall(0, RPC.CALL_GET_ACCOUNTS, params, RPC.VERSION, 1);
+        ApiCall getAccountByAddress = new ApiCall(0, RPC.CALL_GET_ACCOUNTS, params, RPC.VERSION, (int) requestId);
         websocket.sendText(getAccountByAddress.toJsonString());
     }
 
@@ -74,7 +76,9 @@ public class GetAccounts extends BaseGrapheneHandler {
         } else {
             this.mListener.onSuccess(witnessResponse);
         }
-        websocket.disconnect();
+        if(oneTime){
+            websocket.disconnect();
+        }
     }
 
     @Override
