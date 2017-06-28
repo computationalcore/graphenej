@@ -111,7 +111,6 @@ public class SubscriptionResponse {
             SubscriptionResponse response = new SubscriptionResponse();
             JsonObject responseObject = json.getAsJsonObject();
             if(!responseObject.has(KEY_METHOD)){
-                System.out.println("Missing method field");
                 return response;
             }
             response.method = responseObject.get(KEY_METHOD).getAsString();
