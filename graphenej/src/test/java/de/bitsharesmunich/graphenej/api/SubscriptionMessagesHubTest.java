@@ -6,6 +6,8 @@ import org.junit.Test;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import de.bitsharesmunich.graphenej.ObjectType;
 import de.bitsharesmunich.graphenej.Transaction;
@@ -34,6 +36,59 @@ public class SubscriptionMessagesHubTest extends BaseApiTest {
             System.out.println("onError");
         }
     };
+
+    /**
+     * Testing the subscription and unsubscription features.
+     *
+     * The test is deemed successful if no exception is thown and the messages indeed
+     * are cancelled.
+     */
+    @Test
+    public void testSubscribeUnsubscribe(){
+        /**
+         * Task that will send a 'cancel_all_subscriptions' API message.
+         */
+        TimerTask unsubscribeTask = new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("Cancelling all subscriptions");
+                mMessagesHub.cancelSubscriptions();
+            }
+        };
+
+        /**
+         * Task that will just finish the test.
+         */
+        TimerTask shutdownTask = new TimerTask() {
+
+            @Override
+            public void run() {
+                System.out.println("Finish test");
+                synchronized (SubscriptionMessagesHubTest.this){
+                    SubscriptionMessagesHubTest.this.notifyAll();
+                }
+            }
+        };
+
+        try{
+            mMessagesHub = new SubscriptionMessagesHub("", "", true, mErrorListener);
+            mWebSocket.addListener(mMessagesHub);
+            mWebSocket.connect();
+
+            Timer timer = new Timer();
+            timer.schedule(unsubscribeTask, 5000);
+            timer.schedule(shutdownTask, 15000);
+
+            // Holding this thread while we get update notifications
+            synchronized (this){
+                wait();
+            }
+        } catch (InterruptedException e) {
+            System.out.println("InterruptedException. Msg: "+e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
+        }
+    }
 
     @Test
     public void testGlobalPropertiesDeserializer(){

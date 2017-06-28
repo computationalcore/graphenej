@@ -198,6 +198,11 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
         subscriptionCounter = 0;
     }
 
+    public void cancelSubscriptions(){
+        ApiCall unsubscribe = new ApiCall(databaseApiId, RPC.CALL_CANCEL_ALL_SUBSCRIPTIONS, new ArrayList<Serializable>(), RPC.VERSION, SUBCRIPTION_REQUEST);
+        mWebsocket.sendText(unsubscribe.toJsonString());
+    }
+
     public void addRequestHandler(BaseGrapheneHandler handler) throws RepeatedRequestIdException {
         if(mHandlerMap.get(handler.getRequestId()) != null){
             throw new RepeatedRequestIdException("Already registered handler with id: "+handler.getRequestId());
