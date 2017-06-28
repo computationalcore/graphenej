@@ -91,13 +91,8 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
 
     /**
      * Constructor used to create a subscription message hub that will call the set_subscribe_callback
-<<<<<<< Updated upstream
-     * API with the clear_filter parameter set to true, meaning that it will receive automatic updates
-     * on all network events.
-=======
-     * API with the clear_filter parameter set to false, meaning that it will only receive automatic updates
+     * API with the clear_filter parameter set to false, meaning that it will only receive updates
      * from objects we register.
->>>>>>> Stashed changes
      *
      * @param user: User name, in case the node to which we're going to connect to requires authentication
      * @param password: Password, same as above
@@ -174,7 +169,8 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
                 subscriptionCounter++;
             }else{
                 WitnessResponse witnessResponse = gson.fromJson(message, WitnessResponse.class);
-                if(witnessResponse.result != null){
+                if(witnessResponse.result != null &&
+                        mHandlerMap.get(witnessResponse.id) != null){
                     // This is the response to a request that was submitted to the message hub
                     // and whose handler was stored in the "request id" -> "handler" map
                     BaseGrapheneHandler handler = mHandlerMap.get(witnessResponse.id);
