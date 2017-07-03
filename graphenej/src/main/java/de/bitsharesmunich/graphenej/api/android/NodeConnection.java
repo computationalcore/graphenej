@@ -17,7 +17,7 @@ public class NodeConnection {
     private int mUrlIndex;
     private WebsocketWorkerThread mThread;
     private SubscriptionMessagesHub mMessagesHub;
-    private long requestCounter = SubscriptionMessagesHub.SUBCRIPTION_NOTIFICATION + 1;
+    private long requestCounter = SubscriptionMessagesHub.MANUAL_SUBSCRIPTION_ID + 1;
 
     private static NodeConnection instance;
 

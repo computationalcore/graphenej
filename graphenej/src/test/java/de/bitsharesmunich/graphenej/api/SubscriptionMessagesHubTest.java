@@ -20,11 +20,15 @@ import de.bitsharesmunich.graphenej.models.SubscriptionResponse;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 
 /**
- * Created by nelson on 4/25/17.
+ * Class used to encapsulate all tests that relate to the {@see SubscriptionMessagesHub} class.
  */
 public class SubscriptionMessagesHubTest extends BaseApiTest {
 
     private SubscriptionMessagesHub mMessagesHub;
+
+    /**
+     * Error listener
+     */
     private WitnessResponseListener mErrorListener = new WitnessResponseListener() {
         @Override
         public void onSuccess(WitnessResponse response) {
@@ -99,6 +103,12 @@ public class SubscriptionMessagesHubTest extends BaseApiTest {
         }
     }
 
+    /**
+     * This test will register a {@see SubscriptionListener} and wait for an amount equal to MAX_MESSAGES
+     * of {@see DynamicGlobalProperties} objects to be returned.
+     *
+     * The test will be deemed successfull if no errors arise in the meantime.
+     */
     @Test
     public void testGlobalPropertiesDeserializer(){
         try{
@@ -167,6 +177,8 @@ public class SubscriptionMessagesHubTest extends BaseApiTest {
 
     /**
      * This is a basic test that will only display a count of operations per received broadcasted transactions.
+     *
+     * The test will be deemed successfull if we get to receive MAX_MESSAGES transaction objects without errors.
      */
     @Test
     public void testBroadcastedTransactionDeserializer(){

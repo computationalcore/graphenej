@@ -40,10 +40,16 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
     // Sequence of message ids
     public final static int LOGIN_ID = 1;
     public final static int GET_DATABASE_ID = 2;
-    public final static int SUBCRIPTION_REQUEST = 3;
+    public final static int SUBSCRIPTION_REQUEST = 3;
 
     // ID of subscription notifications
-    public final static int SUBCRIPTION_NOTIFICATION = 4;
+    public final static int SUBSCRIPTION_NOTIFICATION = 4;
+
+    /**
+     * Id attributed to the indivitual 'get_objects' API call required for a fine-grained
+     * subscription request.
+     */
+    public final static int MANUAL_SUBSCRIPTION_ID = 5;
 
     private SubscriptionResponse.SubscriptionResponseDeserializer mSubscriptionDeserializer;
     private Gson gson;
@@ -54,11 +60,6 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
     private int databaseApiId = -1;
     private int subscriptionCounter = 0;
     private HashMap<Long, BaseGrapheneHandler> mHandlerMap = new HashMap<>();
-
-    /**
-     * Id used to separate requests regarding the subscriptions
-     */
-    private final int SUBSCRIPTION_ID = 10;
 
     /**
      * Constructor used to create a subscription message hub that will call the set_subscribe_callback
@@ -143,7 +144,7 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
             databaseApiId = witnessResponse.result;
 
             subscribe();
-        } else if(currentId == SUBCRIPTION_REQUEST){
+        } else if(currentId == SUBSCRIPTION_REQUEST){
             List<SubscriptionListener> subscriptionListeners = mSubscriptionDeserializer.getSubscriptionListeners();
 
             // If we haven't subscribed to all requested subscription channels yet,
@@ -159,7 +160,7 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
                 }
 
                 payload.add(objects);
-                ApiCall subscribe = new ApiCall(databaseApiId, RPC.GET_OBJECTS, payload, RPC.VERSION, SUBSCRIPTION_ID);
+                ApiCall subscribe = new ApiCall(databaseApiId, RPC.GET_OBJECTS, payload, RPC.VERSION, MANUAL_SUBSCRIPTION_ID);
                 websocket.sendText(subscribe.toJsonString());
                 subscriptionCounter++;
             }else{
@@ -192,16 +193,19 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
      */
     private void subscribe(){
         ArrayList<Serializable> subscriptionParams = new ArrayList<>();
-        subscriptionParams.add(String.format("%d", SUBCRIPTION_NOTIFICATION));
+        subscriptionParams.add(String.format("%d", SUBSCRIPTION_NOTIFICATION));
         subscriptionParams.add(clearFilter);
-        ApiCall getDatabaseId = new ApiCall(databaseApiId, RPC.CALL_SET_SUBSCRIBE_CALLBACK, subscriptionParams, RPC.VERSION, SUBCRIPTION_REQUEST);
+        ApiCall getDatabaseId = new ApiCall(databaseApiId, RPC.CALL_SET_SUBSCRIBE_CALLBACK, subscriptionParams, RPC.VERSION, SUBSCRIPTION_REQUEST);
         mWebsocket.sendText(getDatabaseId.toJsonString());
-        currentId = SUBCRIPTION_REQUEST;
+        currentId = SUBSCRIPTION_REQUEST;
     }
 
     /**
      * Public method used to re-establish a subscription after it was cancelled by a previous
      * call to the {@see #cancelSubscriptions()} method call.
+     *
+     * Please note that you should repeat the registration step for every interested listener, since
+     * those were probably lost after the previous {@see #cancelSubscriptions()} method call.
      */
     public void resubscribe(){
         if(mWebsocket.isOpen()){
@@ -212,11 +216,11 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
     }
 
     /**
-     * Method that send a subscription cancellation request to the full node, and also
-     * deregisters all subscription and request listeners.
+     * Method that sends a subscription cancellation request to the full node, and also
+     * de-registers all subscription and request listeners.
      */
     public void cancelSubscriptions(){
-        ApiCall unsubscribe = new ApiCall(databaseApiId, RPC.CALL_CANCEL_ALL_SUBSCRIPTIONS, new ArrayList<Serializable>(), RPC.VERSION, SUBCRIPTION_REQUEST);
+        ApiCall unsubscribe = new ApiCall(databaseApiId, RPC.CALL_CANCEL_ALL_SUBSCRIPTIONS, new ArrayList<Serializable>(), RPC.VERSION, SUBSCRIPTION_REQUEST);
         mWebsocket.sendText(unsubscribe.toJsonString());
 
         // Clearing all subscription listeners
