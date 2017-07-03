@@ -56,6 +56,14 @@ public class SubscriptionMessagesHubTest extends BaseApiTest {
             }
         };
 
+        TimerTask resubscribeTask = new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("Resubscribing..");
+                mMessagesHub.resubscribe();
+            }
+        };
+
         /**
          * Task that will just finish the test.
          */
@@ -77,7 +85,8 @@ public class SubscriptionMessagesHubTest extends BaseApiTest {
 
             Timer timer = new Timer();
             timer.schedule(unsubscribeTask, 5000);
-            timer.schedule(shutdownTask, 15000);
+            timer.schedule(resubscribeTask, 10000);
+            timer.schedule(shutdownTask, 20000);
 
             // Holding this thread while we get update notifications
             synchronized (this){

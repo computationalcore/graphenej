@@ -56,7 +56,7 @@ public class SubscriptionResponse {
     public List<Serializable> params;
 
     /**
-     * Deserializer class that is used to parse and deserialize subscription responses in a partial way,
+     * Inner static class used to parse and deserialize subscription responses in a partial way,
      * depending on the amount of SubscriptionListeners we might have registered.
      *
      * The rationale behind these architecture is to avoid wasting computational resources parsing unneeded
@@ -83,6 +83,11 @@ public class SubscriptionResponse {
             listenerTypeCount = new HashMap<>();
         }
 
+        /**
+         * Adds a subscription listener to the list.
+         * @param subscriptionListener: Class implementing the {@see SubscriptionListener} interface
+         *                            to be added to the list.
+         */
         public void addSubscriptionListener(SubscriptionListener subscriptionListener){
             int currentCount = 0;
             if(listenerTypeCount.containsKey(subscriptionListener.getInterestObjectType())){
@@ -92,10 +97,19 @@ public class SubscriptionResponse {
             this.mListeners.add(subscriptionListener);
         }
 
+        /**
+         * Retrieves the full list of SubscriptionListeners registered.
+         * @return
+         */
         public List<SubscriptionListener> getSubscriptionListeners(){
             return this.mListeners;
         }
 
+        /**
+         * Removes a subscription listener to the list.
+         * @param subscriptionListener: Class implementing the {@see SubscriptionListener} interface
+         *                            to be removed from the list.
+         */
         public void removeSubscriptionListener(SubscriptionListener subscriptionListener){
             int currentCount = listenerTypeCount.get(subscriptionListener.getInterestObjectType());
             if(currentCount != 0){
@@ -104,6 +118,14 @@ public class SubscriptionResponse {
                 System.out.println("Trying to remove subscription listener, but none is registered!");
             }
             this.mListeners.remove(subscriptionListener);
+        }
+
+        /**
+         * Removes all registered subscription listeners
+         */
+        public void clearAllSubscriptionListeners(){
+            this.mListeners.clear();
+            this.listenerTypeCount.clear();
         }
 
         @Override

@@ -142,12 +142,7 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
             WitnessResponse<Integer> witnessResponse = gson.fromJson(message, ApiIdResponse);
             databaseApiId = witnessResponse.result;
 
-            ArrayList<Serializable> subscriptionParams = new ArrayList<>();
-            subscriptionParams.add(String.format("%d", SUBCRIPTION_NOTIFICATION));
-            subscriptionParams.add(clearFilter);
-            ApiCall getDatabaseId = new ApiCall(databaseApiId, RPC.CALL_SET_SUBSCRIBE_CALLBACK, subscriptionParams, RPC.VERSION, SUBCRIPTION_REQUEST);
-            websocket.sendText(getDatabaseId.toJsonString());
-            currentId++;
+            subscribe();
         } else if(currentId == SUBCRIPTION_REQUEST){
             List<SubscriptionListener> subscriptionListeners = mSubscriptionDeserializer.getSubscriptionListeners();
 
@@ -192,15 +187,52 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
         System.out.println(">> "+frame.getPayloadText());
     }
 
+    /**
+     * Private method that sends a subscription request to the full node
+     */
+    private void subscribe(){
+        ArrayList<Serializable> subscriptionParams = new ArrayList<>();
+        subscriptionParams.add(String.format("%d", SUBCRIPTION_NOTIFICATION));
+        subscriptionParams.add(clearFilter);
+        ApiCall getDatabaseId = new ApiCall(databaseApiId, RPC.CALL_SET_SUBSCRIBE_CALLBACK, subscriptionParams, RPC.VERSION, SUBCRIPTION_REQUEST);
+        mWebsocket.sendText(getDatabaseId.toJsonString());
+        currentId = SUBCRIPTION_REQUEST;
+    }
+
+    /**
+     * Public method used to re-establish a subscription after it was cancelled by a previous
+     * call to the {@see #cancelSubscriptions()} method call.
+     */
+    public void resubscribe(){
+        if(mWebsocket.isOpen()){
+            subscribe();
+        }else{
+            throw new IllegalStateException("Websocket is not open, can't resubscribe");
+        }
+    }
+
+    /**
+     * Method that send a subscription cancellation request to the full node, and also
+     * deregisters all subscription and request listeners.
+     */
+    public void cancelSubscriptions(){
+        ApiCall unsubscribe = new ApiCall(databaseApiId, RPC.CALL_CANCEL_ALL_SUBSCRIPTIONS, new ArrayList<Serializable>(), RPC.VERSION, SUBCRIPTION_REQUEST);
+        mWebsocket.sendText(unsubscribe.toJsonString());
+
+        // Clearing all subscription listeners
+        mSubscriptionDeserializer.clearAllSubscriptionListeners();
+
+        // Clearing all request handler listners
+        mHandlerMap.clear();
+    }
+
+    /**
+     * Method used to reset all internal variables.
+     */
     public void reset(){
         currentId = 0;
         databaseApiId = -1;
         subscriptionCounter = 0;
-    }
-
-    public void cancelSubscriptions(){
-        ApiCall unsubscribe = new ApiCall(databaseApiId, RPC.CALL_CANCEL_ALL_SUBSCRIPTIONS, new ArrayList<Serializable>(), RPC.VERSION, SUBCRIPTION_REQUEST);
-        mWebsocket.sendText(unsubscribe.toJsonString());
     }
 
     public void addRequestHandler(BaseGrapheneHandler handler) throws RepeatedRequestIdException {
@@ -208,10 +240,12 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
             throw new RepeatedRequestIdException("Already registered handler with id: "+handler.getRequestId());
         }
 
-        System.out.println("Registering handler with id: "+handler.getRequestId());
         mHandlerMap.put(handler.getRequestId(), handler);
 
         try {
+            // Artificially calling the 'onConnected' method of the handler.
+            // The underlying websocket was already connected, but from the WebSocketAdapter
+            // point of view it doesn't make a difference.
             handler.onConnected(mWebsocket, null);
         } catch (Exception e) {
             System.out.println("Exception. Msg: "+e.getMessage());
