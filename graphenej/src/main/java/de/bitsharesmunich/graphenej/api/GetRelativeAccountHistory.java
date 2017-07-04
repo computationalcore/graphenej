@@ -127,7 +127,7 @@ public class GetRelativeAccountHistory extends BaseGrapheneHandler {
      */
     private void sendRelativeAccountHistoryRequest(){
         ArrayList<Serializable> params = new ArrayList<>();
-        params.add(mUserAccount.toJsonString());
+        params.add(mUserAccount.getObjectId());
         params.add(this.stop);
         params.add(this.limit);
         params.add(this.start);
