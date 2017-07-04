@@ -79,7 +79,7 @@ public class LimitOrderCreateOperation extends BaseOperation {
         JsonObject jsonObject = new JsonObject();
         if(fee != null)
             jsonObject.add(KEY_FEE, fee.toJsonObject());
-        jsonObject.addProperty(KEY_SELLER, seller.toJsonString());
+        jsonObject.addProperty(KEY_SELLER, seller.getObjectId());
         jsonObject.add(KEY_AMOUNT_TO_SELL, amountToSell.toJsonObject());
         jsonObject.add(KEY_MIN_TO_RECEIVE, minToReceive.toJsonObject());
 
