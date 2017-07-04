@@ -61,6 +61,10 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
     private int subscriptionCounter = 0;
     private HashMap<Long, BaseGrapheneHandler> mHandlerMap = new HashMap<>();
 
+    // State variables
+    private boolean isUnsubscribing;
+    private boolean isSubscribed;
+
     /**
      * Constructor used to create a subscription message hub that will call the set_subscribe_callback
      * API with the clear_filter parameter set to false, meaning that it will only receive automatic updates
@@ -147,6 +151,10 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
         } else if(currentId == SUBSCRIPTION_REQUEST){
             List<SubscriptionListener> subscriptionListeners = mSubscriptionDeserializer.getSubscriptionListeners();
 
+            if(!isUnsubscribing){
+                isSubscribed = true;
+            }
+
             // If we haven't subscribed to all requested subscription channels yet,
             // just send one more subscription
             if(subscriptionListeners != null &&
@@ -192,6 +200,8 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
      * Private method that sends a subscription request to the full node
      */
     private void subscribe(){
+        isUnsubscribing = false;
+
         ArrayList<Serializable> subscriptionParams = new ArrayList<>();
         subscriptionParams.add(String.format("%d", SUBSCRIPTION_NOTIFICATION));
         subscriptionParams.add(clearFilter);
@@ -220,6 +230,9 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
      * de-registers all subscription and request listeners.
      */
     public void cancelSubscriptions(){
+        isSubscribed = false;
+        isUnsubscribing = true;
+
         ApiCall unsubscribe = new ApiCall(databaseApiId, RPC.CALL_CANCEL_ALL_SUBSCRIPTIONS, new ArrayList<Serializable>(), RPC.VERSION, SUBSCRIPTION_REQUEST);
         mWebsocket.sendText(unsubscribe.toJsonString());
 
@@ -228,6 +241,14 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
 
         // Clearing all request handler listners
         mHandlerMap.clear();
+    }
+
+    /**
+     * Method used to check the current state of the connection.
+     * @return: True if the websocket is open and there is an active subscription, false otherwise.
+     */
+    public boolean isSubscribed(){
+        return this.mWebsocket.isOpen() && isSubscribed;
     }
 
     /**
