@@ -26,9 +26,14 @@ public class GetAllAssetHolders extends BaseGrapheneHandler {
     private int currentId = 1;
     private int assetApiId = -1;
 
-    public GetAllAssetHolders(WitnessResponseListener listener) {
+    private boolean mOneTime;
+
+    public GetAllAssetHolders(boolean oneTime, WitnessResponseListener listener) {
         super(listener);
+        this.mOneTime = oneTime;
     }
+
+    public GetAllAssetHolders(WitnessResponseListener listener) { this(true, listener);}
 
     @Override
     public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
@@ -48,7 +53,9 @@ public class GetAllAssetHolders extends BaseGrapheneHandler {
         BaseResponse baseResponse = gson.fromJson(response, BaseResponse.class);
         if(baseResponse.error != null){
             mListener.onError(baseResponse.error);
-            websocket.disconnect();
+            if(mOneTime){
+                websocket.disconnect();
+            }
         }else {
             currentId++;
             ArrayList<Serializable> emptyParams = new ArrayList<>();
@@ -68,7 +75,9 @@ public class GetAllAssetHolders extends BaseGrapheneHandler {
                 builder.registerTypeAdapter(AssetHolderCount.class, new AssetHolderCount.HoldersCountDeserializer());
                 WitnessResponse<List<AssetHolderCount>> witnessResponse = builder.create().fromJson(response, AssetTokenHolders);
                 mListener.onSuccess(witnessResponse);
-                websocket.disconnect();
+                if(mOneTime){
+                    websocket.disconnect();
+                }
             }else{
                 System.out.println("current id: "+currentId);
             }

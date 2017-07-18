@@ -25,11 +25,20 @@ public class GetAccountBalances extends BaseGrapheneHandler {
 
     private UserAccount mUserAccount;
     private List<Asset> mAssetList;
+    private boolean mOneTime;
 
-    public GetAccountBalances(UserAccount userAccount, List<Asset> assets, WitnessResponseListener listener) {
+    /*
+     * Constructor
+     */
+    public GetAccountBalances(UserAccount userAccount, boolean oneTime, List<Asset> assets, WitnessResponseListener listener) {
         super(listener);
         this.mUserAccount = userAccount;
         this.mAssetList = assets;
+        this.mOneTime = oneTime;
+    }
+
+    public GetAccountBalances(UserAccount userAccount, List<Asset> assets, WitnessResponseListener listener) {
+        this(userAccount, true, assets, listener);
     }
 
     @Override
@@ -57,7 +66,9 @@ public class GetAccountBalances extends BaseGrapheneHandler {
         Type WitnessResponseType = new TypeToken<WitnessResponse<List<AssetAmount>>>(){}.getType();
         WitnessResponse<List<AssetAmount>> witnessResponse = gsonBuilder.create().fromJson(response, WitnessResponseType);
         mListener.onSuccess(witnessResponse);
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 
     @Override

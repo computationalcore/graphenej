@@ -28,20 +28,31 @@ public class GetAccounts extends BaseGrapheneHandler {
     private String accountId;
     private List<UserAccount> userAccounts;
     private WitnessResponseListener mListener;
-    private boolean oneTime;
+    private boolean mOneTime;
 
+    /*
+     * Construtor
+     */
     public GetAccounts(String accountId, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.accountId = accountId;
-        this.oneTime = oneTime;
+        this.mOneTime = oneTime;
         this.mListener = listener;
     }
 
     public GetAccounts(List<UserAccount> accounts, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.userAccounts = accounts;
-        this.oneTime = oneTime;
+        this.mOneTime = oneTime;
         this.mListener = listener;
+    }
+
+    public GetAccounts(String accountId, WitnessResponseListener listener){
+        this(accountId, true, listener);
+    }
+
+    public GetAccounts(List<UserAccount> accounts, WitnessResponseListener listener){
+        this(accounts, true, listener);
     }
 
     @Override
@@ -76,7 +87,7 @@ public class GetAccounts extends BaseGrapheneHandler {
         } else {
             this.mListener.onSuccess(witnessResponse);
         }
-        if(oneTime){
+        if(mOneTime){
             websocket.disconnect();
         }
     }

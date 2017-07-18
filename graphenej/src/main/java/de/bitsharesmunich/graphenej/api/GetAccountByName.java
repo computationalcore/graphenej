@@ -26,11 +26,17 @@ public class GetAccountByName extends BaseGrapheneHandler {
 
     private String accountName;
     private WitnessResponseListener mListener;
+    private boolean mOneTime;
 
-    public GetAccountByName(String accountName, WitnessResponseListener listener){
+    public GetAccountByName(String accountName, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.accountName = accountName;
+        this.mOneTime = oneTime;
         this.mListener = listener;
+    }
+
+    public GetAccountByName(String accountName, WitnessResponseListener listener){
+        this(accountName, true, listener);
     }
 
     @Override
@@ -58,8 +64,9 @@ public class GetAccountByName extends BaseGrapheneHandler {
         }else{
             this.mListener.onSuccess(witnessResponse);
         }
-
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 
     @Override
