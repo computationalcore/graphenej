@@ -25,17 +25,29 @@ public class GetKeyReferences extends BaseGrapheneHandler {
 
     private List<Address> addresses;
 
-    public GetKeyReferences(Address address, WitnessResponseListener listener){
+    private boolean mOneTime;
+
+    public GetKeyReferences(Address address, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         addresses = new ArrayList<>();
         addresses.add(address);
+        this.mOneTime = oneTime;
 
     }
 
-    public GetKeyReferences(List<Address> addresses, WitnessResponseListener listener) {
+    public GetKeyReferences(List<Address> addresses, boolean oneTime, WitnessResponseListener listener) {
         super(listener);
         this.addresses = addresses;
         this.mListener = listener;
+        this.mOneTime = oneTime;
+    }
+
+    public GetKeyReferences(Address address, WitnessResponseListener listener){
+        this(address, true, listener);
+    }
+
+    public GetKeyReferences(List<Address> addresses, WitnessResponseListener listener) {
+        this(addresses, true, listener);
     }
 
     @Override
@@ -64,7 +76,9 @@ public class GetKeyReferences extends BaseGrapheneHandler {
         } else {
             this.mListener.onSuccess(witnessResponse);
         }
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 
     @Override

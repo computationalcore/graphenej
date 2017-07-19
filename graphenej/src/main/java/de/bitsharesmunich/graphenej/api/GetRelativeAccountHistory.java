@@ -48,8 +48,46 @@ public class GetRelativeAccountHistory extends BaseGrapheneHandler {
     private int currentId = 1;
     private int apiId = -1;
 
+    private boolean mOneTime;
+
     /**
      * Constructor that takes all possible parameters.
+     * @param userAccount The user account to be queried
+     * @param stop Sequence number of earliest operation
+     * @param limit Maximum number of operations to retrieve (must not exceed 100)
+     * @param start Sequence number of the most recent operation to retrieve
+     * @param oneTime Boolean value indicating if websocket must be closed or not after request
+     * @param listener Listener to be notified with the result of this query
+     */
+    public GetRelativeAccountHistory(UserAccount userAccount, int stop, int limit, int start, boolean oneTime, WitnessResponseListener listener){
+        super(listener);
+        if(limit > MAX_LIMIT) limit = MAX_LIMIT;
+        this.mUserAccount = userAccount;
+        this.stop = stop;
+        this.limit = limit;
+        this.start = start;
+        this.mOneTime = oneTime;
+        this.mListener = listener;
+    }
+
+    /**
+     * Constructor that uses the default values, and sets the limit to its maximum possible value.
+     * @param userAccount The user account to be queried
+     * @param oneTime Boolean value indicating if websocket must be closed or not after request
+     * @param listener Listener to be notified with the result of this query
+     */
+    public GetRelativeAccountHistory(UserAccount userAccount, boolean oneTime, WitnessResponseListener listener){
+        super(listener);
+        this.mUserAccount = userAccount;
+        this.stop = DEFAULT_STOP;
+        this.limit = MAX_LIMIT;
+        this.start = DEFAULT_START;
+        this.mOneTime = oneTime;
+        this.mListener = listener;
+    }
+
+    /**
+     * Constructor that takes all possible parameters except for oneTime (which will be always true here)
      * @param userAccount The user account to be queried
      * @param stop Sequence number of earliest operation
      * @param limit Maximum number of operations to retrieve (must not exceed 100)
@@ -57,27 +95,17 @@ public class GetRelativeAccountHistory extends BaseGrapheneHandler {
      * @param listener Listener to be notified with the result of this query
      */
     public GetRelativeAccountHistory(UserAccount userAccount, int stop, int limit, int start, WitnessResponseListener listener){
-        super(listener);
-        if(limit > MAX_LIMIT) limit = MAX_LIMIT;
-        this.mUserAccount = userAccount;
-        this.stop = stop;
-        this.limit = limit;
-        this.start = start;
-        this.mListener = listener;
+        this(userAccount, stop, limit, start, true, listener);
     }
 
     /**
      * Constructor that uses the default values, and sets the limit to its maximum possible value.
+     * oneTime is always set to true at this constructor.
      * @param userAccount The user account to be queried
      * @param listener Listener to be notified with the result of this query
      */
     public GetRelativeAccountHistory(UserAccount userAccount, WitnessResponseListener listener){
-        super(listener);
-        this.mUserAccount = userAccount;
-        this.stop = DEFAULT_STOP;
-        this.limit = MAX_LIMIT;
-        this.start = DEFAULT_START;
-        this.mListener = listener;
+        this(userAccount, true, listener);
     }
 
     @Override
@@ -98,7 +126,9 @@ public class GetRelativeAccountHistory extends BaseGrapheneHandler {
         BaseResponse baseResponse = gson.fromJson(response, BaseResponse.class);
         if(baseResponse.error != null){
             mListener.onError(baseResponse.error);
-            websocket.disconnect();
+            if(mOneTime){
+                websocket.disconnect();
+            }
         }else{
             currentId++;
             ArrayList<Serializable> emptyParams = new ArrayList<>();
@@ -153,7 +183,7 @@ public class GetRelativeAccountHistory extends BaseGrapheneHandler {
      * Disconnects the websocket
      */
     public void disconnect(){
-        if(mWebsocket != null && mWebsocket.isOpen()){
+        if(mWebsocket != null && mWebsocket.isOpen() && mOneTime){
             mWebsocket.disconnect();
         }
     }

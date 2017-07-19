@@ -34,10 +34,17 @@ public class GetBlockHeader extends BaseGrapheneHandler {
     private int currentId = LOGIN_ID;
     private int apiId = -1;
 
-    public GetBlockHeader(long blockNumber, WitnessResponseListener listener){
+    private boolean mOneTime;
+
+    public GetBlockHeader(long blockNumber, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.blockNumber = blockNumber;
+        this.mOneTime = oneTime;
         this.mListener = listener;
+    }
+
+    public GetBlockHeader(long blockNumber, WitnessResponseListener listener){
+        this(blockNumber, true, listener);
     }
 
     @Override
@@ -58,7 +65,9 @@ public class GetBlockHeader extends BaseGrapheneHandler {
         BaseResponse baseResponse = gson.fromJson(response, BaseResponse.class);
         if(baseResponse.error != null){
             mListener.onError(baseResponse.error);
-            websocket.disconnect();
+            if(mOneTime){
+                websocket.disconnect();
+            }
         }else {
             currentId++;
             ArrayList<Serializable> emptyParams = new ArrayList<>();
@@ -80,7 +89,9 @@ public class GetBlockHeader extends BaseGrapheneHandler {
                 Type RelativeAccountHistoryResponse = new TypeToken<WitnessResponse<BlockHeader>>(){}.getType();
                 WitnessResponse<BlockHeader> transfersResponse = gson.fromJson(response, RelativeAccountHistoryResponse);
                 mListener.onSuccess(transfersResponse);
-                websocket.disconnect();
+                if(mOneTime){
+                    websocket.disconnect();
+                }
             }
         }
 

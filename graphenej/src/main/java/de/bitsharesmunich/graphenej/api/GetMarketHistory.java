@@ -44,14 +44,21 @@ public class GetMarketHistory extends BaseGrapheneHandler {
     private int apiId = -1;
     private int counter = 0;
 
-    public GetMarketHistory(Asset base, Asset quote, long bucket, Date start, Date end, WitnessResponseListener listener){
+    private boolean mOneTime;
+
+    public GetMarketHistory(Asset base, Asset quote, long bucket, Date start, Date end, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.base = base;
         this.quote = quote;
         this.bucket = bucket;
         this.start = start;
         this.end = end;
+        this.mOneTime = oneTime;
         this.mListener = listener;
+    }
+
+    public GetMarketHistory(Asset base, Asset quote, long bucket, Date start, Date end, WitnessResponseListener listener){
+        this(base, quote, bucket, start, end, true, listener);
     }
 
     public Asset getBase() {
@@ -99,7 +106,7 @@ public class GetMarketHistory extends BaseGrapheneHandler {
     }
 
     public void disconnect(){
-        if(mWebsocket != null && mWebsocket.isOpen()){
+        if(mWebsocket != null && mWebsocket.isOpen() && mOneTime){
             mWebsocket.disconnect();
         }
     }
@@ -131,7 +138,9 @@ public class GetMarketHistory extends BaseGrapheneHandler {
         BaseResponse baseResponse = gson.fromJson(response, BaseResponse.class);
         if(baseResponse.error != null){
             mListener.onError(baseResponse.error);
-            websocket.disconnect();
+            if(mOneTime){
+                websocket.disconnect();
+            }
         }else{
             currentId++;
             ArrayList<Serializable> emptyParams = new ArrayList<>();

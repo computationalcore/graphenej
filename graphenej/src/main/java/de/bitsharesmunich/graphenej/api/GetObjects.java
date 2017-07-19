@@ -33,9 +33,16 @@ import de.bitsharesmunich.graphenej.models.WitnessResponse;
 public class GetObjects extends BaseGrapheneHandler {
     private List<String> ids;
 
-    public GetObjects(List<String> ids, WitnessResponseListener listener){
+    private boolean mOneTime;
+
+    public GetObjects(List<String> ids, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.ids = ids;
+        this.mOneTime = oneTime;
+    }
+
+    public GetObjects(List<String> ids, WitnessResponseListener listener){
+        this(ids, true, listener);
     }
 
     @Override
@@ -92,7 +99,9 @@ public class GetObjects extends BaseGrapheneHandler {
         WitnessResponse<List<GrapheneObject>> output = new WitnessResponse<>();
         output.result = parsedResult;
         mListener.onSuccess(output);
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 
     @Override

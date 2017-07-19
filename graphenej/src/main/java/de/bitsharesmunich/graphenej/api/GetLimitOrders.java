@@ -31,12 +31,20 @@ public class GetLimitOrders extends BaseGrapheneHandler {
     private int limit;
     private WitnessResponseListener mListener;
 
-    public GetLimitOrders(String a, String b, int limit, WitnessResponseListener mListener) {
+    private boolean mOneTime;
+
+
+    public GetLimitOrders(String a, String b, int limit, boolean oneTime, WitnessResponseListener mListener) {
         super(mListener);
         this.a = a;
         this.b = b;
         this.limit = limit;
+        this.mOneTime = oneTime;
         this.mListener = mListener;
+    }
+
+    public GetLimitOrders(String a, String b, int limit, WitnessResponseListener mListener) {
+        this(a, b, limit, true, mListener);
     }
 
     @Override
@@ -70,7 +78,9 @@ public class GetLimitOrders extends BaseGrapheneHandler {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 
     @Override
@@ -83,12 +93,16 @@ public class GetLimitOrders extends BaseGrapheneHandler {
     @Override
     public void onError(WebSocket websocket, WebSocketException cause) throws Exception {
         mListener.onError(new BaseResponse.Error(cause.getMessage()));
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 
     @Override
     public void handleCallbackError(WebSocket websocket, Throwable cause) throws Exception {
         mListener.onError(new BaseResponse.Error(cause.getMessage()));
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 }
