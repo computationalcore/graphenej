@@ -3,6 +3,7 @@ package de.bitsharesmunich.graphenej.api.android;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -12,11 +13,14 @@ import de.bitsharesmunich.graphenej.api.GetAccountBalances;
 import de.bitsharesmunich.graphenej.api.GetAccountByName;
 import de.bitsharesmunich.graphenej.api.GetAllAssetHolders;
 import de.bitsharesmunich.graphenej.api.GetBlockHeader;
+import de.bitsharesmunich.graphenej.api.GetKeyReferences;
 import de.bitsharesmunich.graphenej.errors.RepeatedRequestIdException;
+import de.bitsharesmunich.graphenej.errors.MalformedAddressException;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
 import de.bitsharesmunich.graphenej.models.BaseResponse;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 import de.bitsharesmunich.graphenej.UserAccount;
+import de.bitsharesmunich.graphenej.Address;
 
 /**
  * Created by nelson on 6/26/17.
@@ -222,7 +226,75 @@ public class NodeConnectionTest {
             System.out.println("InterruptedException. Msg: "+e.getMessage());
         }
     }
-    
+
+    @Test
+    public void testGetKeyReferencesRequest(){
+        nodeConnection = NodeConnection.getInstance();
+        nodeConnection.addNodeUrl(BLOCK_PAY_DE);
+        nodeConnection.connect("", "", false, mErrorListener);
+
+        Address address1 = null;
+        Address address2 = null;
+        Address address3 = null;
+        try {
+            address1 = new Address("BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY");
+            address2 = new Address("BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY");
+            address3 = new Address("BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYp00");
+        } catch (MalformedAddressException e) {
+            System.out.println("MalformedAddressException. Msg: " + e.getMessage());
+        }
+
+        ArrayList<Address> addresses = new ArrayList<>();
+        addresses.add(address1);
+        addresses.add(address2);
+        addresses.add(address3);
+
+        // Test with the one address constructor
+        System.out.println("Adding GetKeyReferences one address request (One address)");
+        try{
+            nodeConnection.addRequestHandler(new GetKeyReferences(address1, false, new WitnessResponseListener(){
+                @Override
+                public void onSuccess(WitnessResponse response) {
+                    System.out.println("GetKeyReferences.onSuccess");
+                }
+
+                @Override
+                public void onError(BaseResponse.Error error) {
+                    System.out.println("GetKeyReferences.onError. Msg: "+ error.message);
+                }
+            }));
+        }catch(RepeatedRequestIdException e){
+            System.out.println("RepeatedRequestIdException. Msg: "+e.getMessage());
+        }
+
+        // Test with the list of addresses constructor
+        System.out.println("Adding GetKeyReferences address request (List of Addresses)");
+        try{
+            nodeConnection.addRequestHandler(new GetKeyReferences(addresses, false, new WitnessResponseListener(){
+                @Override
+                public void onSuccess(WitnessResponse response) {
+                    System.out.println("GetKeyReferences.onSuccess");
+                }
+
+                @Override
+                public void onError(BaseResponse.Error error) {
+                    System.out.println("GetKeyReferences.onError. Msg: "+ error.message);
+                }
+            }));
+        }catch(RepeatedRequestIdException e){
+            System.out.println("RepeatedRequestIdException. Msg: "+e.getMessage());
+        }
+
+        try{
+            // Holding this thread while we get update notifications
+            synchronized (this){
+                wait();
+            }
+        }catch(InterruptedException e){
+            System.out.println("InterruptedException. Msg: "+e.getMessage());
+        }
+    }
+
 
     private WitnessResponseListener mErrorListener = new WitnessResponseListener() {
 

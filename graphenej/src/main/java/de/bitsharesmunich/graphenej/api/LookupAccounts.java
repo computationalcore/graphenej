@@ -27,18 +27,30 @@ public class LookupAccounts extends BaseGrapheneHandler {
     private int maxAccounts = DEFAULT_MAX;
     private final WitnessResponseListener mListener;
 
-    public LookupAccounts(String accountName, WitnessResponseListener listener){
+    private boolean mOneTime;
+
+    public LookupAccounts(String accountName, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.accountName = accountName;
         this.maxAccounts = DEFAULT_MAX;
+        this.mOneTime = oneTime;
         this.mListener = listener;
     }
 
-    public LookupAccounts(String accountName, int maxAccounts, WitnessResponseListener listener){
+    public LookupAccounts(String accountName, int maxAccounts, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.accountName = accountName;
         this.maxAccounts  = maxAccounts;
+        this.mOneTime = oneTime;
         this.mListener = listener;
+    }
+
+    public LookupAccounts(String accountName, WitnessResponseListener listener){
+        this(accountName, true, listener);
+    }
+
+    public LookupAccounts(String accountName, int maxAccounts, WitnessResponseListener listener){
+        this(accountName, maxAccounts, true, listener);
     }
 
     @Override
@@ -65,7 +77,9 @@ public class LookupAccounts extends BaseGrapheneHandler {
             this.mListener.onSuccess(witnessResponse);
         }
 
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 
     @Override

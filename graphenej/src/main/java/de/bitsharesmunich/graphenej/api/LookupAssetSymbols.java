@@ -24,10 +24,17 @@ public class LookupAssetSymbols extends BaseGrapheneHandler {
     private WitnessResponseListener mListener;
     private List<Asset> assets;
 
-    public LookupAssetSymbols(List<Asset> assets, WitnessResponseListener listener){
+    private boolean mOneTime;
+
+    public LookupAssetSymbols(List<Asset> assets, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.assets = assets;
+        this.mOneTime = oneTime;
         this.mListener = listener;
+    }
+
+    public LookupAssetSymbols(List<Asset> assets, WitnessResponseListener listener){
+        this(assets, true, listener);
     }
 
     @Override

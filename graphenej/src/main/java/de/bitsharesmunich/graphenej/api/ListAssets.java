@@ -45,16 +45,29 @@ public class ListAssets extends BaseGrapheneHandler {
     private int limit;
     private int requestCounter = 0;
 
+    private boolean mOneTime;
+
     /**
      * Constructor
      * @param lowerBoundSymbol: Lower bound of symbol names to retrieve
      * @param limit: Maximum number of assets to fetch, if the constant LIST_ALL
      *             is passed, all existing assets will be retrieved.
      */
-    public ListAssets(String lowerBoundSymbol, int limit, WitnessResponseListener listener){
+    public ListAssets(String lowerBoundSymbol, int limit, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.lowerBound = lowerBoundSymbol;
         this.limit = limit;
+        this.mOneTime = oneTime;
+    }
+
+    /**
+     * Constructor with oneTime = true for compatibility issue.
+     * @param lowerBoundSymbol: Lower bound of symbol names to retrieve
+     * @param limit: Maximum number of assets to fetch, if the constant LIST_ALL
+     *             is passed, all existing assets will be retrieved.
+     */
+    public ListAssets(String lowerBoundSymbol, int limit, WitnessResponseListener listener){
+        this(lowerBoundSymbol, limit, true, listener);
     }
 
     @Override
@@ -81,7 +94,9 @@ public class ListAssets extends BaseGrapheneHandler {
             // If the requested number of assets was below
             // the limit, we just call the listener.
             mListener.onSuccess(witnessResponse);
-            websocket.disconnect();
+            if(mOneTime){
+                websocket.disconnect();
+            }
         }else{
             // Updating counter to keep track of how many batches we already retrieved.
             requestCounter++;
@@ -96,12 +111,16 @@ public class ListAssets extends BaseGrapheneHandler {
                 // we got less than the requested amount.
                 witnessResponse.result = this.assets;
                 mListener.onSuccess(witnessResponse);
-                websocket.disconnect();
+                if(mOneTime){
+                    websocket.disconnect();
+                }
             }else if(this.assets.size() == this.limit){
                 // We already have the required amount of assets
                 witnessResponse.result = this.assets;
                 mListener.onSuccess(witnessResponse);
-                websocket.disconnect();
+                if(mOneTime){
+                    websocket.disconnect();
+                }
             }else{
                 // We still need to fetch some more assets
                 this.lowerBound = this.assets.get(this.assets.size() - 1).getSymbol();

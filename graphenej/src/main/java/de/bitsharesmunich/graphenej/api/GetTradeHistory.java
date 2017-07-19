@@ -29,14 +29,21 @@ public class GetTradeHistory extends BaseGrapheneHandler {
     private int limit;
     private WitnessResponseListener mListener;
 
-    public GetTradeHistory(String a, String b, String toTime, String fromTime,int limit, WitnessResponseListener mListener) {
+    private boolean mOneTime;
+
+    public GetTradeHistory(String a, String b, String toTime, String fromTime,int limit, boolean oneTime, WitnessResponseListener mListener) {
         super(mListener);
         this.a = a;
         this.b = b;
         this.toTime = toTime;
         this.fromTime = fromTime;
         this.limit = limit;
+        this.mOneTime = oneTime;
         this.mListener = mListener;
+    }
+
+    public GetTradeHistory(String a, String b, String toTime, String fromTime,int limit, WitnessResponseListener mListener) {
+        this(a, b, toTime, fromTime, limit, true, mListener);
     }
 
     @Override
@@ -72,7 +79,9 @@ public class GetTradeHistory extends BaseGrapheneHandler {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 
     @Override

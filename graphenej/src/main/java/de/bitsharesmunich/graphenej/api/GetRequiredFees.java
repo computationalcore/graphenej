@@ -31,10 +31,17 @@ public class GetRequiredFees extends WebSocketAdapter {
     private List<BaseOperation> operations;
     private Asset asset;
 
-    public GetRequiredFees(List<BaseOperation> operations, Asset asset, WitnessResponseListener listener){
+    private boolean mOneTime;
+
+    public GetRequiredFees(List<BaseOperation> operations, Asset asset, boolean oneTime, WitnessResponseListener listener){
         this.operations = operations;
         this.asset = asset;
+        this.mOneTime = oneTime;
         this.mListener = listener;
+    }
+
+    public GetRequiredFees(List<BaseOperation> operations, Asset asset, WitnessResponseListener listener){
+        this(operations, asset, true, listener);
     }
 
     @Override
@@ -66,12 +73,16 @@ public class GetRequiredFees extends WebSocketAdapter {
     @Override
     public void onError(WebSocket websocket, WebSocketException cause) throws Exception {
         mListener.onError(new BaseResponse.Error(cause.getMessage()));
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 
     @Override
     public void handleCallbackError(WebSocket websocket, Throwable cause) throws Exception {
         mListener.onError(new BaseResponse.Error(cause.getMessage()));
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 }
