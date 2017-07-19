@@ -19,6 +19,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ *  Class that implements get_account_balances request handler.
+ *
+ *  Get an account’s balances in various assets.
+ *
+ *  The request returns the balances of the account
+ *
+ *  @see <a href="https://goo.gl/faFdey">get_account_balances API doc</a>
+ *
  * Created by nelson on 1/13/17.
  */
 public class GetAccountBalances extends BaseGrapheneHandler {
@@ -27,18 +35,35 @@ public class GetAccountBalances extends BaseGrapheneHandler {
     private List<Asset> mAssetList;
     private boolean mOneTime;
 
-    /*
-     * Constructor
+    /**
+     * Default Constructor
+     *
+     * @param userAccount account to get balances for
+     * @param assets list of the assets to get balances of; if empty, get all assets account has a balance in
+     * @param oneTime boolean value indicating if websocket must be closed (true) or not (false)
+     *                after the response
+     * @param listener A class implementing the WitnessResponseListener interface. This should
+     *                be implemented by the party interested in being notified about the success/failure
+     *                of the transaction broadcast operation.
      */
-    public GetAccountBalances(UserAccount userAccount, boolean oneTime, List<Asset> assets, WitnessResponseListener listener) {
+    public GetAccountBalances(UserAccount userAccount, List<Asset> assets, boolean oneTime, WitnessResponseListener listener) {
         super(listener);
         this.mUserAccount = userAccount;
         this.mAssetList = assets;
         this.mOneTime = oneTime;
     }
 
+    /**
+     * Using this constructor the websocket connection closes after the response.
+     *
+     * @param userAccount account to get balances for
+     * @param assets list of the assets to get balances of; if empty, get all assets account has a balance in
+     * @param listener A class implementing the WitnessResponseListener interface. This should
+     *                be implemented by the party interested in being notified about the success/failure
+     *                of the transaction broadcast operation.
+     */
     public GetAccountBalances(UserAccount userAccount, List<Asset> assets, WitnessResponseListener listener) {
-        this(userAccount, true, assets, listener);
+        this(userAccount, assets, true, listener);
     }
 
     @Override

@@ -27,10 +27,10 @@ import de.bitsharesmunich.graphenej.Address;
  * Created by nelson on 6/26/17.
  */
 public class NodeConnectionTest {
-    private String BLOCK_PAY_DE = System.getenv("OPENLEDGER_EU");
     private String NODE_URL_1 = System.getenv("NODE_URL_1");
     private String NODE_URL_2 = System.getenv("NODE_URL_2");
     private String NODE_URL_3 = System.getenv("NODE_URL_3");
+    private String NODE_URL_4 = System.getenv("NODE_URL_4");
     private String ACCOUNT_ID = System.getenv("ACCOUNT_ID");
     private String ACCOUNT_NAME = System.getenv("ACCOUNT_NAME");
     private long BlOCK_TEST_NUMBER = Long.parseLong(System.getenv("BlOCK_TEST_NUMBER"));
@@ -75,7 +75,7 @@ public class NodeConnectionTest {
     @Test
     public void testNodeConnection(){
         nodeConnection = NodeConnection.getInstance();
-        nodeConnection.addNodeUrl(BLOCK_PAY_DE);
+        nodeConnection.addNodeUrl(NODE_URL_1);
         nodeConnection.connect("", "", true, mErrorListener);
 
         Timer timer = new Timer();
@@ -93,15 +93,22 @@ public class NodeConnectionTest {
     }
 
     @Test
+    /**
+     * Test for NodeConnection's addNodeUrl and addNodeUrls working together.
+     *
+     * Need to setup the NODE_URL_(1 to 4) env to work. Some of the nodes may have invalid nodes
+     * websockets URL just to test the hop.
+     *
+     */
     public void testNodeHopFeature(){
         nodeConnection = NodeConnection.getInstance();
-        nodeConnection.addNodeUrl(NODE_URL_1);
+        nodeConnection.addNodeUrl(NODE_URL_4);
         //Test adding a "sublist"
         ArrayList<String> urlList = new ArrayList<String>(){{
-            add(NODE_URL_1);
-            add(NODE_URL_2);
+            add(NODE_URL_3);
+            add(NODE_URL_3);
         }};
-        nodeConnection.addNodeUrl(BLOCK_PAY_DE);
+        nodeConnection.addNodeUrl(NODE_URL_1);
 
         nodeConnection.connect("", "", true, mErrorListener);
 
@@ -119,10 +126,16 @@ public class NodeConnectionTest {
         }
     }
 
+    /**
+     * Test for GetAccountBalances Handler.
+     *
+     * Request balances for a valid account (Need to setup the ACCOUNT_ID env with desired account id)
+     *
+     */
     @Test
     public void testGetAccountBalancesRequest(){
         nodeConnection = NodeConnection.getInstance();
-        nodeConnection.addNodeUrl(BLOCK_PAY_DE);
+        nodeConnection.addNodeUrl(NODE_URL_1);
         nodeConnection.connect("", "", false, mErrorListener);
 
         System.out.println("Adding GetAccountBalances here");
@@ -132,7 +145,26 @@ public class NodeConnectionTest {
             assetList.add(BTS);
             assetList.add(BITDOLAR);
             assetList.add(BITEURO);
-            nodeConnection.addRequestHandler(new GetAccountBalances(userAccount, false, assetList, new WitnessResponseListener(){
+            System.out.println("Test: Request to discrete asset list");
+            nodeConnection.addRequestHandler(new GetAccountBalances(userAccount, assetList, false, new WitnessResponseListener(){
+                @Override
+                public void onSuccess(WitnessResponse response) {
+                    System.out.println("getAccountBalances.onSuccess");
+                }
+
+                @Override
+                public void onError(BaseResponse.Error error) {
+                    System.out.println("getAccountBalances.onError. Msg: "+ error.message);
+                }
+            }));
+        }catch(RepeatedRequestIdException e){
+            System.out.println("RepeatedRequestIdException. Msg: "+e.getMessage());
+        }
+
+        try{
+            UserAccount userAccount = new UserAccount(ACCOUNT_ID);
+            System.out.println("Test: Request to all account' assets balance");
+            nodeConnection.addRequestHandler(new GetAccountBalances(userAccount, null, false, new WitnessResponseListener(){
                 @Override
                 public void onSuccess(WitnessResponse response) {
                     System.out.println("getAccountBalances.onSuccess");
@@ -158,9 +190,16 @@ public class NodeConnectionTest {
     }
 
     @Test
+    /**
+     * Test for GetAccountByName Handler.
+     *
+     * Request for a valid account name by name (Need to setup the ACCOUNT_NAME env with desired
+     * account name)
+     *
+     */
     public void testGetAccountByNameRequest(){
         nodeConnection = NodeConnection.getInstance();
-        nodeConnection.addNodeUrl(BLOCK_PAY_DE);
+        nodeConnection.addNodeUrl(NODE_URL_1);
         nodeConnection.connect("", "", false, mErrorListener);
 
         System.out.println("Adding GetAccountByName here");
@@ -193,7 +232,7 @@ public class NodeConnectionTest {
     @Test
     public void testGetAllAssetHoldersRequest(){
         nodeConnection = NodeConnection.getInstance();
-        nodeConnection.addNodeUrl(BLOCK_PAY_DE);
+        nodeConnection.addNodeUrl(NODE_URL_1);
         nodeConnection.connect("", "", false, mErrorListener);
 
         System.out.println("Adding GetAllAssetHolders request");
@@ -226,7 +265,7 @@ public class NodeConnectionTest {
     @Test
     public void testGetBlockHeaderRequest(){
         nodeConnection = NodeConnection.getInstance();
-        nodeConnection.addNodeUrl(BLOCK_PAY_DE);
+        nodeConnection.addNodeUrl(NODE_URL_1);
         nodeConnection.connect("", "", false, mErrorListener);
 
 
@@ -261,7 +300,7 @@ public class NodeConnectionTest {
     @Test
     public void testGetKeyReferencesRequest(){
         nodeConnection = NodeConnection.getInstance();
-        nodeConnection.addNodeUrl(BLOCK_PAY_DE);
+        nodeConnection.addNodeUrl(NODE_URL_1);
         nodeConnection.connect("", "", false, mErrorListener);
 
         Address address1 = null;

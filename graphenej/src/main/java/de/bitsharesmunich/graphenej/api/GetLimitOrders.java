@@ -22,7 +22,15 @@ import de.bitsharesmunich.graphenej.models.BaseResponse;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 
 /**
- * Created by nelson on 11/15/16.
+ *  Class that implements get_limit_orders request handler.
+ *
+ *  Get limit orders in a given market.
+ *
+ *  The request returns the limit orders, ordered from least price to greatest
+ *
+ *  @see <a href="https://goo.gl/5sRTRq">get_limit_orders API doc</a>
+ *
+ * Created by nelson on 1/5/17.
  */
 public class GetLimitOrders extends BaseGrapheneHandler {
 
@@ -34,6 +42,18 @@ public class GetLimitOrders extends BaseGrapheneHandler {
     private boolean mOneTime;
 
 
+    /**
+     * Default Constructor
+     *
+     * @param a id of asset being sold
+     * @param b id of asset being purchased
+     * @param limit maximum number of orders to retrieve
+     * @param oneTime boolean value indicating if websocket must be closed (true) or not (false)
+     *                after the response
+     * @param mListener A class implementing the WitnessResponseListener interface. This should
+     *                be implemented by the party interested in being notified about the success/failure
+     *                of the transaction broadcast operation.
+     */
     public GetLimitOrders(String a, String b, int limit, boolean oneTime, WitnessResponseListener mListener) {
         super(mListener);
         this.a = a;
@@ -43,6 +63,16 @@ public class GetLimitOrders extends BaseGrapheneHandler {
         this.mListener = mListener;
     }
 
+    /**
+     * Using this constructor the websocket connection closes after the response.
+     *
+     * @param a id of asset being sold
+     * @param b id of asset being purchased
+     * @param limit maximum number of orders to retrieve
+     * @param mListener A class implementing the WitnessResponseListener interface. This should
+     *                be implemented by the party interested in being notified about the success/failure
+     *                of the transaction broadcast operation.
+     */
     public GetLimitOrders(String a, String b, int limit, WitnessResponseListener mListener) {
         this(a, b, limit, true, mListener);
     }
