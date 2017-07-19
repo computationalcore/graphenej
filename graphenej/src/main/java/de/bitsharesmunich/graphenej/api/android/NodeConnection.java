@@ -13,7 +13,13 @@ import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
  */
 
 public class NodeConnection {
+    /**
+     * List of URLs of the nodes
+     */
     private List<String> mUrlList;
+    /**
+     * Index of the current node from the list
+     */
     private int mUrlIndex;
     private WebsocketWorkerThread mThread;
     private SubscriptionMessagesHub mMessagesHub;
@@ -21,6 +27,9 @@ public class NodeConnection {
 
     private static NodeConnection instance;
 
+    /*
+     * Ger the instance of the NodeConnection which is inteded to be used as a Singleton.
+     */
     public static NodeConnection getInstance(){
         if(instance == null){
             instance = new NodeConnection();
@@ -32,14 +41,38 @@ public class NodeConnection {
         this.mUrlList = new ArrayList<>();
     }
 
+    /**
+     * Add a websocket URL node that will be added to the list used at node hop scheme.
+     *
+     * @param url: URL of the node
+     */
     public void addNodeUrl(String url){
         this.mUrlList.add(url);
     }
 
+    /**
+     * Add a list of websocket URL nodes that will be added to the current list and
+     * be used at node hop scheme.
+     *
+     * @param urlList: List of URLs of the nodes
+     */
+    public void addNodeUrls(List<String> urlList){
+        List<String> newList = new ArrayList<String>(mUrlList);
+        newList.addAll(urlList);
+    }
+
+    /**
+     * Get the list of websocket URL nodes.
+     *
+     * @return List of URLs of the nodes
+     */
     public List<String> getNodeUrls(){
         return this.mUrlList;
     }
 
+    /**
+     * Clear list of websocket URL nodes.
+     */
     public void clearNodeList(){
         this.mUrlList.clear();
     }
@@ -60,6 +93,9 @@ public class NodeConnection {
         }
     }
 
+    /**
+     *  Add the API Handler to the node.
+     */
     public void addRequestHandler(BaseGrapheneHandler handler) throws RepeatedRequestIdException {
         handler.setRequestId(requestCounter);
         requestCounter++;

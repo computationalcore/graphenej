@@ -14,6 +14,7 @@ import de.bitsharesmunich.graphenej.api.GetAccountByName;
 import de.bitsharesmunich.graphenej.api.GetAllAssetHolders;
 import de.bitsharesmunich.graphenej.api.GetBlockHeader;
 import de.bitsharesmunich.graphenej.api.GetKeyReferences;
+import de.bitsharesmunich.graphenej.api.GetLimitOrders;
 import de.bitsharesmunich.graphenej.errors.RepeatedRequestIdException;
 import de.bitsharesmunich.graphenej.errors.MalformedAddressException;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
@@ -27,6 +28,9 @@ import de.bitsharesmunich.graphenej.Address;
  */
 public class NodeConnectionTest {
     private String BLOCK_PAY_DE = System.getenv("OPENLEDGER_EU");
+    private String NODE_URL_1 = System.getenv("NODE_URL_1");
+    private String NODE_URL_2 = System.getenv("NODE_URL_2");
+    private String NODE_URL_3 = System.getenv("NODE_URL_3");
     private String ACCOUNT_ID = System.getenv("ACCOUNT_ID");
     private String ACCOUNT_NAME = System.getenv("ACCOUNT_NAME");
     private long BlOCK_TEST_NUMBER = Long.parseLong(System.getenv("BlOCK_TEST_NUMBER"));
@@ -72,6 +76,33 @@ public class NodeConnectionTest {
     public void testNodeConnection(){
         nodeConnection = NodeConnection.getInstance();
         nodeConnection.addNodeUrl(BLOCK_PAY_DE);
+        nodeConnection.connect("", "", true, mErrorListener);
+
+        Timer timer = new Timer();
+        timer.schedule(subscribeTask, 5000);
+        timer.schedule(releaseTask, 30000);
+
+        try{
+            // Holding this thread while we get update notifications
+            synchronized (this){
+                wait();
+            }
+        }catch(InterruptedException e){
+            System.out.println("InterruptedException. Msg: "+e.getMessage());
+        }
+    }
+
+    @Test
+    public void testNodeHopFeature(){
+        nodeConnection = NodeConnection.getInstance();
+        nodeConnection.addNodeUrl(NODE_URL_1);
+        //Test adding a "sublist"
+        ArrayList<String> urlList = new ArrayList<String>(){{
+            add(NODE_URL_1);
+            add(NODE_URL_2);
+        }};
+        nodeConnection.addNodeUrl(BLOCK_PAY_DE);
+
         nodeConnection.connect("", "", true, mErrorListener);
 
         Timer timer = new Timer();
