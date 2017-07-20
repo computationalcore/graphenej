@@ -465,7 +465,7 @@ public class NodeConnectionTest {
 
         System.out.println("Adding GetBlockHeader request");
         try{
-            nodeConnection.addRequestHandler(new GetBlockHeader(BlOCK_TEST_NUMBER,false, new WitnessResponseListener(){
+            nodeConnection.addRequestHandler(new GetBlockHeader(BlOCK_TEST_NUMBER, true, new WitnessResponseListener(){
                 @Override
                 public void onSuccess(WitnessResponse response) {
                     System.out.println("GetBlockHeader.onSuccess");
@@ -507,15 +507,16 @@ public class NodeConnectionTest {
         //Test with 2 BTS
         Asset testAsset = new Asset("1.3.0");
         AssetAmount assetAmountTest = new AssetAmount(UnsignedLong.valueOf(200000), testAsset);
+        AssetAmount feeAmountTest = new AssetAmount(UnsignedLong.valueOf(100000), testAsset);
 
-        TransferOperation transferOperation = new TransferOperation(userAccount_from, userAccount_to, assetAmountTest, assetAmountTest);
+        TransferOperation transferOperation = new TransferOperation(userAccount_from, userAccount_to, assetAmountTest, feeAmountTest);
 
         ArrayList<BaseOperation> operations = new ArrayList<>();
         operations.add(transferOperation);
 
-        System.out.println("Adding GetRequiredFees request");
+        System.out.println("Adding GetBlockHeader request");
         try{
-            nodeConnection.addRequestHandler(new GetRequiredFees(operations, testAsset, false, new WitnessResponseListener(){
+            nodeConnection.addRequestHandler(new GetRequiredFees(operations, testAsset, true, new WitnessResponseListener(){
                 @Override
                 public void onSuccess(WitnessResponse response) {
                     System.out.println("GetRequiredFees.onSuccess");

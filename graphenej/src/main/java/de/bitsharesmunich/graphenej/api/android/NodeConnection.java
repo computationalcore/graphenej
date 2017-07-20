@@ -109,7 +109,7 @@ public class NodeConnection {
             mThread = new WebsocketWorkerThread(this.mUrlList.get(mUrlIndex), mInternalErrorListener);
             mUrlIndex = mUrlIndex + 1 % this.mUrlList.size();
 
-            mMessagesHub = new SubscriptionMessagesHub(user, password, subscribe, errorListener);
+            mMessagesHub = new SubscriptionMessagesHub(user, password, subscribe, mInternalErrorListener);
             mThread.addListener(mMessagesHub);
             mThread.start();
         }
