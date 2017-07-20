@@ -29,7 +29,7 @@ import java.util.Map;
  *
  *  @see <a href="https://goo.gl/MB4TXq">get_required_fees API doc</a>
  */
-public class GetRequiredFees extends WebSocketAdapter {
+public class GetRequiredFees extends BaseGrapheneHandler {
 
     private WitnessResponseListener mListener;
     private List<BaseOperation> operations;
@@ -49,6 +49,7 @@ public class GetRequiredFees extends WebSocketAdapter {
      *                of the transaction broadcast operation.
      */
     public GetRequiredFees(List<BaseOperation> operations, Asset asset, boolean oneTime, WitnessResponseListener listener){
+        super(listener);
         this.operations = operations;
         this.asset = asset;
         this.mOneTime = oneTime;

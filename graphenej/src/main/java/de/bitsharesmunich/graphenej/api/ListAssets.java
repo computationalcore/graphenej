@@ -26,7 +26,6 @@ import java.util.Map;
  * constructor. Internally we are going to perform multiple calls in order to satisfy the user's
  * request.
  *
- * Created by nelson on 1/5/17.
  */
 public class ListAssets extends BaseGrapheneHandler {
     /**
@@ -49,6 +48,7 @@ public class ListAssets extends BaseGrapheneHandler {
 
     /**
      * Constructor
+     *
      * @param lowerBoundSymbol: Lower bound of symbol names to retrieve
      * @param limit: Maximum number of assets to fetch, if the constant LIST_ALL
      *             is passed, all existing assets will be retrieved.
@@ -61,7 +61,8 @@ public class ListAssets extends BaseGrapheneHandler {
     }
 
     /**
-     * Constructor with oneTime = true for compatibility issue.
+     * Using this constructor the WebSocket connection closes after the response.
+     *
      * @param lowerBoundSymbol: Lower bound of symbol names to retrieve
      * @param limit: Maximum number of assets to fetch, if the constant LIST_ALL
      *             is passed, all existing assets will be retrieved.
