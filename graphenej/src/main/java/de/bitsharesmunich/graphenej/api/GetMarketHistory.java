@@ -23,7 +23,11 @@ import de.bitsharesmunich.graphenej.models.BucketObject;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 
 /**
- * Created by nelson on 12/22/16.
+ *  Class that implements get_market_history request handler.
+ *
+ *
+ *  @see <a href="https://goo.gl/hfVFBW">get_market_history API doc</a>
+ *
  */
 public class GetMarketHistory extends BaseGrapheneHandler {
 
@@ -46,6 +50,20 @@ public class GetMarketHistory extends BaseGrapheneHandler {
 
     private boolean mOneTime;
 
+    /**
+     * Constructor
+     *
+     * @param base
+     * @param quote
+     * @param bucket
+     * @param start
+     * @param end
+     * @param oneTime boolean value indicating if websocket must be closed (true) or not (false)
+     *                after the response
+     * @param listener a class implementing the WitnessResponseListener interface. This should
+     *                be implemented by the party interested in being notified about the success/failure
+     *                of the transaction broadcast operation.
+     */
     public GetMarketHistory(Asset base, Asset quote, long bucket, Date start, Date end, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.base = base;
@@ -57,6 +75,17 @@ public class GetMarketHistory extends BaseGrapheneHandler {
         this.mListener = listener;
     }
 
+    /**
+     * Using this constructor the websocket connection closes after the response.
+     *
+     * @param base
+     * @param quote
+     * @param bucket
+     * @param start
+     * @param end
+     * @param listener a class implementing the WitnessResponseListener interface. This should
+     *              be implemented by the party interested in being notified about the success/failure
+     */
     public GetMarketHistory(Asset base, Asset quote, long bucket, Date start, Date end, WitnessResponseListener listener){
         this(base, quote, bucket, start, end, true, listener);
     }

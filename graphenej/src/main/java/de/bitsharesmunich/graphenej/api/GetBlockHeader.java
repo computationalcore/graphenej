@@ -19,7 +19,13 @@ import de.bitsharesmunich.graphenej.models.BlockHeader;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 
 /**
- * Created by nelson on 12/13/16.
+ *  Class that implements get_block_header request handler.
+ *
+ *  Retrieve a block header.
+ *
+ *  The request returns the header of the referenced block, or null if no matching block was found
+ *
+ *  @see <a href="https://goo.gl/qw1eeb">get_block_header API doc</a>
  */
 public class GetBlockHeader extends BaseGrapheneHandler {
 
@@ -36,6 +42,15 @@ public class GetBlockHeader extends BaseGrapheneHandler {
 
     private boolean mOneTime;
 
+    /**
+     * Constructor
+     * @param blockNumber height of the block whose header should be returned
+     * @param oneTime boolean value indicating if websocket must be closed (true) or not (false)
+     *                after the response
+     * @param listener A class implementing the WitnessResponseListener interface. This should
+     *                be implemented by the party interested in being notified about the success/failure
+     *                of the transaction broadcast operation.
+     */
     public GetBlockHeader(long blockNumber, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.blockNumber = blockNumber;
@@ -43,6 +58,13 @@ public class GetBlockHeader extends BaseGrapheneHandler {
         this.mListener = listener;
     }
 
+    /**
+     * Using this constructor the websocket connection closes after the response.
+     * @param blockNumber height of the block whose header should be returned
+     * @param listener A class implementing the WitnessResponseListener interface. This should
+     *                be implemented by the party interested in being notified about the success/failure
+     *                of the transaction broadcast operation.
+     */
     public GetBlockHeader(long blockNumber, WitnessResponseListener listener){
         this(blockNumber, true, listener);
     }

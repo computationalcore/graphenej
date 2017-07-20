@@ -3,6 +3,10 @@ package de.bitsharesmunich.graphenej.api;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketException;
+
+import org.w3c.dom.Node;
+
+import de.bitsharesmunich.graphenej.interfaces.NodeErrorListener;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
 import de.bitsharesmunich.graphenej.models.BaseResponse;
 
@@ -14,6 +18,7 @@ import de.bitsharesmunich.graphenej.models.BaseResponse;
 public abstract class BaseGrapheneHandler extends WebSocketAdapter {
 
     protected WitnessResponseListener mListener;
+    protected NodeErrorListener mErrorListener;
 
     /**
      * The 'id' field of a message to the node. This is used in order to multiplex different messages
@@ -30,11 +35,14 @@ public abstract class BaseGrapheneHandler extends WebSocketAdapter {
     public BaseGrapheneHandler(WitnessResponseListener listener){
         this.mListener = listener;
     }
+    public BaseGrapheneHandler(NodeErrorListener listener){
+        this.mErrorListener = listener;
+    }
 
     @Override
     public void onError(WebSocket websocket, WebSocketException cause) throws Exception {
         System.out.println("onError. cause: "+cause.getMessage());
-        mListener.onError(new BaseResponse.Error(cause.getMessage()));
+        mErrorListener.onError(new BaseResponse.Error(cause.getMessage()));
         websocket.disconnect();
     }
 
@@ -44,7 +52,7 @@ public abstract class BaseGrapheneHandler extends WebSocketAdapter {
         for (StackTraceElement element : cause.getStackTrace()){
             System.out.println(element.getFileName()+"#"+element.getClassName()+":"+element.getLineNumber());
         }
-        mListener.onError(new BaseResponse.Error(cause.getMessage()));
+        mErrorListener.onError(new BaseResponse.Error(cause.getMessage()));
         websocket.disconnect();
     }
 

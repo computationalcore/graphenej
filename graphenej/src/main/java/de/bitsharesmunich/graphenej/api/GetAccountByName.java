@@ -27,8 +27,6 @@ import de.bitsharesmunich.graphenej.models.WitnessResponse;
  *  The request returns account data that refer to the name.
  *
  *  @see <a href="https://goo.gl/w75qjV">get_account_by_name API doc</a>
- *
- * Created by nelson on 11/15/16.
  */
 public class GetAccountByName extends BaseGrapheneHandler {
 

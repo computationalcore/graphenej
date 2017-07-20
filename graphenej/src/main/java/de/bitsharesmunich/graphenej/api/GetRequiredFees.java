@@ -23,7 +23,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by nelson on 11/15/16.
+ *  Class that implements get_required_fees request handler.
+ *
+ *  For each operation calculate the required fee in the specified asset type.
+ *
+ *  @see <a href="https://goo.gl/MB4TXq">get_required_fees API doc</a>
  */
 public class GetRequiredFees extends WebSocketAdapter {
 
@@ -33,6 +37,17 @@ public class GetRequiredFees extends WebSocketAdapter {
 
     private boolean mOneTime;
 
+    /**
+     * Constructor
+     *
+     * @param operations list of operations that fee should be calculated
+     * @param asset specify the asset of the operations
+     * @param oneTime boolean value indicating if websocket must be closed (true) or not (false)
+     *                after the response
+     * @param listener A class implementing the WitnessResponseListener interface. This should
+     *                be implemented by the party interested in being notified about the success/failure
+     *                of the transaction broadcast operation.
+     */
     public GetRequiredFees(List<BaseOperation> operations, Asset asset, boolean oneTime, WitnessResponseListener listener){
         this.operations = operations;
         this.asset = asset;
@@ -40,6 +55,15 @@ public class GetRequiredFees extends WebSocketAdapter {
         this.mListener = listener;
     }
 
+    /**
+     * Using this constructor the websocket connection closes after the response.
+     *
+     * @param operations list of operations that fee should be calculated
+     * @param asset specify the asset of the operations
+     * @param listener A class implementing the WitnessResponseListener interface. This should
+     *                be implemented by the party interested in being notified about the success/failure
+     *                of the transaction broadcast operation.
+     */
     public GetRequiredFees(List<BaseOperation> operations, Asset asset, WitnessResponseListener listener){
         this(operations, asset, true, listener);
     }

@@ -6,7 +6,9 @@ import java.util.List;
 import de.bitsharesmunich.graphenej.api.BaseGrapheneHandler;
 import de.bitsharesmunich.graphenej.api.SubscriptionMessagesHub;
 import de.bitsharesmunich.graphenej.errors.RepeatedRequestIdException;
+import de.bitsharesmunich.graphenej.interfaces.NodeErrorListener;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
+import de.bitsharesmunich.graphenej.models.BaseResponse;
 
 /**
  * Created by nelson on 6/26/17.
@@ -24,8 +26,13 @@ public class NodeConnection {
     private WebsocketWorkerThread mThread;
     private SubscriptionMessagesHub mMessagesHub;
     private long requestCounter = SubscriptionMessagesHub.MANUAL_SUBSCRIPTION_ID + 1;
+    private WitnessResponseListener mErrorListener;
 
     private static NodeConnection instance;
+
+    private String mUser;
+    private String mPassword;
+    private boolean mSubscribe;
 
     /*
      * Ger the instance of the NodeConnection which is inteded to be used as a Singleton.
@@ -47,6 +54,7 @@ public class NodeConnection {
      * @param url: URL of the node
      */
     public void addNodeUrl(String url){
+        System.out.println("addNodeUrl: "+url);
         this.mUrlList.add(url);
     }
 
@@ -77,6 +85,15 @@ public class NodeConnection {
         this.mUrlList.clear();
     }
 
+    private NodeErrorListener mInternalErrorListener = new NodeErrorListener() {
+        @Override
+        public void onError(BaseResponse.Error error) {
+            System.out.println("NodeConnect Error. Msg: "+error);
+
+            connect(mUser, mPassword, mSubscribe, mErrorListener);
+        }
+    };
+
     /**
      * Method that will try to connect to one of the nodes. If the connection fails
      * a subsequent call to this method will try to connect with the next node in the
@@ -84,7 +101,12 @@ public class NodeConnection {
      */
     public void connect(String user, String password, boolean subscribe, WitnessResponseListener errorListener) {
         if(this.mUrlList.size() > 0){
-            mThread = new WebsocketWorkerThread(this.mUrlList.get(mUrlIndex));
+            mUser = user;
+            mPassword = password;
+            mSubscribe = subscribe;
+            System.out.println("Connecting to: "+ this.mUrlList.get(mUrlIndex));
+            mErrorListener = errorListener;
+            mThread = new WebsocketWorkerThread(this.mUrlList.get(mUrlIndex), mInternalErrorListener);
             mUrlIndex = mUrlIndex + 1 % this.mUrlList.size();
 
             mMessagesHub = new SubscriptionMessagesHub(user, password, subscribe, errorListener);

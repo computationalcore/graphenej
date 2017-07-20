@@ -30,7 +30,6 @@ import de.bitsharesmunich.graphenej.models.WitnessResponse;
  *
  *  @see <a href="https://goo.gl/5sRTRq">get_limit_orders API doc</a>
  *
- * Created by nelson on 1/5/17.
  */
 public class GetLimitOrders extends BaseGrapheneHandler {
 
@@ -50,12 +49,12 @@ public class GetLimitOrders extends BaseGrapheneHandler {
      * @param limit maximum number of orders to retrieve
      * @param oneTime boolean value indicating if websocket must be closed (true) or not (false)
      *                after the response
-     * @param mListener A class implementing the WitnessResponseListener interface. This should
+     * @param listener A class implementing the WitnessResponseListener interface. This should
      *                be implemented by the party interested in being notified about the success/failure
      *                of the transaction broadcast operation.
      */
-    public GetLimitOrders(String a, String b, int limit, boolean oneTime, WitnessResponseListener mListener) {
-        super(mListener);
+    public GetLimitOrders(String a, String b, int limit, boolean oneTime, WitnessResponseListener listener) {
+        super(listener);
         this.a = a;
         this.b = b;
         this.limit = limit;
@@ -69,12 +68,12 @@ public class GetLimitOrders extends BaseGrapheneHandler {
      * @param a id of asset being sold
      * @param b id of asset being purchased
      * @param limit maximum number of orders to retrieve
-     * @param mListener A class implementing the WitnessResponseListener interface. This should
+     * @param listener A class implementing the WitnessResponseListener interface. This should
      *                be implemented by the party interested in being notified about the success/failure
      *                of the transaction broadcast operation.
      */
-    public GetLimitOrders(String a, String b, int limit, WitnessResponseListener mListener) {
-        this(a, b, limit, true, mListener);
+    public GetLimitOrders(String a, String b, int limit, WitnessResponseListener listener) {
+        this(a, b, limit, true, listener);
     }
 
     @Override

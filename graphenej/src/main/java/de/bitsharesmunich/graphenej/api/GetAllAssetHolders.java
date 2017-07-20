@@ -16,7 +16,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by nelson on 1/25/17.
+ *  Class that implements get_all_asset_holders request handler.
+ *
+ *  Get a list of all system assets with holders count.
+ *
+ *  The request returns the list of all assets with holders count.
+ *
+ *  @see <a href="https://goo.gl/AgTSLU">get_all_asset_holders API doc</a>
  */
 public class GetAllAssetHolders extends BaseGrapheneHandler {
     private final static int LOGIN_ID = 1;
@@ -28,11 +34,26 @@ public class GetAllAssetHolders extends BaseGrapheneHandler {
 
     private boolean mOneTime;
 
+    /**
+     * Constructor
+     * @param oneTime boolean value indicating if websocket must be closed (true) or not (false)
+     *                after the response
+     * @param listener A class implementing the WitnessResponseListener interface. This should
+     *                be implemented by the party interested in being notified about the success/failure
+     *                of the transaction broadcast operation.
+     */
     public GetAllAssetHolders(boolean oneTime, WitnessResponseListener listener) {
         super(listener);
         this.mOneTime = oneTime;
     }
 
+    /**
+     * Using this constructor the websocket connection closes after the response.
+     *
+     * @param listener A class implementing the WitnessResponseListener interface. This should
+     *                be implemented by the party interested in being notified about the success/failure
+     *                of the transaction broadcast operation.
+     */
     public GetAllAssetHolders(WitnessResponseListener listener) { this(true, listener);}
 
     @Override

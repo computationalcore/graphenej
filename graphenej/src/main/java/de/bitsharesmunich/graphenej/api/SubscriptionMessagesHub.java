@@ -18,6 +18,7 @@ import de.bitsharesmunich.graphenej.RPC;
 import de.bitsharesmunich.graphenej.Transaction;
 import de.bitsharesmunich.graphenej.UserAccount;
 import de.bitsharesmunich.graphenej.errors.RepeatedRequestIdException;
+import de.bitsharesmunich.graphenej.interfaces.NodeErrorListener;
 import de.bitsharesmunich.graphenej.interfaces.SubscriptionHub;
 import de.bitsharesmunich.graphenej.interfaces.SubscriptionListener;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
@@ -104,6 +105,48 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
      * @param errorListener: Callback that will be fired in case there is an error.
      */
     public SubscriptionMessagesHub(String user, String password, WitnessResponseListener errorListener){
+        this(user, password, false, errorListener);
+    }
+
+    /**
+     * Constructor used to create a subscription message hub that will call the set_subscribe_callback
+     * API with the clear_filter parameter set to false, meaning that it will only receive automatic updates
+     * from objects we register.
+     *
+     * A list of ObjectTypes must be provided, otherwise we won't get any update.
+     *
+     * @param user: User name, in case the node to which we're going to connect to requires authentication
+     * @param password: Password, same as above
+     * @param clearFilter: Whether to automatically subscribe of not to the notification feed.
+     * @param errorListener: Callback that will be fired in case there is an error.
+     */
+    public SubscriptionMessagesHub(String user, String password, boolean clearFilter, NodeErrorListener errorListener){
+        super(errorListener);
+        this.user = user;
+        this.password = password;
+        this.clearFilter = clearFilter;
+        this.mSubscriptionDeserializer = new SubscriptionResponse.SubscriptionResponseDeserializer();
+        GsonBuilder builder = new GsonBuilder();
+        builder.registerTypeAdapter(SubscriptionResponse.class, mSubscriptionDeserializer);
+        builder.registerTypeAdapter(Transaction.class, new Transaction.TransactionDeserializer());
+        builder.registerTypeAdapter(TransferOperation.class, new TransferOperation.TransferDeserializer());
+        builder.registerTypeAdapter(LimitOrderCreateOperation.class, new LimitOrderCreateOperation.LimitOrderCreateDeserializer());
+        builder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer());
+        builder.registerTypeAdapter(UserAccount.class, new UserAccount.UserAccountSimpleDeserializer());
+        builder.registerTypeAdapter(DynamicGlobalProperties.class, new DynamicGlobalProperties.DynamicGlobalPropertiesDeserializer());
+        this.gson = builder.create();
+    }
+
+    /**
+     * Constructor used to create a subscription message hub that will call the set_subscribe_callback
+     * API with the clear_filter parameter set to false, meaning that it will only receive updates
+     * from objects we register.
+     *
+     * @param user: User name, in case the node to which we're going to connect to requires authentication
+     * @param password: Password, same as above
+     * @param errorListener: Callback that will be fired in case there is an error.
+     */
+    public SubscriptionMessagesHub(String user, String password, NodeErrorListener errorListener){
         this(user, password, false, errorListener);
     }
 

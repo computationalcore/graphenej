@@ -21,8 +21,13 @@ import de.bitsharesmunich.graphenej.models.ApiCall;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 
 /**
+ *  Class that implements get_accounts request handler.
  *
- * @author henry
+ *  Get a list of accounts by ID.
+ *
+ *  The request returns the accounts corresponding to the provided IDs.
+ *
+ *  @see <a href="https://goo.gl/r5RqKG">get_accounts API doc</a>
  */
 public class GetAccounts extends BaseGrapheneHandler {
     private String accountId;
@@ -30,8 +35,14 @@ public class GetAccounts extends BaseGrapheneHandler {
     private WitnessResponseListener mListener;
     private boolean mOneTime;
 
-    /*
-     * Construtor
+    /**
+     * Default Constructor
+     * @param accountId ID of the account to retrieve
+     * @param oneTime boolean value indicating if websocket must be closed (true) or not (false)
+     *                after the response
+     * @param listener A class implementing the WitnessResponseListener interface. This should
+     *                be implemented by the party interested in being notified about the success/failure
+     *                of the transaction broadcast operation.
      */
     public GetAccounts(String accountId, boolean oneTime, WitnessResponseListener listener){
         super(listener);
@@ -40,6 +51,15 @@ public class GetAccounts extends BaseGrapheneHandler {
         this.mListener = listener;
     }
 
+    /**
+     * Using this constructor the websocket connection closes after the response.
+     * @param accounts list with the accounts to retrieve
+     * @param oneTime boolean value indicating if websocket must be closed (true) or not (false)
+     *                after the response
+     * @param listener A class implementing the WitnessResponseListener interface. This should
+     *                be implemented by the party interested in being notified about the success/failure
+     *                of the transaction broadcast operation.
+     */
     public GetAccounts(List<UserAccount> accounts, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.userAccounts = accounts;
@@ -47,10 +67,24 @@ public class GetAccounts extends BaseGrapheneHandler {
         this.mListener = listener;
     }
 
+    /**
+     * Using this constructor the websocket connection closes after the response.
+     * @param accountId ID of the account to retrieve
+     * @param listener A class implementing the WitnessResponseListener interface. This should
+     *                be implemented by the party interested in being notified about the success/failure
+     *                of the transaction broadcast operation.
+     */
     public GetAccounts(String accountId, WitnessResponseListener listener){
         this(accountId, true, listener);
     }
 
+    /**
+     * Using this constructor the websocket connection closes after the response.
+     * @param accounts list with the accounts to retrieve
+     * @param listener A class implementing the WitnessResponseListener interface. This should
+     *                be implemented by the party interested in being notified about the success/failure
+     *                of the transaction broadcast operation.
+     */
     public GetAccounts(List<UserAccount> accounts, WitnessResponseListener listener){
         this(accounts, true, listener);
     }
