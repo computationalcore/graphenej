@@ -44,9 +44,9 @@ public class GetLimitOrders extends BaseGrapheneHandler {
     /**
      * Default Constructor
      *
-     * @param a id of asset being sold
-     * @param b id of asset being purchased
-     * @param limit maximum number of orders to retrieve
+     * @param a             id of asset being sold
+     * @param b             id of asset being purchased
+     * @param limit         maximum number of orders to retrieve
      * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
      *                      (false) after the response
      * @param listener      A class implementing the WitnessResponseListener interface. This should
@@ -59,7 +59,7 @@ public class GetLimitOrders extends BaseGrapheneHandler {
         this.b = b;
         this.limit = limit;
         this.mOneTime = oneTime;
-        this.mListener = mListener;
+        this.mListener = listener;
     }
 
     /**

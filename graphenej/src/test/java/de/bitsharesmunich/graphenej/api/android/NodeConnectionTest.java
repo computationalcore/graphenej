@@ -18,6 +18,7 @@ import de.bitsharesmunich.graphenej.api.GetBlockHeader;
 import de.bitsharesmunich.graphenej.api.GetKeyReferences;
 import de.bitsharesmunich.graphenej.api.GetLimitOrders;
 import de.bitsharesmunich.graphenej.api.GetRequiredFees;
+import de.bitsharesmunich.graphenej.api.GetTradeHistory;
 import de.bitsharesmunich.graphenej.errors.RepeatedRequestIdException;
 import de.bitsharesmunich.graphenej.errors.MalformedAddressException;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
@@ -42,6 +43,7 @@ public class NodeConnectionTest {
     private String ACCOUNT_NAME = System.getenv("ACCOUNT_NAME");
     private long BlOCK_TEST_NUMBER = Long.parseLong(System.getenv("BlOCK_TEST_NUMBER"));
     private Asset BTS = new Asset("1.3.0");
+    private Asset BLOCKPAY = new Asset("1.3.1072");
     private Asset BITDOLAR = new Asset("1.3.121"); //USD Smartcoin
     private Asset BITEURO = new Asset("1.3.120"); //EUR Smartcoin
     private NodeConnection nodeConnection;
@@ -451,6 +453,49 @@ public class NodeConnectionTest {
     }
 
     /**
+     * Test for GetLimitOrders Handler.
+     *
+     * Request for a limit orders between two assets
+     */
+    @Test
+    public void testGetLimitOrdersRequest(){
+        nodeConnection = NodeConnection.getInstance();
+        nodeConnection.addNodeUrl(NODE_URL_1);
+        nodeConnection.connect("", "", false, mErrorListener);
+
+        String asset_sold_id = BLOCKPAY.getBitassetId();
+        String asset_purchased_id = BTS.getBitassetId();
+        int limit = 10;
+
+        System.out.println("Adding GetLimitOrders request");
+        try{
+            nodeConnection.addRequestHandler(new GetLimitOrders(asset_sold_id, asset_purchased_id, limit, true, new WitnessResponseListener(){
+                @Override
+                public void onSuccess(WitnessResponse response) {
+                    System.out.println("GetLimitOrders.onSuccess");
+                }
+
+                @Override
+                public void onError(BaseResponse.Error error) {
+                    System.out.println("GetLimitOrders.onError. Msg: "+ error.message);
+                }
+            }));
+        }catch(RepeatedRequestIdException e){
+            System.out.println("RepeatedRequestIdException. Msg: "+e.getMessage());
+        }
+
+
+        try{
+            // Holding this thread while we get update notifications
+            synchronized (this){
+                wait();
+            }
+        }catch(InterruptedException e){
+            System.out.println("InterruptedException. Msg: "+e.getMessage());
+        }
+    }
+
+    /**
      * Test for GetMarketHistory Handler.
      *
      * Request for a valid account block header (Need to setup the BlOCK_TEST_NUMBER env with desired
@@ -517,6 +562,52 @@ public class NodeConnectionTest {
         System.out.println("Adding GetBlockHeader request");
         try{
             nodeConnection.addRequestHandler(new GetRequiredFees(operations, testAsset, true, new WitnessResponseListener(){
+                @Override
+                public void onSuccess(WitnessResponse response) {
+                    System.out.println("GetRequiredFees.onSuccess");
+                }
+
+                @Override
+                public void onError(BaseResponse.Error error) {
+                    System.out.println("GetRequiredFees.onError. Msg: "+ error.message);
+                }
+            }));
+        }catch(RepeatedRequestIdException e){
+            System.out.println("RepeatedRequestIdException. Msg: "+e.getMessage());
+        }
+
+
+        try{
+            // Holding this thread while we get update notifications
+            synchronized (this){
+                wait();
+            }
+        }catch(InterruptedException e){
+            System.out.println("InterruptedException. Msg: "+e.getMessage());
+        }
+    }
+
+    /**
+     * Test for GetRequiredFees Handler.
+     *
+     */
+    @Test
+    public void testGetTradeHistoryRequest(){
+        nodeConnection = NodeConnection.getInstance();
+        nodeConnection.addNodeUrl(NODE_URL_1);
+        nodeConnection.connect("", "", false, mErrorListener);
+
+        UserAccount userAccount_from = new UserAccount(ACCOUNT_ID_1);
+        UserAccount userAccount_to = new UserAccount(ACCOUNT_ID_2);
+
+
+        String asset_sold_id = BLOCKPAY.getBitassetId();
+        String asset_purchased_id = BTS.getBitassetId();
+        int limit = 10;
+
+        System.out.println("Adding GetRequiredFees request");
+        try{
+            nodeConnection.addRequestHandler(new GetTradeHistory(asset_sold_id, asset_purchased_id, "", "", limit, true, new WitnessResponseListener(){
                 @Override
                 public void onSuccess(WitnessResponse response) {
                     System.out.println("GetRequiredFees.onSuccess");
