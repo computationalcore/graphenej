@@ -54,8 +54,8 @@ public class GetMarketHistory extends BaseGrapheneHandler {
     /**
      * Default Constructor
      *
-     * @param base asset which history is desired
-     * @param quote asset which the base price asset will be compared to
+     * @param base          asset which history is desired
+     * @param quote         asset which the base price asset will be compared to
      * @param bucket        the time interval (in seconds) for each point should be (analog to
      *                      candles on a candle stick graph).
      *                      Note: The bucket value is discrete and node dependent. The default value
@@ -84,8 +84,8 @@ public class GetMarketHistory extends BaseGrapheneHandler {
     /**
      * Using this constructor the WebSocket connection closes after the response.
      *
-     * @param base asset which history is desired
-     * @param quote asset which the base price asset will be compared to
+     * @param base          asset which history is desired
+     * @param quote         asset which the base price asset will be compared to
      * @param bucket        the time interval (in seconds) for each point should be (analog to
      *                      candles on a candle stick graph).
      *                      Note: The bucket value is discrete and node dependent. The default value

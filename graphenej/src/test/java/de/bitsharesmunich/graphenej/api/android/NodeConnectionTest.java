@@ -3,6 +3,7 @@ package de.bitsharesmunich.graphenej.api.android;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -17,6 +18,9 @@ import de.bitsharesmunich.graphenej.api.GetAllAssetHolders;
 import de.bitsharesmunich.graphenej.api.GetBlockHeader;
 import de.bitsharesmunich.graphenej.api.GetKeyReferences;
 import de.bitsharesmunich.graphenej.api.GetLimitOrders;
+import de.bitsharesmunich.graphenej.api.GetMarketHistory;
+import de.bitsharesmunich.graphenej.api.GetObjects;
+import de.bitsharesmunich.graphenej.api.GetRelativeAccountHistory;
 import de.bitsharesmunich.graphenej.api.GetRequiredFees;
 import de.bitsharesmunich.graphenej.api.GetTradeHistory;
 import de.bitsharesmunich.graphenej.errors.RepeatedRequestIdException;
@@ -495,11 +499,11 @@ public class NodeConnectionTest {
         }
     }
 
+
     /**
      * Test for GetMarketHistory Handler.
      *
-     * Request for a valid account block header (Need to setup the BlOCK_TEST_NUMBER env with desired
-     * block height)
+     * Request for market history of a base asset compared to a quote asset.
      */
     @Test
     public void testGetMarketHistoryRequest(){
@@ -507,18 +511,124 @@ public class NodeConnectionTest {
         nodeConnection.addNodeUrl(NODE_URL_1);
         nodeConnection.connect("", "", false, mErrorListener);
 
+        Asset asset_base = BLOCKPAY;
+        Asset asset_quote = BTS;
+        //the time interval of the bucket in seconds
+        long bucket = 3600;
 
-        System.out.println("Adding GetBlockHeader request");
+        //datetime of of the most recent operation to retrieve
+        Date start = new Date();
+        //datetime of the the earliest operation to retrieve
+        //07/16/2017 1:33pm
+        Date end = new Date(1500211991);
+
+        System.out.println("Adding GetMarketHistory request");
         try{
-            nodeConnection.addRequestHandler(new GetBlockHeader(BlOCK_TEST_NUMBER, true, new WitnessResponseListener(){
+            nodeConnection.addRequestHandler(new GetMarketHistory(asset_base, asset_quote, bucket, start, end, true, new WitnessResponseListener(){
                 @Override
                 public void onSuccess(WitnessResponse response) {
-                    System.out.println("GetBlockHeader.onSuccess");
+                    System.out.println("GetMarketHistory.onSuccess");
                 }
 
                 @Override
                 public void onError(BaseResponse.Error error) {
-                    System.out.println("GetBlockHeader.onError. Msg: "+ error.message);
+                    System.out.println("GetMarketHistory.onError. Msg: "+ error.message);
+                }
+            }));
+        }catch(RepeatedRequestIdException e){
+            System.out.println("RepeatedRequestIdException. Msg: "+e.getMessage());
+        }
+
+
+        try{
+            // Holding this thread while we get update notifications
+            synchronized (this){
+                wait();
+            }
+        }catch(InterruptedException e){
+            System.out.println("InterruptedException. Msg: "+e.getMessage());
+        }
+    }
+
+    /**
+     * Test for GetObjects Handler.
+     *
+     * Request for a limit orders between two assets
+     */
+    @Test
+    public void testGetObjectsRequest(){
+        nodeConnection = NodeConnection.getInstance();
+        nodeConnection.addNodeUrl(NODE_URL_1);
+        nodeConnection.connect("", "", false, mErrorListener);
+
+        String asset_sold_id = BLOCKPAY.getBitassetId();
+        String asset_purchased_id = BTS.getBitassetId();
+        int limit = 10;
+
+        ArrayList<String> objectList = new ArrayList<String>(){{
+            add(BLOCKPAY.getBitassetId());
+            add(BTS.getBitassetId());
+            add(BITEURO.getBitassetId());
+        }};
+
+        System.out.println("Adding GetObjects request");
+        try{
+            nodeConnection.addRequestHandler(new GetObjects(objectList, true, new WitnessResponseListener(){
+                @Override
+                public void onSuccess(WitnessResponse response) {
+                    System.out.println("GetObjects.onSuccess");
+                }
+
+                @Override
+                public void onError(BaseResponse.Error error) {
+                    System.out.println("GetObjects.onError. Msg: "+ error.message);
+                }
+            }));
+        }catch(RepeatedRequestIdException e){
+            System.out.println("RepeatedRequestIdException. Msg: "+e.getMessage());
+        }
+
+
+        try{
+            // Holding this thread while we get update notifications
+            synchronized (this){
+                wait();
+            }
+        }catch(InterruptedException e){
+            System.out.println("InterruptedException. Msg: "+e.getMessage());
+        }
+    }
+
+    /**
+     * Test for GetRelativeAccount Handler.
+     *
+     * Request for the transaction history of a user account.
+     */
+    @Test
+    public void testGetRelativeAccountHistoryRequest(){
+        nodeConnection = NodeConnection.getInstance();
+        nodeConnection.addNodeUrl(NODE_URL_1);
+        nodeConnection.connect("", "", false, mErrorListener);
+
+        UserAccount userAccount = new UserAccount(ACCOUNT_ID_1);
+
+        //Sequence number of earliest operation
+        int stop = 10;
+        int limit = 50;
+        //Sequence number of the most recent operation to retrieve
+        int start = 50;
+
+        System.out.println("Adding GetRelativeAccountHistory request");
+        try{
+            nodeConnection.addRequestHandler(new GetRelativeAccountHistory(userAccount, stop, limit, start, true, new WitnessResponseListener(){
+                @Override
+                public void onSuccess(WitnessResponse response) {
+                    System.out.println("GetRelativeAccountHistory.onSuccess");
+                }
+
+                @Override
+                public void onError(BaseResponse.Error error) {
+                    System.out.println("GetRelativeAccountHistory.onError. Msg: "+ error.message);
                 }
             }));
         }catch(RepeatedRequestIdException e){
@@ -588,7 +698,7 @@ public class NodeConnectionTest {
     }
 
     /**
-     * Test for GetRequiredFees Handler.
+     * Test for GetTradeHistory Handler.
      *
      */
     @Test
@@ -605,17 +715,17 @@ public class NodeConnectionTest {
         String asset_purchased_id = BTS.getBitassetId();
         int limit = 10;
 
-        System.out.println("Adding GetRequiredFees request");
+        System.out.println("Adding GetTradeHistory request");
         try{
             nodeConnection.addRequestHandler(new GetTradeHistory(asset_sold_id, asset_purchased_id, "", "", limit, true, new WitnessResponseListener(){
                 @Override
                 public void onSuccess(WitnessResponse response) {
-                    System.out.println("GetRequiredFees.onSuccess");
+                    System.out.println("GetTradeHistory.onSuccess");
                 }
 
                 @Override
                 public void onError(BaseResponse.Error error) {
-                    System.out.println("GetRequiredFees.onError. Msg: "+ error.message);
+                    System.out.println("GetTradeHistory.onError. Msg: "+ error.message);
                 }
             }));
         }catch(RepeatedRequestIdException e){
