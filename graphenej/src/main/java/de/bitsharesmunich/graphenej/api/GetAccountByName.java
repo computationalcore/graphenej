@@ -24,7 +24,7 @@ import de.bitsharesmunich.graphenej.models.WitnessResponse;
  *
  *  Get an account’s info by name.
  *
- *  The request returns account data that refer to the name.
+ *  The response returns account data that refer to the name.
  *
  *  @see <a href="https://goo.gl/w75qjV">get_account_by_name API doc</a>
  */
@@ -37,12 +37,12 @@ public class GetAccountByName extends BaseGrapheneHandler {
     /**
      * Default Constructor
      *
-     * @param accountName name of the account to get info
-     * @param oneTime boolean value indicating if websocket must be closed (true) or not (false)
-     *                after the response
-     * @param listener A class implementing the WitnessResponseListener interface. This should
-     *                be implemented by the party interested in being notified about the success/failure
-     *                of the transaction broadcast operation.
+     * @param accountName   name of the account to get info
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
     public GetAccountByName(String accountName, boolean oneTime, WitnessResponseListener listener){
         super(listener);
@@ -52,12 +52,12 @@ public class GetAccountByName extends BaseGrapheneHandler {
     }
 
     /**
-     * Using this constructor the websocket connection closes after the response.
+     * Using this constructor the WebSocket connection closes after the response.
      *
-     * @param accountName name of the account to get info
-     * @param listener A class implementing the WitnessResponseListener interface. This should
-     *                be implemented by the party interested in being notified about the success/failure
-     *                of the transaction broadcast operation.
+     * @param accountName   name of the account to get info
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
     public GetAccountByName(String accountName, WitnessResponseListener listener){
         this(accountName, true, listener);

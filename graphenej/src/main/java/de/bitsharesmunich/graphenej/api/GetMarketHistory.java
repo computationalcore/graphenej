@@ -25,6 +25,7 @@ import de.bitsharesmunich.graphenej.models.WitnessResponse;
 /**
  *  Class that implements get_market_history request handler.
  *
+ *  Get mar
  *
  *  @see <a href="https://goo.gl/hfVFBW">get_market_history API doc</a>
  *
@@ -51,18 +52,23 @@ public class GetMarketHistory extends BaseGrapheneHandler {
     private boolean mOneTime;
 
     /**
-     * Constructor
+     * Default Constructor
      *
-     * @param base
-     * @param quote
-     * @param bucket
-     * @param start
-     * @param end
-     * @param oneTime boolean value indicating if websocket must be closed (true) or not (false)
-     *                after the response
-     * @param listener a class implementing the WitnessResponseListener interface. This should
-     *                be implemented by the party interested in being notified about the success/failure
-     *                of the transaction broadcast operation.
+     * @param base asset which history is desired
+     * @param quote asset which the base price asset will be compared to
+     * @param bucket        the time interval (in seconds) for each point should be (analog to
+     *                      candles on a candle stick graph).
+     *                      Note: The bucket value is discrete and node dependent. The default value
+     *                      is 3600s. To get the available buckets of a node use
+     *                      get_all_asset_holders API call.
+     * @param start         datetime of of the most recent operation to retrieve (Note: The name is
+     *                      counter intuitive, but it follow the original API parameter name)
+     * @param end           datetime of the the earliest operation to retrieve
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
     public GetMarketHistory(Asset base, Asset quote, long bucket, Date start, Date end, boolean oneTime, WitnessResponseListener listener){
         super(listener);
@@ -76,15 +82,21 @@ public class GetMarketHistory extends BaseGrapheneHandler {
     }
 
     /**
-     * Using this constructor the websocket connection closes after the response.
+     * Using this constructor the WebSocket connection closes after the response.
      *
-     * @param base
-     * @param quote
-     * @param bucket
-     * @param start
-     * @param end
-     * @param listener a class implementing the WitnessResponseListener interface. This should
-     *              be implemented by the party interested in being notified about the success/failure
+     * @param base asset which history is desired
+     * @param quote asset which the base price asset will be compared to
+     * @param bucket        the time interval (in seconds) for each point should be (analog to
+     *                      candles on a candle stick graph).
+     *                      Note: The bucket value is discrete and node dependent. The default value
+     *                      is 3600s. To get the available buckets of a node use
+     *                      get_all_asset_holders API call.
+     * @param start         datetime of of the most recent operation to retrieve (Note: The name is
+     *                      counter intuitive, but it follow the original API parameter name)
+     * @param end           datetime of the the earliest operation to retrieve
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
     public GetMarketHistory(Asset base, Asset quote, long bucket, Date start, Date end, WitnessResponseListener listener){
         this(base, quote, bucket, start, end, true, listener);
@@ -135,7 +147,7 @@ public class GetMarketHistory extends BaseGrapheneHandler {
     }
 
     public void disconnect(){
-        if(mWebsocket != null && mWebsocket.isOpen() && mOneTime){
+        if(mWebsocket != null && mWebsocket.isOpen()){
             mWebsocket.disconnect();
         }
     }

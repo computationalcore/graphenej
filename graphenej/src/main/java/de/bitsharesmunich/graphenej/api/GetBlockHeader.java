@@ -43,13 +43,14 @@ public class GetBlockHeader extends BaseGrapheneHandler {
     private boolean mOneTime;
 
     /**
-     * Constructor
-     * @param blockNumber height of the block whose header should be returned
-     * @param oneTime boolean value indicating if websocket must be closed (true) or not (false)
-     *                after the response
-     * @param listener A class implementing the WitnessResponseListener interface. This should
-     *                be implemented by the party interested in being notified about the success/failure
-     *                of the transaction broadcast operation.
+     * Default Constructor
+     *
+     * @param blockNumber   height of the block whose header should be returned
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
     public GetBlockHeader(long blockNumber, boolean oneTime, WitnessResponseListener listener){
         super(listener);
@@ -59,11 +60,12 @@ public class GetBlockHeader extends BaseGrapheneHandler {
     }
 
     /**
-     * Using this constructor the websocket connection closes after the response.
-     * @param blockNumber height of the block whose header should be returned
-     * @param listener A class implementing the WitnessResponseListener interface. This should
-     *                be implemented by the party interested in being notified about the success/failure
-     *                of the transaction broadcast operation.
+     * Using this constructor the WebSocket connection closes after the response.
+     *
+     * @param blockNumber   height of the block whose header should be returned
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
     public GetBlockHeader(long blockNumber, WitnessResponseListener listener){
         this(blockNumber, true, listener);

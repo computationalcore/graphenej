@@ -11,9 +11,11 @@ import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
 import de.bitsharesmunich.graphenej.models.BaseResponse;
 
 /**
- * Created by nelson on 6/26/17.
+ *  Class used to encapsulate all connections that should be done to a node (with node hop support).
+ *
+ *  This class is intended to be used as a central broker for all full node API requests. It should
+ *  be used as a singleton under an application.
  */
-
 public class NodeConnection {
     /**
      * List of URLs of the nodes
@@ -35,7 +37,7 @@ public class NodeConnection {
     private boolean mSubscribe;
 
     /*
-     * Ger the instance of the NodeConnection which is inteded to be used as a Singleton.
+     * Get the instance of the NodeConnection which is intended to be used as a Singleton.
      */
     public static NodeConnection getInstance(){
         if(instance == null){
@@ -49,7 +51,7 @@ public class NodeConnection {
     }
 
     /**
-     * Add a websocket URL node that will be added to the list used at node hop scheme.
+     * Add a WebSocket URL node that will be added to the list used at node hop scheme.
      *
      * @param url: URL of the node
      */
@@ -59,7 +61,7 @@ public class NodeConnection {
     }
 
     /**
-     * Add a list of websocket URL nodes that will be added to the current list and
+     * Add a list of WebSocket URL nodes that will be added to the current list and
      * be used at node hop scheme.
      *
      * @param urlList: List of URLs of the nodes
@@ -70,7 +72,7 @@ public class NodeConnection {
     }
 
     /**
-     * Get the list of websocket URL nodes.
+     * Get the list of WebSocket URL nodes.
      *
      * @return List of URLs of the nodes
      */
@@ -79,7 +81,7 @@ public class NodeConnection {
     }
 
     /**
-     * Clear list of websocket URL nodes.
+     * Clear list of WebSocket URL nodes.
      */
     public void clearNodeList(){
         this.mUrlList.clear();
@@ -95,9 +97,21 @@ public class NodeConnection {
     };
 
     /**
+
+     */
+    /**
      * Method that will try to connect to one of the nodes. If the connection fails
      * a subsequent call to this method will try to connect with the next node in the
      * list if there is one.
+     *
+     * @param   user            user credential used for restricted requested that needed to be
+     *                          logged
+     * @param   password        password credential used for restricted requested that needed to be
+     *                          logged
+     * @param   subscribe       if the node should be subscribed to the node
+     * @param   errorListener   a class implementing the WitnessResponseListener interface. This
+     *                          should be implemented by the party interested in being notified
+     *                          about the failure of the desired broadcast operation.
      */
     public void connect(String user, String password, boolean subscribe, WitnessResponseListener errorListener) {
         if(this.mUrlList.size() > 0){
@@ -116,7 +130,10 @@ public class NodeConnection {
     }
 
     /**
-     *  Add the API Handler to the node.
+     * Add the API Handler to the node.
+     *
+     * @param   handler request handler to be added to the connection
+     * @throws  RepeatedRequestIdException
      */
     public void addRequestHandler(BaseGrapheneHandler handler) throws RepeatedRequestIdException {
         handler.setRequestId(requestCounter);

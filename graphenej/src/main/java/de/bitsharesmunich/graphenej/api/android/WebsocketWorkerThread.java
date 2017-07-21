@@ -15,7 +15,8 @@ import de.bitsharesmunich.graphenej.models.BaseResponse;
 import de.bitsharesmunich.graphenej.test.NaiveSSLContext;
 
 /**
- * Created by nelson on 11/17/16.
+ *  Class used to encapsulate the thread where the WebSocket does the requests.
+ *
  */
 public class WebsocketWorkerThread extends Thread {
     private final String TAG = this.getClass().getName();
@@ -27,6 +28,11 @@ public class WebsocketWorkerThread extends Thread {
     private WebSocket mWebSocket;
     private NodeErrorListener mErrorListener;
 
+    /**
+     * Constructor
+     *
+     * @param url   URL of the WebSocket
+     */
     public WebsocketWorkerThread(String url){
         try {
             WebSocketFactory factory = new WebSocketFactory().setConnectionTimeout(TIMEOUT);
@@ -49,9 +55,12 @@ public class WebsocketWorkerThread extends Thread {
     }
 
     /**
-     * Constructor with connection error listener
-     * @param url
-     * @param errorListener
+     * Constructor with connection error listener.
+     *
+     * @param url               URL of the WebSocket
+     * @param errorListener     a class implementing the NodeErrorListener interface. This
+     *                          should be implemented by the party interested in being notified
+     *                          about the failure of the connection.
      */
     public WebsocketWorkerThread(String url, NodeErrorListener errorListener){
         try {
@@ -75,6 +84,9 @@ public class WebsocketWorkerThread extends Thread {
         }
     }
 
+    /**
+     * Method call when the thread is started.
+     */
     @Override
     public void run() {
         try {
@@ -85,6 +97,13 @@ public class WebsocketWorkerThread extends Thread {
         }
     }
 
+    /**
+     * Add a WebSocketListener to the thread that will run. This should be implemented by the party
+     * interested in being notified about the response value of a request.
+     *
+     * @param listener  listener implemented to be notified when the socket get a response from the
+     *                  node
+     */
     public void addListener(WebSocketListener listener){
         mWebSocket.addListener(listener);
     }

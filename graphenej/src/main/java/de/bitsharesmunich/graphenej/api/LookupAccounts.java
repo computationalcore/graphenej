@@ -38,12 +38,12 @@ public class LookupAccounts extends BaseGrapheneHandler {
     /**
      * Constructor
      *
-     * @param accountName account name used at the query
-     * @param oneTime boolean value indicating if websocket must be closed (true) or not (false)
-     *                after the response
-     * @param listener A class implementing the WitnessResponseListener interface. This should
-     *                be implemented by the party interested in being notified about the success/failure
-     *                of the transaction broadcast operation.
+     * @param accountName   account name used at the query
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
     public LookupAccounts(String accountName, boolean oneTime, WitnessResponseListener listener){
         super(listener);
@@ -56,13 +56,13 @@ public class LookupAccounts extends BaseGrapheneHandler {
     /**
      * Constructor with  maxAccounts
      *
-     * @param accountName account name used at the query
-     * @param maxAccounts maximum number of results to return (must not exceed 1000)
-     * @param oneTime boolean value indicating if websocket must be closed (true) or not (false)
-     *                after the response
-     * @param listener A class implementing the WitnessResponseListener interface. This should
-     *                be implemented by the party interested in being notified about the success/failure
-     *                of the transaction broadcast operation.
+     * @param accountName   account name used at the query
+     * @param maxAccounts   maximum number of results to return (must not exceed 1000)
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
     public LookupAccounts(String accountName, int maxAccounts, boolean oneTime, WitnessResponseListener listener){
         super(listener);
@@ -75,10 +75,10 @@ public class LookupAccounts extends BaseGrapheneHandler {
     /**
      * Using this constructor the WebSocket connection closes after the response.
      *
-     * @param accountName account name used at the query
-     * @param listener A class implementing the WitnessResponseListener interface. This should
-     *                be implemented by the party interested in being notified about the success/failure
-     *                of the transaction broadcast operation.
+     * @param accountName   account name used at the query
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
     public LookupAccounts(String accountName, WitnessResponseListener listener){
         this(accountName, true, listener);
@@ -87,9 +87,11 @@ public class LookupAccounts extends BaseGrapheneHandler {
     /**
      * Using this constructor the WebSocket connection closes after the response.
      *
-     * @param accountName account name used at the query
-     * @param maxAccounts  maximum number of results to return (must not exceed 1000)
-     * @param listener
+     * @param accountName   account name used at the query
+     * @param maxAccounts   maximum number of results to return (must not exceed 1000)
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
     public LookupAccounts(String accountName, int maxAccounts, WitnessResponseListener listener){
         this(accountName, maxAccounts, true, listener);

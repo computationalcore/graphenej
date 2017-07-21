@@ -20,9 +20,9 @@ import java.util.Map;
  *
  *  Get a list of all system assets with holders count.
  *
- *  The request returns the list of all assets with holders count.
+ *  The response returns the list of all assets with holders count.
  *
- *  @see <a href="https://goo.gl/AgTSLU">get_all_asset_holders API doc</a>
+ *  @see <a href="https://goo.gl/AgTSLU">get_all_asset_holders API doc (source code ref.)</a>
  */
 public class GetAllAssetHolders extends BaseGrapheneHandler {
     private final static int LOGIN_ID = 1;
@@ -35,12 +35,13 @@ public class GetAllAssetHolders extends BaseGrapheneHandler {
     private boolean mOneTime;
 
     /**
-     * Constructor
-     * @param oneTime boolean value indicating if websocket must be closed (true) or not (false)
-     *                after the response
-     * @param listener A class implementing the WitnessResponseListener interface. This should
-     *                be implemented by the party interested in being notified about the success/failure
-     *                of the transaction broadcast operation.
+     * Default Constructor
+     *
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
     public GetAllAssetHolders(boolean oneTime, WitnessResponseListener listener) {
         super(listener);
@@ -48,7 +49,7 @@ public class GetAllAssetHolders extends BaseGrapheneHandler {
     }
 
     /**
-     * Using this constructor the websocket connection closes after the response.
+     * Using this constructor the WebSocket connection closes after the response.
      *
      * @param listener A class implementing the WitnessResponseListener interface. This should
      *                be implemented by the party interested in being notified about the success/failure

@@ -46,12 +46,14 @@ public class TransactionBroadcastSequence extends BaseGrapheneHandler {
     private boolean mOneTime;
 
     /**
-     * Constructor of this class. The ids required
-     * @param transaction: The transaction to be broadcasted.
-     * @param oneTime Boolean value indicating if websocket must be closed or not after request
-     * @param listener: A class implementing the WitnessResponseListener interface. This should
-     *                be implemented by the party interested in being notified about the success/failure
-     *                of the transaction broadcast operation.
+     * Default Constructor
+     *
+     * @param transaction   transaction to be broadcasted.
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
     public TransactionBroadcastSequence(Transaction transaction, Asset feeAsset, boolean oneTime, WitnessResponseListener listener){
         super(listener);
@@ -62,11 +64,12 @@ public class TransactionBroadcastSequence extends BaseGrapheneHandler {
     }
 
     /**
-     * Constructor of this class with oneTime=true
-     * @param transaction: The transaction to be broadcasted.
-     * @param listener: A class implementing the WitnessResponseListener interface. This should
-     *                be implemented by the party interested in being notified about the success/failure
-     *                of the transaction broadcast operation.
+     * Using this constructor the WebSocket connection closes after the response.
+     *
+     * @param transaction:  transaction to be broadcasted.
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
     public TransactionBroadcastSequence(Transaction transaction, Asset feeAsset, WitnessResponseListener listener){
         this(transaction, feeAsset, true, listener);

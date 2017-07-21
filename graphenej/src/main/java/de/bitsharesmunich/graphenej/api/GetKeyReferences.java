@@ -37,7 +37,7 @@ public class GetKeyReferences extends BaseGrapheneHandler {
      * Constructor
      *
      * @param address address to be query
-     * @param oneTime boolean value indicating if websocket must be closed (true) or not (false)
+     * @param oneTime boolean value indicating if WebSocket must be closed (true) or not (false)
      *                after the response
      * @param listener A class implementing the WitnessResponseListener interface. This should
      *                be implemented by the party interested in being notified about the success/failure
@@ -53,7 +53,7 @@ public class GetKeyReferences extends BaseGrapheneHandler {
     /**
      *
      * @param addresses list of addresses to be query
-     * @param oneTime boolean value indicating if websocket must be closed (true) or not (false)
+     * @param oneTime boolean value indicating if WebSocket must be closed (true) or not (false)
      *                after the response
      * @param listener A class implementing the WitnessResponseListener interface. This should
      *                be implemented by the party interested in being notified about the success/failure

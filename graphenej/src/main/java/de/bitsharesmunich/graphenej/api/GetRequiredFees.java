@@ -38,15 +38,15 @@ public class GetRequiredFees extends BaseGrapheneHandler {
     private boolean mOneTime;
 
     /**
-     * Constructor
+     * Default Constructor
      *
-     * @param operations list of operations that fee should be calculated
-     * @param asset specify the asset of the operations
-     * @param oneTime boolean value indicating if websocket must be closed (true) or not (false)
-     *                after the response
-     * @param listener A class implementing the WitnessResponseListener interface. This should
-     *                be implemented by the party interested in being notified about the success/failure
-     *                of the transaction broadcast operation.
+     * @param operations    list of operations that fee should be calculated
+     * @param asset         specify the asset of the operations
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
     public GetRequiredFees(List<BaseOperation> operations, Asset asset, boolean oneTime, WitnessResponseListener listener){
         super(listener);
@@ -57,13 +57,13 @@ public class GetRequiredFees extends BaseGrapheneHandler {
     }
 
     /**
-     * Using this constructor the websocket connection closes after the response.
+     * Using this constructor the WebSocket connection closes after the response.
      *
-     * @param operations list of operations that fee should be calculated
-     * @param asset specify the asset of the operations
-     * @param listener A class implementing the WitnessResponseListener interface. This should
-     *                be implemented by the party interested in being notified about the success/failure
-     *                of the transaction broadcast operation.
+     * @param operations    list of operations that fee should be calculated
+     * @param asset         specify the asset of the operations
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
     public GetRequiredFees(List<BaseOperation> operations, Asset asset, WitnessResponseListener listener){
         this(operations, asset, true, listener);

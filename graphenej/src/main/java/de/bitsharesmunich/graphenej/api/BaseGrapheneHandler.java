@@ -12,8 +12,6 @@ import de.bitsharesmunich.graphenej.models.BaseResponse;
 
 /**
  * Base class that should be extended by any implementation of a specific request to the full node.
- *
- * Created by nelson on 1/5/17.
  */
 public abstract class BaseGrapheneHandler extends WebSocketAdapter {
 
@@ -32,9 +30,22 @@ public abstract class BaseGrapheneHandler extends WebSocketAdapter {
      */
     protected long requestId;
 
+    /**
+     * Constructor (The original constructor, should be replaced with the one that receives
+     * NodeErrorListener instead of WitnessResponseListener)
+     *
+     * @param listener listener to be notified in if an error occurs
+     */
+    @Deprecated
     public BaseGrapheneHandler(WitnessResponseListener listener){
         this.mListener = listener;
     }
+
+    /**
+     * Constructor
+     *
+     * @param listener listener to be notified if an error occurs
+     */
     public BaseGrapheneHandler(NodeErrorListener listener){
         this.mErrorListener = listener;
     }
@@ -52,7 +63,14 @@ public abstract class BaseGrapheneHandler extends WebSocketAdapter {
         for (StackTraceElement element : cause.getStackTrace()){
             System.out.println(element.getFileName()+"#"+element.getClassName()+":"+element.getLineNumber());
         }
-        mErrorListener.onError(new BaseResponse.Error(cause.getMessage()));
+        // Should be replaced for mErrorListener (NodeErrorListener type) only in the future
+        if(mErrorListener != null){
+            mErrorListener.onError(new BaseResponse.Error(cause.getMessage()));
+        }
+        else{
+            mListener.onError(new BaseResponse.Error(cause.getMessage()));
+        }
+
         websocket.disconnect();
     }
 

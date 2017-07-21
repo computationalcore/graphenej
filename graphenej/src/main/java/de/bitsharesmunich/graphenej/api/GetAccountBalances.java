@@ -23,11 +23,10 @@ import java.util.Map;
  *
  *  Get an account’s balances in various assets.
  *
- *  The request returns the balances of the account
+ *  The response returns the balances of the account
  *
  *  @see <a href="https://goo.gl/faFdey">get_account_balances API doc</a>
  *
- * Created by nelson on 1/13/17.
  */
 public class GetAccountBalances extends BaseGrapheneHandler {
 
@@ -38,13 +37,14 @@ public class GetAccountBalances extends BaseGrapheneHandler {
     /**
      * Default Constructor
      *
-     * @param userAccount account to get balances for
-     * @param assets list of the assets to get balances of; if empty, get all assets account has a balance in
-     * @param oneTime boolean value indicating if websocket must be closed (true) or not (false)
-     *                after the response
-     * @param listener A class implementing the WitnessResponseListener interface. This should
-     *                be implemented by the party interested in being notified about the success/failure
-     *                of the transaction broadcast operation.
+     * @param userAccount   account to get balances for
+     * @param assets        list of the assets to get balances of; if empty, get all assets account
+     *                      has a balance in
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
     public GetAccountBalances(UserAccount userAccount, List<Asset> assets, boolean oneTime, WitnessResponseListener listener) {
         super(listener);
@@ -54,13 +54,14 @@ public class GetAccountBalances extends BaseGrapheneHandler {
     }
 
     /**
-     * Using this constructor the websocket connection closes after the response.
+     * Using this constructor the WebSocket connection closes after the response.
      *
-     * @param userAccount account to get balances for
-     * @param assets list of the assets to get balances of; if empty, get all assets account has a balance in
-     * @param listener A class implementing the WitnessResponseListener interface. This should
-     *                be implemented by the party interested in being notified about the success/failure
-     *                of the transaction broadcast operation.
+     * @param userAccount   account to get balances for
+     * @param assets        list of the assets to get balances of; if empty, get all assets account
+     *                      has a balance in
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
     public GetAccountBalances(UserAccount userAccount, List<Asset> assets, WitnessResponseListener listener) {
         this(userAccount, assets, true, listener);

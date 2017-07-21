@@ -47,11 +47,11 @@ public class GetLimitOrders extends BaseGrapheneHandler {
      * @param a id of asset being sold
      * @param b id of asset being purchased
      * @param limit maximum number of orders to retrieve
-     * @param oneTime boolean value indicating if websocket must be closed (true) or not (false)
-     *                after the response
-     * @param listener A class implementing the WitnessResponseListener interface. This should
-     *                be implemented by the party interested in being notified about the success/failure
-     *                of the transaction broadcast operation.
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
     public GetLimitOrders(String a, String b, int limit, boolean oneTime, WitnessResponseListener listener) {
         super(listener);
@@ -63,14 +63,14 @@ public class GetLimitOrders extends BaseGrapheneHandler {
     }
 
     /**
-     * Using this constructor the websocket connection closes after the response.
+     * Using this constructor the WebSocket connection closes after the response.
      *
-     * @param a id of asset being sold
-     * @param b id of asset being purchased
-     * @param limit maximum number of orders to retrieve
-     * @param listener A class implementing the WitnessResponseListener interface. This should
-     *                be implemented by the party interested in being notified about the success/failure
-     *                of the transaction broadcast operation.
+     * @param a             id of asset being sold
+     * @param b             id of asset being purchased
+     * @param limit         maximum number of orders to retrieve
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
     public GetLimitOrders(String a, String b, int limit, WitnessResponseListener listener) {
         this(a, b, limit, true, listener);

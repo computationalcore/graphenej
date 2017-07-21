@@ -19,13 +19,12 @@ import java.util.Map;
 /**
  * WebSocketAdapter class used to send a request a 'list_assets' API call to the witness node.
  *
- * @see: <a href="http://docs.bitshares.org/development/namespaces/app.html"></a>
- *
  * The API imposes a limit of of 100 assets per request, but if the user of this class wants
  * to get a list of all assets, the LIST_ALL constant must be used as second argument in the
  * constructor. Internally we are going to perform multiple calls in order to satisfy the user's
  * request.
  *
+ * @see: <a href="http://docs.bitshares.org/development/namespaces/app.html"></a>
  */
 public class ListAssets extends BaseGrapheneHandler {
     /**
@@ -49,9 +48,14 @@ public class ListAssets extends BaseGrapheneHandler {
     /**
      * Constructor
      *
-     * @param lowerBoundSymbol: Lower bound of symbol names to retrieve
-     * @param limit: Maximum number of assets to fetch, if the constant LIST_ALL
-     *             is passed, all existing assets will be retrieved.
+     * @param lowerBoundSymbol  Lower bound of symbol names to retrieve
+     * @param limit             Maximum number of assets to fetch, if the constant LIST_ALL
+     *                          is passed, all existing assets will be retrieved.
+     * @param oneTime           boolean value indicating if WebSocket must be closed (true) or not
+     *                          (false) after the response
+     * @param listener          A class implementing the WitnessResponseListener interface. This
+     *                          should be implemented by the party interested in being notified
+     *                          about the success/failure of the operation.
      */
     public ListAssets(String lowerBoundSymbol, int limit, boolean oneTime, WitnessResponseListener listener){
         super(listener);
@@ -63,9 +67,14 @@ public class ListAssets extends BaseGrapheneHandler {
     /**
      * Using this constructor the WebSocket connection closes after the response.
      *
-     * @param lowerBoundSymbol: Lower bound of symbol names to retrieve
-     * @param limit: Maximum number of assets to fetch, if the constant LIST_ALL
-     *             is passed, all existing assets will be retrieved.
+     * @param lowerBoundSymbol  Lower bound of symbol names to retrieve
+     * @param limit             Maximum number of assets to fetch, if the constant LIST_ALL
+     *                          is passed, all existing assets will be retrieved.
+     * @param oneTime           boolean value indicating if WebSocket must be closed (true) or not
+     *                          (false) after the response
+     * @param listener          A class implementing the WitnessResponseListener interface. This
+     *                          should be implemented by the party interested in being notified
+     *                          about the success/failure of the operation.
      */
     public ListAssets(String lowerBoundSymbol, int limit, WitnessResponseListener listener){
         this(lowerBoundSymbol, limit, true, listener);
