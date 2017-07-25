@@ -3,6 +3,7 @@ package de.bitsharesmunich.graphenej.objects;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import de.bitsharesmunich.graphenej.Address;
+import de.bitsharesmunich.graphenej.PublicKey;
 import de.bitsharesmunich.graphenej.Util;
 import de.bitsharesmunich.graphenej.errors.ChecksumException;
 import org.bitcoinj.core.DumpedPrivateKey;
@@ -24,8 +25,12 @@ public class MemoTest {
     private Address destinationAddress;
 
     private long nonce;
+    //private String sourceWIF = "5HyF3A4rpW7fGLumk81eEsKz2YiTsVmR7ickPKtEhKUVgFaJjWb";
+    //private String sourceWIF = "5HyF3A4rpW7fGLumk81eEsKz2YiTsVmR7ickPKtEhKUVgFaJjWb";
+    private String sourceWIF = "5J96pne45qWM1WpektoeazN6k9Mt93jQ7LyueRxFfEMTiy6yxjM";
+    private String destinationWIF = "5HuGQT8qwHScBgD4XsGbQUmXQF18MrbzxaQDiGGXFNRrCtqgT5Q";
     private String shortMessage = "test";
-    private String longerMessage = "testing now longer string!!";
+    private String longerMessage = "testing now longer string with some special charaters é ç o ú á í Í mMno!!";
 
     private byte[] shortEncryptedMessage = Util.hexToBytes("4c81c2db6ebc61e3f9e0ead65c0559dd");
     private byte[] longerEncryptedMessage = Util.hexToBytes("1f8a08f1ff53dcefd48eeb052d26fba425f2a917f508ce61fc3d5696b10efa17");
@@ -34,12 +39,17 @@ public class MemoTest {
 
     @Before
     public void setUp() throws Exception {
-        sourcePrivate = DumpedPrivateKey.fromBase58(null, "5J96pne45qWM1WpektoeazN6k9Mt93jQ7LyueRxFfEMTiy6yxjM").getKey();
-        destinationPrivate = DumpedPrivateKey.fromBase58(null, "5HuGQT8qwHScBgD4XsGbQUmXQF18MrbzxaQDiGGXFNRrCtqgT5Q").getKey();
+        //Source
+        sourcePrivate = DumpedPrivateKey.fromBase58(null, sourceWIF).getKey();
+        PublicKey publicKey = new PublicKey(ECKey.fromPublicOnly(sourcePrivate.getPubKey()));
+        sourceAddress = new Address(publicKey.getKey());
 
-        sourceAddress = new Address("BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY");
-        destinationAddress = new Address("BTS8ADjGaswhfFoxMGxqCdBtzhTBJsrGadCLoc9Ey5AGc8eoVZ5bV");
+        //Destination
+        destinationPrivate = DumpedPrivateKey.fromBase58(null, destinationWIF).getKey();
+        publicKey = new PublicKey(ECKey.fromPublicOnly(destinationPrivate.getPubKey()));
+        destinationAddress = new Address(publicKey.getKey());
 
+        //memo.getNonce()
         nonce = 5;
     }
 
@@ -56,7 +66,8 @@ public class MemoTest {
     public void shouldEncryptAndDecryptShortMessage(){
         try {
             byte[] encrypted = Memo.encryptMessage(sourcePrivate, destinationAddress, nonce, shortMessage);
-            String decrypted = decrypted = Memo.decryptMessage(destinationPrivate, sourceAddress, nonce, encrypted);
+            String decrypted = Memo.decryptMessage(destinationPrivate, sourceAddress, nonce, encrypted);
+            System.out.println("Short Decrypted Message: " + decrypted);
             assertEquals("Decrypted message must be equal to original", decrypted, shortMessage);
         } catch (ChecksumException e) {
             e.printStackTrace();
@@ -68,6 +79,7 @@ public class MemoTest {
         try{
             byte[] longEncrypted = Memo.encryptMessage(sourcePrivate, destinationAddress, nonce, longerMessage);
             String longDecrypted = Memo.decryptMessage(destinationPrivate, sourceAddress, nonce, longEncrypted);
+            System.out.println("Long Decrypted Message: " + longDecrypted);
             assertEquals("The longer message must be equal to the original", longerMessage, longDecrypted);
         } catch (ChecksumException e) {
             e.printStackTrace();
