@@ -1,16 +1,27 @@
 package de.bitsharesmunich.graphenej.api.android;
 
+import org.bitcoinj.core.ECKey;
+import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import com.google.common.primitives.UnsignedLong;
+import com.neovisionaries.ws.client.WebSocket;
+import com.neovisionaries.ws.client.WebSocketException;
+import com.neovisionaries.ws.client.WebSocketFactory;
+
+import javax.net.ssl.SSLContext;
 
 import de.bitsharesmunich.graphenej.Asset;
+import de.bitsharesmunich.graphenej.BrainKey;
 import de.bitsharesmunich.graphenej.OperationType;
+import de.bitsharesmunich.graphenej.Transaction;
 import de.bitsharesmunich.graphenej.api.GetAccounts;
 import de.bitsharesmunich.graphenej.api.GetAccountBalances;
 import de.bitsharesmunich.graphenej.api.GetAccountByName;
@@ -25,6 +36,8 @@ import de.bitsharesmunich.graphenej.api.GetRequiredFees;
 import de.bitsharesmunich.graphenej.api.GetTradeHistory;
 import de.bitsharesmunich.graphenej.api.ListAssets;
 import de.bitsharesmunich.graphenej.api.LookupAccounts;
+import de.bitsharesmunich.graphenej.api.LookupAssetSymbols;
+import de.bitsharesmunich.graphenej.api.TransactionBroadcastSequence;
 import de.bitsharesmunich.graphenej.errors.RepeatedRequestIdException;
 import de.bitsharesmunich.graphenej.errors.MalformedAddressException;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
@@ -35,6 +48,8 @@ import de.bitsharesmunich.graphenej.UserAccount;
 import de.bitsharesmunich.graphenej.Address;
 import de.bitsharesmunich.graphenej.BaseOperation;
 import de.bitsharesmunich.graphenej.operations.TransferOperation;
+import de.bitsharesmunich.graphenej.operations.TransferOperationBuilder;
+import de.bitsharesmunich.graphenej.test.NaiveSSLContext;
 
 /**
  * Created by nelson on 6/26/17.
@@ -44,6 +59,7 @@ public class NodeConnectionTest {
     private String NODE_URL_2 = System.getenv("NODE_URL_2");
     private String NODE_URL_3 = System.getenv("NODE_URL_3");
     private String NODE_URL_4 = System.getenv("NODE_URL_4");
+    private String TEST_ACCOUNT_BRAIN_KEY = System.getenv("TEST_ACCOUNT_BRAIN_KEY");
     private String ACCOUNT_ID_1 = System.getenv("ACCOUNT_ID_1");
     private String ACCOUNT_ID_2 = System.getenv("ACCOUNT_ID_2");
     private String ACCOUNT_NAME = System.getenv("ACCOUNT_NAME");
@@ -805,7 +821,6 @@ public class NodeConnectionTest {
         UserAccount userAccount = new UserAccount(ACCOUNT_ID_1);
         UserAccount userAccount_2 = new UserAccount(ACCOUNT_ID_2);
 
-        //Sequence number of earliest operation
         int maxAccounts = 10;
 
         System.out.println("Adding LookupAccounts request");
@@ -852,6 +867,126 @@ public class NodeConnectionTest {
         }
     }
 
+    /**
+     * Test for LookupAssetSymbols Handler.
+     *
+     * Request for the assets corresponding to the provided symbols or IDs.
+     */
+    @Test
+    public void testLookupAssetSymbolsRequest(){
+        nodeConnection = NodeConnection.getInstance();
+        nodeConnection.addNodeUrl(NODE_URL_1);
+        nodeConnection.connect("", "", false, mErrorListener);
+
+
+        ArrayList<Asset> assetList = new ArrayList<Asset>(){{
+            add(BLOCKPAY);
+            add(BTS);
+            add(BITEURO);
+        }};
+
+        System.out.println("Adding LookupAssetSymbols request");
+        try{
+            nodeConnection.addRequestHandler(new LookupAssetSymbols(assetList, true, new WitnessResponseListener(){
+                @Override
+                public void onSuccess(WitnessResponse response) {
+                    System.out.println("LookupAssetSymbols.onSuccess");
+                }
+
+                @Override
+                public void onError(BaseResponse.Error error) {
+                    System.out.println("LookupAssetSymbols.onError. Msg: "+ error.message);
+                }
+            }));
+        }catch(RepeatedRequestIdException e){
+            System.out.println("RepeatedRequestIdException. Msg: "+e.getMessage());
+        }
+
+        try{
+            // Holding this thread while we get update notifications
+            synchronized (this){
+                wait();
+            }
+        }catch(InterruptedException e){
+            System.out.println("InterruptedException. Msg: "+e.getMessage());
+        }
+    }
+
+    /**
+     * Test for TransactionBroadcastSequence Handler.
+     *
+     */
+    @Test
+    public void testTransactionBroadcastSequenceRequest(){
+        nodeConnection = NodeConnection.getInstance();
+        nodeConnection.addNodeUrl(NODE_URL_1);
+        nodeConnection.connect("", "", false, mErrorListener);
+
+
+        ArrayList<Asset> assetList = new ArrayList<Asset>(){{
+            add(BLOCKPAY);
+            add(BTS);
+            add(BITEURO);
+        }};
+
+        ECKey privateKey = new BrainKey(TEST_ACCOUNT_BRAIN_KEY, 0).getPrivateKey();
+
+        UserAccount userAccount = new UserAccount(ACCOUNT_ID_1);
+        UserAccount userAccount_2 = new UserAccount(ACCOUNT_ID_2);
+
+        TransferOperation transferOperation1 = new TransferOperationBuilder()
+                .setTransferAmount(new AssetAmount(UnsignedLong.valueOf(1), BTS))
+                .setSource(userAccount)
+                .setDestination(userAccount_2)
+                .setFee(new AssetAmount(UnsignedLong.valueOf(264174), BTS))
+                .build();
+
+
+        ArrayList<BaseOperation> operationList = new ArrayList<>();
+        operationList.add(transferOperation1);
+
+        try{
+            Transaction transaction = new Transaction(privateKey, null, operationList);
+
+            SSLContext context = null;
+            context = NaiveSSLContext.getInstance("TLS");
+            WebSocketFactory factory = new WebSocketFactory();
+
+            // Set the custom SSL context.
+            factory.setSSLContext(context);
+
+            WebSocket mWebSocket = factory.createSocket(NODE_URL_1);
+
+            mWebSocket.addListener(new TransactionBroadcastSequence(transaction, BTS, new WitnessResponseListener(){
+                @Override
+                public void onSuccess(WitnessResponse response) {
+                    System.out.println("TransactionBroadcastSequence.onSuccess");
+                }
+
+                @Override
+                public void onError(BaseResponse.Error error) {
+                    System.out.println("TransactionBroadcastSequence.onError. Msg: "+ error.message);
+                }
+            }));
+            mWebSocket.connect();
+
+            try{
+                // Holding this thread while we get update notifications
+                synchronized (this){
+                    wait();
+                }
+            }catch(InterruptedException e){
+                System.out.println("InterruptedException. Msg: "+e.getMessage());
+            }
+
+        }catch(NoSuchAlgorithmException e){
+            System.out.println("NoSuchAlgoritmException. Msg: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IOException. Msg: " + e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
+        }
+    }
 
 
     private WitnessResponseListener mErrorListener = new WitnessResponseListener() {

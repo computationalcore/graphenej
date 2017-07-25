@@ -22,7 +22,7 @@ import de.bitsharesmunich.graphenej.models.WitnessResponse;
  *
  *  Get the assets corresponding to the provided IDs.
  *
- *  The request returns the assets corresponding to the provided symbols or IDs.
+ *  The response returns the assets corresponding to the provided symbols or IDs.
  *
  *  @see <a href="https://goo.gl/WvREGV">lookup_asset_symbols API doc</a>
  */
