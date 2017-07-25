@@ -23,6 +23,8 @@ import de.bitsharesmunich.graphenej.api.GetObjects;
 import de.bitsharesmunich.graphenej.api.GetRelativeAccountHistory;
 import de.bitsharesmunich.graphenej.api.GetRequiredFees;
 import de.bitsharesmunich.graphenej.api.GetTradeHistory;
+import de.bitsharesmunich.graphenej.api.ListAssets;
+import de.bitsharesmunich.graphenej.api.LookupAccounts;
 import de.bitsharesmunich.graphenej.errors.RepeatedRequestIdException;
 import de.bitsharesmunich.graphenej.errors.MalformedAddressException;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
@@ -742,6 +744,114 @@ public class NodeConnectionTest {
             System.out.println("InterruptedException. Msg: "+e.getMessage());
         }
     }
+
+    /**
+     * Test for ListAsset Handler.
+     *'
+     * Request the  'list_assets' API call to the witness node
+     */
+    @Test
+    public void testListAssetRequest(){
+        nodeConnection = NodeConnection.getInstance();
+        nodeConnection.addNodeUrl(NODE_URL_1);
+        nodeConnection.connect("", "", false, mErrorListener);
+
+        UserAccount userAccount_from = new UserAccount(ACCOUNT_ID_1);
+        UserAccount userAccount_to = new UserAccount(ACCOUNT_ID_2);
+
+
+        String asset_symbol = BLOCKPAY.getSymbol();
+        int limit = 10;
+
+        System.out.println("Adding ListAssets request");
+        try{
+            nodeConnection.addRequestHandler(new ListAssets(asset_symbol, limit, true, new WitnessResponseListener(){
+                @Override
+                public void onSuccess(WitnessResponse response) {
+                    System.out.println("ListAssets.onSuccess");
+                }
+
+                @Override
+                public void onError(BaseResponse.Error error) {
+                    System.out.println("ListAssets.onError. Msg: "+ error.message);
+                }
+            }));
+        }catch(RepeatedRequestIdException e){
+            System.out.println("RepeatedRequestIdException. Msg: "+e.getMessage());
+        }
+
+
+        try{
+            // Holding this thread while we get update notifications
+            synchronized (this){
+                wait();
+            }
+        }catch(InterruptedException e){
+            System.out.println("InterruptedException. Msg: "+e.getMessage());
+        }
+    }
+
+    /**
+     * Test for GetRelativeAccount Handler.
+     *
+     * Request for the transaction history of a user account.
+     */
+    @Test
+    public void testGetLookupAccountsRequest(){
+        nodeConnection = NodeConnection.getInstance();
+        nodeConnection.addNodeUrl(NODE_URL_1);
+        nodeConnection.connect("", "", false, mErrorListener);
+
+        UserAccount userAccount = new UserAccount(ACCOUNT_ID_1);
+        UserAccount userAccount_2 = new UserAccount(ACCOUNT_ID_2);
+
+        //Sequence number of earliest operation
+        int maxAccounts = 10;
+
+        System.out.println("Adding LookupAccounts request");
+        try{
+            nodeConnection.addRequestHandler(new LookupAccounts(userAccount.getName(), true, new WitnessResponseListener(){
+                @Override
+                public void onSuccess(WitnessResponse response) {
+                    System.out.println("LookupAccounts.onSuccess");
+                }
+
+                @Override
+                public void onError(BaseResponse.Error error) {
+                    System.out.println("LookupAccounts.onError. Msg: "+ error.message);
+                }
+            }));
+        }catch(RepeatedRequestIdException e){
+            System.out.println("RepeatedRequestIdException. Msg: "+e.getMessage());
+        }
+
+        System.out.println("Adding LookupAccounts request . maxAccounts = "+maxAccounts);
+        try{
+            nodeConnection.addRequestHandler(new LookupAccounts(userAccount_2.getName(), maxAccounts, true, new WitnessResponseListener(){
+                @Override
+                public void onSuccess(WitnessResponse response) {
+                    System.out.println("LookupAccounts.onSuccess");
+                }
+
+                @Override
+                public void onError(BaseResponse.Error error) {
+                    System.out.println("LookupAccounts.onError. Msg: "+ error.message);
+                }
+            }));
+        }catch(RepeatedRequestIdException e){
+            System.out.println("RepeatedRequestIdException. Msg: "+e.getMessage());
+        }
+
+        try{
+            // Holding this thread while we get update notifications
+            synchronized (this){
+                wait();
+            }
+        }catch(InterruptedException e){
+            System.out.println("InterruptedException. Msg: "+e.getMessage());
+        }
+    }
+
 
 
     private WitnessResponseListener mErrorListener = new WitnessResponseListener() {
