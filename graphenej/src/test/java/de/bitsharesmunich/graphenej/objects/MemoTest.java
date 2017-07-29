@@ -14,7 +14,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Created by nelson on 12/19/16.
+ * Unit Tests for Memo Related Classes.
  */
 public class MemoTest {
 
@@ -25,10 +25,11 @@ public class MemoTest {
     private Address destinationAddress;
 
     private long nonce;
-    //private String sourceWIF = "5HyF3A4rpW7fGLumk81eEsKz2YiTsVmR7ickPKtEhKUVgFaJjWb";
-    //private String sourceWIF = "5HyF3A4rpW7fGLumk81eEsKz2YiTsVmR7ickPKtEhKUVgFaJjWb";
-    private String sourceWIF = "5J96pne45qWM1WpektoeazN6k9Mt93jQ7LyueRxFfEMTiy6yxjM";
-    private String destinationWIF = "5HuGQT8qwHScBgD4XsGbQUmXQF18MrbzxaQDiGGXFNRrCtqgT5Q";
+    private String sourceWIF = System.getenv("SOURCE_WIF");
+    private String destinationWIF = System.getenv("DESTINATION_WIF");
+    private byte[] memoEncryptedEnvMessage = Util.hexToBytes(System.getenv("MEMO_MESSAGE"));
+    //private String sourceWIF = "5J96pne45qWM1WpektoeazN6k9Mt93jQ7LyueRxFfEMTiy6yxjM";
+    //private String destinationWIF = "5HuGQT8qwHScBgD4XsGbQUmXQF18MrbzxaQDiGGXFNRrCtqgT5Q";
     private String shortMessage = "test";
     private String longerMessage = "testing now longer string with some special charaters é ç o ú á í Í mMno!!";
 
@@ -60,6 +61,39 @@ public class MemoTest {
 
         byte[] encryptedLong = Memo.encryptMessage(sourcePrivate, destinationAddress, 1, longerMessage);
         assertArrayEquals("Testing with longer message and nonce 1", encryptedLong, longerEncryptedMessage);
+    }
+
+    @Test
+    public void shouldDecryptEnvMessage(){
+        try {
+            String decrypted = Memo.decryptMessage(destinationPrivate, sourceAddress, nonce, memoEncryptedEnvMessage);
+            System.out.println("Short Decrypted Message: " + decrypted);
+            assertEquals("Decrypted message must be equal to original", decrypted, shortMessage);
+        } catch (ChecksumException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void shouldDecryptShortMessage(){
+        try {
+            String decrypted = Memo.decryptMessage(destinationPrivate, sourceAddress, nonce, shortEncryptedMessage);
+            System.out.println("Short Decrypted Message: " + decrypted);
+            assertEquals("Decrypted message must be equal to original", decrypted, shortMessage);
+        } catch (ChecksumException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void shouldDecryptLongerMessage(){
+        try{
+            String longDecrypted = Memo.decryptMessage(destinationPrivate, sourceAddress, nonce, longerEncryptedMessage);
+            System.out.println("Long Decrypted Message: " + longDecrypted);
+            assertEquals("The longer message must be equal to the original", longerMessage, longDecrypted);
+        } catch (ChecksumException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
