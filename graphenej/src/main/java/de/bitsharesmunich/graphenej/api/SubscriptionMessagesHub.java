@@ -25,6 +25,7 @@ import de.bitsharesmunich.graphenej.models.ApiCall;
 import de.bitsharesmunich.graphenej.models.DynamicGlobalProperties;
 import de.bitsharesmunich.graphenej.models.SubscriptionResponse;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
+import de.bitsharesmunich.graphenej.objects.Memo;
 import de.bitsharesmunich.graphenej.operations.LimitOrderCreateOperation;
 import de.bitsharesmunich.graphenej.operations.TransferOperation;
 
@@ -91,6 +92,7 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
         builder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer());
         builder.registerTypeAdapter(UserAccount.class, new UserAccount.UserAccountSimpleDeserializer());
         builder.registerTypeAdapter(DynamicGlobalProperties.class, new DynamicGlobalProperties.DynamicGlobalPropertiesDeserializer());
+        builder.registerTypeAdapter(Memo.class, new Memo.MemoDeserializer());
         this.gson = builder.create();
     }
 

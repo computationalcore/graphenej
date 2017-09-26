@@ -1,17 +1,25 @@
 package de.bitsharesmunich.graphenej.objects;
 
 import com.google.common.primitives.Bytes;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+
 import de.bitsharesmunich.graphenej.Address;
 import de.bitsharesmunich.graphenej.PublicKey;
 import de.bitsharesmunich.graphenej.Util;
 import de.bitsharesmunich.graphenej.errors.ChecksumException;
+import de.bitsharesmunich.graphenej.errors.MalformedAddressException;
 import de.bitsharesmunich.graphenej.interfaces.ByteSerializable;
 import de.bitsharesmunich.graphenej.interfaces.JsonSerializable;
+import de.bitsharesmunich.graphenej.operations.TransferOperation;
+
 import org.bitcoinj.core.ECKey;
 import org.spongycastle.math.ec.ECPoint;
 
+import java.lang.reflect.Type;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -268,5 +276,31 @@ public class Memo implements ByteSerializable, JsonSerializable {
             memoObject.addProperty(KEY_MESSAGE, Util.bytesToHex(this.message));
         }
         return memoObject;
+    }
+
+    /**
+     * Class used to deserialize a memo
+     */
+    public static class MemoDeserializer implements JsonDeserializer<Memo> {
+
+        @Override
+        public Memo deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            JsonObject jsonObject = json.getAsJsonObject();
+            String fromAddress = jsonObject.get(KEY_FROM).getAsString();
+            String toAddress = jsonObject.get(KEY_TO).getAsString();
+            long nonce = jsonObject.get(KEY_NONCE).getAsLong();
+            String msg = jsonObject.get(KEY_MESSAGE).getAsString();
+
+            Memo memo = null;
+            try{
+                Address from = new Address(fromAddress);
+                Address to = new Address(toAddress);
+                byte[] message = Util.hexToBytes(msg);
+                memo = new Memo(from, to, nonce, message);
+            }catch(MalformedAddressException e){
+                System.out.println("MalformedAddressException. Msg: "+e.getMessage());
+            }
+            return memo;
+        }
     }
 }

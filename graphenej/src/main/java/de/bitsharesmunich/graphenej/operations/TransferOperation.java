@@ -191,6 +191,13 @@ public class TransferOperation extends BaseOperation {
                 UserAccount from = new UserAccount(jsonObject.get(KEY_FROM).getAsString());
                 UserAccount to = new UserAccount(jsonObject.get(KEY_TO).getAsString());
                 TransferOperation transfer = new TransferOperation(from, to, amount, fee);
+
+                // If the transfer had a memo, deserialize it
+                if(jsonObject.has(KEY_MEMO)){
+                    Memo memo = context.deserialize(jsonObject.get(KEY_MEMO), Memo.class);
+                    transfer.setMemo(memo);
+                }
+
                 return transfer;
             }
         }

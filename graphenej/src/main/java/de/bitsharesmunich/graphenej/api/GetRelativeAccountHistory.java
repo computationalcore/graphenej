@@ -20,6 +20,7 @@ import de.bitsharesmunich.graphenej.models.ApiCall;
 import de.bitsharesmunich.graphenej.models.BaseResponse;
 import de.bitsharesmunich.graphenej.models.HistoricalTransfer;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
+import de.bitsharesmunich.graphenej.objects.Memo;
 import de.bitsharesmunich.graphenej.operations.TransferOperation;
 
 /**
@@ -116,6 +117,7 @@ public class GetRelativeAccountHistory extends BaseGrapheneHandler {
                 GsonBuilder gsonBuilder = new GsonBuilder();
                 gsonBuilder.registerTypeAdapter(TransferOperation.class, new TransferOperation.TransferDeserializer());
                 gsonBuilder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer());
+                gsonBuilder.registerTypeAdapter(Memo.class, new Memo.MemoDeserializer());
                 WitnessResponse<List<HistoricalTransfer>> transfersResponse = gsonBuilder.create().fromJson(response, RelativeAccountHistoryResponse);
                 mListener.onSuccess(transfersResponse);
             }
