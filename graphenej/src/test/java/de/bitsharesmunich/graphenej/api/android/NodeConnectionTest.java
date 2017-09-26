@@ -18,7 +18,7 @@ public class NodeConnectionTest {
     private String BLOCK_PAY_DE = System.getenv("OPENLEDGER_EU");
     private NodeConnection nodeConnection;
 
-    private TimerTask subscribeTask = new TimerTask() {
+    private TimerTask scheduleTask = new TimerTask() {
         @Override
         public void run() {
             System.out.println("Adding request here");
@@ -58,7 +58,7 @@ public class NodeConnectionTest {
         nodeConnection.connect("", "", true, mErrorListener);
 
         Timer timer = new Timer();
-        timer.schedule(subscribeTask, 5000);
+        timer.schedule(scheduleTask, 5000);
         timer.schedule(releaseTask, 30000);
 
         try{
