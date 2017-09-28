@@ -18,7 +18,13 @@ import de.bitsharesmunich.graphenej.models.ApiCall;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 
 /**
- * Created by henry on 07/12/16.
+ *  Class that implements lookup_accounts request handler.
+ *
+ *  Get names and IDs for registered accounts.
+ *
+ *  The request returns a map of account names to corresponding IDs.
+ *
+ *  @see <a href="https://goo.gl/zhPjuW">lookup_accounts API doc</a>
  */
 public class LookupAccounts extends BaseGrapheneHandler {
 
@@ -27,18 +33,68 @@ public class LookupAccounts extends BaseGrapheneHandler {
     private int maxAccounts = DEFAULT_MAX;
     private final WitnessResponseListener mListener;
 
-    public LookupAccounts(String accountName, WitnessResponseListener listener){
+    private boolean mOneTime;
+
+    /**
+     * Constructor
+     *
+     * @param accountName   account name used at the query
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public LookupAccounts(String accountName, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.accountName = accountName;
         this.maxAccounts = DEFAULT_MAX;
+        this.mOneTime = oneTime;
         this.mListener = listener;
     }
 
-    public LookupAccounts(String accountName, int maxAccounts, WitnessResponseListener listener){
+    /**
+     * Constructor with  maxAccounts
+     *
+     * @param accountName   account name used at the query
+     * @param maxAccounts   maximum number of results to return (must not exceed 1000)
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public LookupAccounts(String accountName, int maxAccounts, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.accountName = accountName;
         this.maxAccounts  = maxAccounts;
+        this.mOneTime = oneTime;
         this.mListener = listener;
+    }
+
+    /**
+     * Using this constructor the WebSocket connection closes after the response.
+     *
+     * @param accountName   account name used at the query
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public LookupAccounts(String accountName, WitnessResponseListener listener){
+        this(accountName, true, listener);
+    }
+
+    /**
+     * Using this constructor the WebSocket connection closes after the response.
+     *
+     * @param accountName   account name used at the query
+     * @param maxAccounts   maximum number of results to return (must not exceed 1000)
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public LookupAccounts(String accountName, int maxAccounts, WitnessResponseListener listener){
+        this(accountName, maxAccounts, true, listener);
     }
 
     @Override
@@ -65,7 +121,9 @@ public class LookupAccounts extends BaseGrapheneHandler {
             this.mListener.onSuccess(witnessResponse);
         }
 
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 
     @Override

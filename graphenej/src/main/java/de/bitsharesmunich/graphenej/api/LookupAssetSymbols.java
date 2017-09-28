@@ -18,16 +18,47 @@ import de.bitsharesmunich.graphenej.models.ApiCall;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 
 /**
- * Created by nelson on 12/12/16.
+ *  Class that implements lookup_asset_symbols request handler.
+ *
+ *  Get the assets corresponding to the provided IDs.
+ *
+ *  The response returns the assets corresponding to the provided symbols or IDs.
+ *
+ *  @see <a href="https://goo.gl/WvREGV">lookup_asset_symbols API doc</a>
  */
 public class LookupAssetSymbols extends BaseGrapheneHandler {
     private WitnessResponseListener mListener;
     private List<Asset> assets;
 
-    public LookupAssetSymbols(List<Asset> assets, WitnessResponseListener listener){
+    private boolean mOneTime;
+
+    /**
+     * Default Constructor
+     *
+     * @param assets        list of the assets to retrieve
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public LookupAssetSymbols(List<Asset> assets, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.assets = assets;
+        this.mOneTime = oneTime;
         this.mListener = listener;
+    }
+
+    /**
+     * Using this constructor the WebSocket connection closes after the response.
+     *
+     * @param assets        list of the assets to retrieve
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public LookupAssetSymbols(List<Asset> assets, WitnessResponseListener listener){
+        this(assets, true, listener);
     }
 
     @Override
@@ -51,6 +82,9 @@ public class LookupAssetSymbols extends BaseGrapheneHandler {
         gsonBuilder.registerTypeAdapter(Asset.class, new Asset.AssetDeserializer());
         WitnessResponse<List<Asset>> witnessResponse = gsonBuilder.create().fromJson(response, LookupAssetSymbolsResponse);
         mListener.onSuccess(witnessResponse);
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 
     @Override

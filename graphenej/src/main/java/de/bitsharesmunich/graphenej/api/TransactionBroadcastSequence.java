@@ -43,18 +43,36 @@ public class TransactionBroadcastSequence extends BaseGrapheneHandler {
     private int currentId = 1;
     private int broadcastApiId = -1;
 
+    private boolean mOneTime;
+
     /**
-     * Constructor of this class. The ids required
-     * @param transaction: The transaction to be broadcasted.
-     * @param listener: A class implementing the WitnessResponseListener interface. This should
-     *                be implemented by the party interested in being notified about the success/failure
-     *                of the transaction broadcast operation.
+     * Default Constructor
+     *
+     * @param transaction   transaction to be broadcasted.
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
-    public TransactionBroadcastSequence(Transaction transaction, Asset feeAsset, WitnessResponseListener listener){
+    public TransactionBroadcastSequence(Transaction transaction, Asset feeAsset, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.transaction = transaction;
         this.feeAsset = feeAsset;
+        this.mOneTime = oneTime;
         this.mListener = listener;
+    }
+
+    /**
+     * Using this constructor the WebSocket connection closes after the response.
+     *
+     * @param transaction:  transaction to be broadcasted.
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public TransactionBroadcastSequence(Transaction transaction, Asset feeAsset, WitnessResponseListener listener){
+        this(transaction, feeAsset, true, listener);
     }
 
     @Override
@@ -77,7 +95,9 @@ public class TransactionBroadcastSequence extends BaseGrapheneHandler {
         BaseResponse baseResponse = gson.fromJson(response, BaseResponse.class);
         if(baseResponse.error != null){
             mListener.onError(baseResponse.error);
-            websocket.disconnect();
+            if(mOneTime){
+                websocket.disconnect();
+            }
         }else{
             currentId++;
             ArrayList<Serializable> emptyParams = new ArrayList<>();
@@ -140,7 +160,9 @@ public class TransactionBroadcastSequence extends BaseGrapheneHandler {
                 Type WitnessResponseType = new TypeToken<WitnessResponse<String>>(){}.getType();
                 WitnessResponse<String> witnessResponse = gson.fromJson(response, WitnessResponseType);
                 mListener.onSuccess(witnessResponse);
-                websocket.disconnect();
+                if(mOneTime){
+                    websocket.disconnect();
+                }
             }
         }
     }
@@ -156,7 +178,9 @@ public class TransactionBroadcastSequence extends BaseGrapheneHandler {
     public void onError(WebSocket websocket, WebSocketException cause) throws Exception {
         System.out.println("onError. cause: "+cause.getMessage());
         mListener.onError(new BaseResponse.Error(cause.getMessage()));
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 
     @Override
@@ -166,6 +190,8 @@ public class TransactionBroadcastSequence extends BaseGrapheneHandler {
             System.out.println(element.getFileName()+"#"+element.getClassName()+":"+element.getLineNumber());
         }
         mListener.onError(new BaseResponse.Error(cause.getMessage()));
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 }

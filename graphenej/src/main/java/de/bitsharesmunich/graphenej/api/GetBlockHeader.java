@@ -19,7 +19,13 @@ import de.bitsharesmunich.graphenej.models.BlockHeader;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 
 /**
- * Created by nelson on 12/13/16.
+ *  Class that implements get_block_header request handler.
+ *
+ *  Retrieve a block header.
+ *
+ *  The request returns the header of the referenced block, or null if no matching block was found
+ *
+ *  @see <a href="https://goo.gl/qw1eeb">get_block_header API doc</a>
  */
 public class GetBlockHeader extends BaseGrapheneHandler {
 
@@ -34,10 +40,35 @@ public class GetBlockHeader extends BaseGrapheneHandler {
     private int currentId = LOGIN_ID;
     private int apiId = -1;
 
-    public GetBlockHeader(long blockNumber, WitnessResponseListener listener){
+    private boolean mOneTime;
+
+    /**
+     * Default Constructor
+     *
+     * @param blockNumber   height of the block whose header should be returned
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public GetBlockHeader(long blockNumber, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.blockNumber = blockNumber;
+        this.mOneTime = oneTime;
         this.mListener = listener;
+    }
+
+    /**
+     * Using this constructor the WebSocket connection closes after the response.
+     *
+     * @param blockNumber   height of the block whose header should be returned
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public GetBlockHeader(long blockNumber, WitnessResponseListener listener){
+        this(blockNumber, true, listener);
     }
 
     @Override
@@ -58,7 +89,9 @@ public class GetBlockHeader extends BaseGrapheneHandler {
         BaseResponse baseResponse = gson.fromJson(response, BaseResponse.class);
         if(baseResponse.error != null){
             mListener.onError(baseResponse.error);
-            websocket.disconnect();
+            if(mOneTime){
+                websocket.disconnect();
+            }
         }else {
             currentId++;
             ArrayList<Serializable> emptyParams = new ArrayList<>();
@@ -80,7 +113,9 @@ public class GetBlockHeader extends BaseGrapheneHandler {
                 Type RelativeAccountHistoryResponse = new TypeToken<WitnessResponse<BlockHeader>>(){}.getType();
                 WitnessResponse<BlockHeader> transfersResponse = gson.fromJson(response, RelativeAccountHistoryResponse);
                 mListener.onSuccess(transfersResponse);
-                websocket.disconnect();
+                if(mOneTime){
+                    websocket.disconnect();
+                }
             }
         }
 

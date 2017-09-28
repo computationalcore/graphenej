@@ -11,6 +11,7 @@ import java.util.TimerTask;
 
 import de.bitsharesmunich.graphenej.ObjectType;
 import de.bitsharesmunich.graphenej.Transaction;
+import de.bitsharesmunich.graphenej.interfaces.NodeErrorListener;
 import de.bitsharesmunich.graphenej.interfaces.SubscriptionListener;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
 import de.bitsharesmunich.graphenej.models.BaseResponse;
@@ -29,12 +30,7 @@ public class SubscriptionMessagesHubTest extends BaseApiTest {
     /**
      * Error listener
      */
-    private WitnessResponseListener mErrorListener = new WitnessResponseListener() {
-        @Override
-        public void onSuccess(WitnessResponse response) {
-            System.out.println("onSuccess");
-        }
-
+    private NodeErrorListener mErrorListener = new NodeErrorListener() {
         @Override
         public void onError(BaseResponse.Error error) {
             System.out.println("onError");

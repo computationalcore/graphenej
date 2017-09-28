@@ -22,7 +22,14 @@ import de.bitsharesmunich.graphenej.models.BaseResponse;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 
 /**
- * Created by nelson on 11/15/16.
+ *  Class that implements get_limit_orders request handler.
+ *
+ *  Get limit orders in a given market.
+ *
+ *  The request returns the limit orders, ordered from least price to greatest
+ *
+ *  @see <a href="https://goo.gl/5sRTRq">get_limit_orders API doc</a>
+ *
  */
 public class GetLimitOrders extends BaseGrapheneHandler {
 
@@ -31,12 +38,42 @@ public class GetLimitOrders extends BaseGrapheneHandler {
     private int limit;
     private WitnessResponseListener mListener;
 
-    public GetLimitOrders(String a, String b, int limit, WitnessResponseListener mListener) {
-        super(mListener);
+    private boolean mOneTime;
+
+
+    /**
+     * Default Constructor
+     *
+     * @param a             id of asset being sold
+     * @param b             id of asset being purchased
+     * @param limit         maximum number of orders to retrieve
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public GetLimitOrders(String a, String b, int limit, boolean oneTime, WitnessResponseListener listener) {
+        super(listener);
         this.a = a;
         this.b = b;
         this.limit = limit;
-        this.mListener = mListener;
+        this.mOneTime = oneTime;
+        this.mListener = listener;
+    }
+
+    /**
+     * Using this constructor the WebSocket connection closes after the response.
+     *
+     * @param a             id of asset being sold
+     * @param b             id of asset being purchased
+     * @param limit         maximum number of orders to retrieve
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public GetLimitOrders(String a, String b, int limit, WitnessResponseListener listener) {
+        this(a, b, limit, true, listener);
     }
 
     @Override
@@ -70,7 +107,9 @@ public class GetLimitOrders extends BaseGrapheneHandler {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 
     @Override
@@ -83,12 +122,16 @@ public class GetLimitOrders extends BaseGrapheneHandler {
     @Override
     public void onError(WebSocket websocket, WebSocketException cause) throws Exception {
         mListener.onError(new BaseResponse.Error(cause.getMessage()));
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 
     @Override
     public void handleCallbackError(WebSocket websocket, Throwable cause) throws Exception {
         mListener.onError(new BaseResponse.Error(cause.getMessage()));
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 }

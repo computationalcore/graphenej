@@ -18,6 +18,7 @@ import de.bitsharesmunich.graphenej.RPC;
 import de.bitsharesmunich.graphenej.Transaction;
 import de.bitsharesmunich.graphenej.UserAccount;
 import de.bitsharesmunich.graphenej.errors.RepeatedRequestIdException;
+import de.bitsharesmunich.graphenej.interfaces.NodeErrorListener;
 import de.bitsharesmunich.graphenej.interfaces.SubscriptionHub;
 import de.bitsharesmunich.graphenej.interfaces.SubscriptionListener;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
@@ -30,9 +31,7 @@ import de.bitsharesmunich.graphenej.operations.LimitOrderCreateOperation;
 import de.bitsharesmunich.graphenej.operations.TransferOperation;
 
 /**
- * A websocket adapter prepared to be used as a basic dispatch hub for subscription messages.
- *
- * Created by nelson on 1/26/17.
+ * A WebSocket adapter prepared to be used as a basic dispatch hub for subscription messages.
  */
 public class SubscriptionMessagesHub extends BaseGrapheneHandler implements SubscriptionHub {
 
@@ -73,12 +72,13 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
      *
      * A list of ObjectTypes must be provided, otherwise we won't get any update.
      *
-     * @param user: User name, in case the node to which we're going to connect to requires authentication
-     * @param password: Password, same as above
-     * @param clearFilter: Whether to automatically subscribe of not to the notification feed.
-     * @param errorListener: Callback that will be fired in case there is an error.
+     * @param user          User name, in case the node to which we're going to connect to requires
+     *                      authentication
+     * @param password      Password, same as above
+     * @param clearFilter   Whether to automatically subscribe of not to the notification feed.
+     * @param errorListener Callback that will be fired in case there is an error.
      */
-    public SubscriptionMessagesHub(String user, String password, boolean clearFilter, WitnessResponseListener errorListener){
+    public SubscriptionMessagesHub(String user, String password, boolean clearFilter, NodeErrorListener errorListener){
         super(errorListener);
         this.user = user;
         this.password = password;
@@ -97,15 +97,16 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
     }
 
     /**
-     * Constructor used to create a subscription message hub that will call the set_subscribe_callback
-     * API with the clear_filter parameter set to false, meaning that it will only receive updates
-     * from objects we register.
+     * Constructor used to create a subscription message hub that will call the
+     * set_subscribe_callback API with the clear_filter parameter set to false, meaning that it will
+     * only receive updates from objects we register.
      *
-     * @param user: User name, in case the node to which we're going to connect to requires authentication
-     * @param password: Password, same as above
-     * @param errorListener: Callback that will be fired in case there is an error.
+     * @param user          User name, in case the node to which we're going to connect to requires
+     *                      authentication
+     * @param password      Password, same as above
+     * @param errorListener Callback that will be fired in case there is an error.
      */
-    public SubscriptionMessagesHub(String user, String password, WitnessResponseListener errorListener){
+    public SubscriptionMessagesHub(String user, String password, NodeErrorListener errorListener){
         this(user, password, false, errorListener);
     }
 
@@ -247,7 +248,8 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
 
     /**
      * Method used to check the current state of the connection.
-     * @return: True if the websocket is open and there is an active subscription, false otherwise.
+     *
+     * @return  True if the websocket is open and there is an active subscription, false otherwise.
      */
     public boolean isSubscribed(){
         return this.mWebsocket.isOpen() && isSubscribed;

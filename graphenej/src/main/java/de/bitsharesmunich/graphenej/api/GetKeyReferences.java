@@ -19,23 +19,75 @@ import de.bitsharesmunich.graphenej.models.ApiCall;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 
 /**
- * Created by nelson on 11/15/16.
+ *  Class that implements get_key_references request handler.
+ *
+ *  Retrieve the keys that refer to the address/list of addresses.
+ *
+ *  The request returns all accounts that refer to the key or account id in their owner or active authorities.
+ *
+ *  @see <a href="https://goo.gl/np8CYF">get_key_references API doc</a>
  */
 public class GetKeyReferences extends BaseGrapheneHandler {
 
     private List<Address> addresses;
 
-    public GetKeyReferences(Address address, WitnessResponseListener listener){
+    private boolean mOneTime;
+
+    /**
+     * Constructor
+     *
+     * @param address address to be query
+     * @param oneTime boolean value indicating if WebSocket must be closed (true) or not (false)
+     *                after the response
+     * @param listener A class implementing the WitnessResponseListener interface. This should
+     *                be implemented by the party interested in being notified about the success/failure
+     *                of the transaction broadcast operation.
+     */
+    public GetKeyReferences(Address address, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         addresses = new ArrayList<>();
         addresses.add(address);
-
+        this.mOneTime = oneTime;
     }
 
-    public GetKeyReferences(List<Address> addresses, WitnessResponseListener listener) {
+    /**
+     *
+     * @param addresses list of addresses to be query
+     * @param oneTime boolean value indicating if WebSocket must be closed (true) or not (false)
+     *                after the response
+     * @param listener A class implementing the WitnessResponseListener interface. This should
+     *                be implemented by the party interested in being notified about the success/failure
+     *                of the transaction broadcast operation.
+     */
+    public GetKeyReferences(List<Address> addresses, boolean oneTime, WitnessResponseListener listener) {
         super(listener);
         this.addresses = addresses;
         this.mListener = listener;
+        this.mOneTime = oneTime;
+    }
+
+    /**
+     * Using this constructor the websocket connection closes after the response.
+     *
+     * @param address
+     * @param listener A class implementing the WitnessResponseListener interface. This should
+     *                be implemented by the party interested in being notified about the success/failure
+     *                of the transaction broadcast operation.
+     */
+    public GetKeyReferences(Address address, WitnessResponseListener listener){
+        this(address, true, listener);
+    }
+
+    /**
+     * Using this constructor the websocket connection closes after the response.
+     *
+     * @param addresses
+     * @param listener A class implementing the WitnessResponseListener interface. This should
+     *                be implemented by the party interested in being notified about the success/failure
+     *                of the transaction broadcast operation.
+     */
+    public GetKeyReferences(List<Address> addresses, WitnessResponseListener listener) {
+        this(addresses, true, listener);
     }
 
     @Override
@@ -64,7 +116,9 @@ public class GetKeyReferences extends BaseGrapheneHandler {
         } else {
             this.mListener.onSuccess(witnessResponse);
         }
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 
     @Override
