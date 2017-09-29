@@ -20,6 +20,7 @@ import de.bitsharesmunich.graphenej.models.ApiCall;
 import de.bitsharesmunich.graphenej.models.BaseResponse;
 import de.bitsharesmunich.graphenej.models.HistoricalTransfer;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
+import de.bitsharesmunich.graphenej.objects.Memo;
 import de.bitsharesmunich.graphenej.operations.TransferOperation;
 
 /**
@@ -48,36 +49,79 @@ public class GetRelativeAccountHistory extends BaseGrapheneHandler {
     private int currentId = 1;
     private int apiId = -1;
 
+    private boolean mOneTime;
+
     /**
      * Constructor that takes all possible parameters.
-     * @param userAccount The user account to be queried
-     * @param stop Sequence number of earliest operation
-     * @param limit Maximum number of operations to retrieve (must not exceed 100)
-     * @param start Sequence number of the most recent operation to retrieve
-     * @param listener Listener to be notified with the result of this query
+     *
+     * @param userAccount   The user account to be queried
+     * @param stop          Sequence number of earliest operation
+     * @param limit         Maximum number of operations to retrieve (must not exceed 100)
+     * @param start         Sequence number of the most recent operation to retrieve
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
-    public GetRelativeAccountHistory(UserAccount userAccount, int stop, int limit, int start, WitnessResponseListener listener){
+    public GetRelativeAccountHistory(UserAccount userAccount, int stop, int limit, int start, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         if(limit > MAX_LIMIT) limit = MAX_LIMIT;
         this.mUserAccount = userAccount;
         this.stop = stop;
         this.limit = limit;
         this.start = start;
+        this.mOneTime = oneTime;
         this.mListener = listener;
     }
 
     /**
      * Constructor that uses the default values, and sets the limit to its maximum possible value.
-     * @param userAccount The user account to be queried
-     * @param listener Listener to be notified with the result of this query
+     *
+     * @param userAccount   The user account to be queried
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
      */
-    public GetRelativeAccountHistory(UserAccount userAccount, WitnessResponseListener listener){
+    public GetRelativeAccountHistory(UserAccount userAccount, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.mUserAccount = userAccount;
         this.stop = DEFAULT_STOP;
         this.limit = MAX_LIMIT;
         this.start = DEFAULT_START;
+        this.mOneTime = oneTime;
         this.mListener = listener;
+    }
+
+    /**
+     * Constructor that takes all possible parameters for the query.
+     * Using this constructor the WebSocket connection closes after the response.
+     *
+     * @param userAccount   The user account to be queried
+     * @param stop          Sequence number of earliest operation
+     * @param limit         Maximum number of operations to retrieve (must not exceed 100)
+     * @param start         Sequence number of the most recent operation to retrieve
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public GetRelativeAccountHistory(UserAccount userAccount, int stop, int limit, int start, WitnessResponseListener listener){
+        this(userAccount, stop, limit, start, true, listener);
+    }
+
+    /**
+     * Constructor that uses the default values, and sets the limit to its maximum possible value.
+     * Using this constructor the WebSocket connection closes after the response.
+     *
+     * @param userAccount   The user account to be queried
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public GetRelativeAccountHistory(UserAccount userAccount, WitnessResponseListener listener){
+        this(userAccount, true, listener);
     }
 
     @Override
@@ -98,7 +142,9 @@ public class GetRelativeAccountHistory extends BaseGrapheneHandler {
         BaseResponse baseResponse = gson.fromJson(response, BaseResponse.class);
         if(baseResponse.error != null){
             mListener.onError(baseResponse.error);
-            websocket.disconnect();
+            if(mOneTime){
+                websocket.disconnect();
+            }
         }else{
             currentId++;
             ArrayList<Serializable> emptyParams = new ArrayList<>();
@@ -116,6 +162,7 @@ public class GetRelativeAccountHistory extends BaseGrapheneHandler {
                 GsonBuilder gsonBuilder = new GsonBuilder();
                 gsonBuilder.registerTypeAdapter(TransferOperation.class, new TransferOperation.TransferDeserializer());
                 gsonBuilder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer());
+                gsonBuilder.registerTypeAdapter(Memo.class, new Memo.MemoDeserializer());
                 WitnessResponse<List<HistoricalTransfer>> transfersResponse = gsonBuilder.create().fromJson(response, RelativeAccountHistoryResponse);
                 mListener.onSuccess(transfersResponse);
             }
@@ -127,7 +174,7 @@ public class GetRelativeAccountHistory extends BaseGrapheneHandler {
      */
     private void sendRelativeAccountHistoryRequest(){
         ArrayList<Serializable> params = new ArrayList<>();
-        params.add(mUserAccount.toJsonString());
+        params.add(mUserAccount.getObjectId());
         params.add(this.stop);
         params.add(this.limit);
         params.add(this.start);
@@ -137,7 +184,8 @@ public class GetRelativeAccountHistory extends BaseGrapheneHandler {
     }
 
     /**
-     * Updates the arguments and makes a new call to the get_relative_account_history API
+     * Updates the arguments and makes a new call to the get_relative_account_history API.
+     *
      * @param stop Sequence number of earliest operation
      * @param limit Maximum number of operations to retrieve (must not exceed 100)
      * @param start Sequence number of the most recent operation to retrieve
@@ -150,10 +198,10 @@ public class GetRelativeAccountHistory extends BaseGrapheneHandler {
     }
 
     /**
-     * Disconnects the websocket
+     * Disconnects the WebSocket.
      */
     public void disconnect(){
-        if(mWebsocket != null && mWebsocket.isOpen()){
+        if(mWebsocket != null && mWebsocket.isOpen() && mOneTime){
             mWebsocket.disconnect();
         }
     }

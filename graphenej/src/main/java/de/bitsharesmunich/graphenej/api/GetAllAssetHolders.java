@@ -16,7 +16,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by nelson on 1/25/17.
+ *  Class that implements get_all_asset_holders request handler.
+ *
+ *  Get a list of all system assets with holders count.
+ *
+ *  The response returns the list of all assets with holders count.
+ *
+ *  @see <a href="https://goo.gl/AgTSLU">get_all_asset_holders API doc (source code ref.)</a>
  */
 public class GetAllAssetHolders extends BaseGrapheneHandler {
     private final static int LOGIN_ID = 1;
@@ -26,9 +32,30 @@ public class GetAllAssetHolders extends BaseGrapheneHandler {
     private int currentId = 1;
     private int assetApiId = -1;
 
-    public GetAllAssetHolders(WitnessResponseListener listener) {
+    private boolean mOneTime;
+
+    /**
+     * Default Constructor
+     *
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public GetAllAssetHolders(boolean oneTime, WitnessResponseListener listener) {
         super(listener);
+        this.mOneTime = oneTime;
     }
+
+    /**
+     * Using this constructor the WebSocket connection closes after the response.
+     *
+     * @param listener A class implementing the WitnessResponseListener interface. This should
+     *                be implemented by the party interested in being notified about the success/failure
+     *                of the transaction broadcast operation.
+     */
+    public GetAllAssetHolders(WitnessResponseListener listener) { this(true, listener);}
 
     @Override
     public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
@@ -48,7 +75,9 @@ public class GetAllAssetHolders extends BaseGrapheneHandler {
         BaseResponse baseResponse = gson.fromJson(response, BaseResponse.class);
         if(baseResponse.error != null){
             mListener.onError(baseResponse.error);
-            websocket.disconnect();
+            if(mOneTime){
+                websocket.disconnect();
+            }
         }else {
             currentId++;
             ArrayList<Serializable> emptyParams = new ArrayList<>();
@@ -68,7 +97,9 @@ public class GetAllAssetHolders extends BaseGrapheneHandler {
                 builder.registerTypeAdapter(AssetHolderCount.class, new AssetHolderCount.HoldersCountDeserializer());
                 WitnessResponse<List<AssetHolderCount>> witnessResponse = builder.create().fromJson(response, AssetTokenHolders);
                 mListener.onSuccess(witnessResponse);
-                websocket.disconnect();
+                if(mOneTime){
+                    websocket.disconnect();
+                }
             }else{
                 System.out.println("current id: "+currentId);
             }

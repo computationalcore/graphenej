@@ -20,17 +20,47 @@ import de.bitsharesmunich.graphenej.models.ApiCall;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 
 /**
- * Created by nelson on 11/15/16.
+ *  Class that implements get_account_by_name request handler.
+ *
+ *  Get an account’s info by name.
+ *
+ *  The response returns account data that refer to the name.
+ *
+ *  @see <a href="https://goo.gl/w75qjV">get_account_by_name API doc</a>
  */
 public class GetAccountByName extends BaseGrapheneHandler {
 
     private String accountName;
     private WitnessResponseListener mListener;
+    private boolean mOneTime;
 
-    public GetAccountByName(String accountName, WitnessResponseListener listener){
+    /**
+     * Default Constructor
+     *
+     * @param accountName   name of the account to get info
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public GetAccountByName(String accountName, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.accountName = accountName;
+        this.mOneTime = oneTime;
         this.mListener = listener;
+    }
+
+    /**
+     * Using this constructor the WebSocket connection closes after the response.
+     *
+     * @param accountName   name of the account to get info
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public GetAccountByName(String accountName, WitnessResponseListener listener){
+        this(accountName, true, listener);
     }
 
     @Override
@@ -58,8 +88,9 @@ public class GetAccountByName extends BaseGrapheneHandler {
         }else{
             this.mListener.onSuccess(witnessResponse);
         }
-
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 
     @Override

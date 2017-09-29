@@ -5,11 +5,13 @@ import com.neovisionaries.ws.client.WebSocketException;
 import org.junit.Test;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import de.bitsharesmunich.graphenej.ObjectType;
 import de.bitsharesmunich.graphenej.Transaction;
+import de.bitsharesmunich.graphenej.interfaces.NodeErrorListener;
 import de.bitsharesmunich.graphenej.interfaces.SubscriptionListener;
 import de.bitsharesmunich.graphenej.interfaces.WitnessResponseListener;
 import de.bitsharesmunich.graphenej.models.BaseResponse;
@@ -19,30 +21,94 @@ import de.bitsharesmunich.graphenej.models.SubscriptionResponse;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 
 /**
- * Created by nelson on 4/25/17.
+ * Class used to encapsulate all tests that relate to the {@see SubscriptionMessagesHub} class.
  */
 public class SubscriptionMessagesHubTest extends BaseApiTest {
 
     private SubscriptionMessagesHub mMessagesHub;
-    private WitnessResponseListener mErrorListener = new WitnessResponseListener() {
-        @Override
-        public void onSuccess(WitnessResponse response) {
-            System.out.println("onSuccess");
-        }
 
+    /**
+     * Error listener
+     */
+    private NodeErrorListener mErrorListener = new NodeErrorListener() {
         @Override
         public void onError(BaseResponse.Error error) {
             System.out.println("onError");
         }
     };
 
+    /**
+     * Testing the subscription and unsubscription features.
+     *
+     * The test is deemed successful if no exception is thown and the messages indeed
+     * are cancelled.
+     */
+    @Test
+    public void testSubscribeUnsubscribe(){
+        /**
+         * Task that will send a 'cancel_all_subscriptions' API message.
+         */
+        TimerTask unsubscribeTask = new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("Cancelling all subscriptions");
+                mMessagesHub.cancelSubscriptions();
+            }
+        };
+
+        TimerTask resubscribeTask = new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("Resubscribing..");
+                mMessagesHub.resubscribe();
+            }
+        };
+
+        /**
+         * Task that will just finish the test.
+         */
+        TimerTask shutdownTask = new TimerTask() {
+
+            @Override
+            public void run() {
+                System.out.println("Finish test");
+                synchronized (SubscriptionMessagesHubTest.this){
+                    SubscriptionMessagesHubTest.this.notifyAll();
+                }
+            }
+        };
+
+        try{
+            mMessagesHub = new SubscriptionMessagesHub("", "", true, mErrorListener);
+            mWebSocket.addListener(mMessagesHub);
+            mWebSocket.connect();
+
+            Timer timer = new Timer();
+            timer.schedule(unsubscribeTask, 5000);
+            timer.schedule(resubscribeTask, 10000);
+            timer.schedule(shutdownTask, 20000);
+
+            // Holding this thread while we get update notifications
+            synchronized (this){
+                wait();
+            }
+        } catch (InterruptedException e) {
+            System.out.println("InterruptedException. Msg: "+e.getMessage());
+        } catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
+        }
+    }
+
+    /**
+     * This test will register a {@see SubscriptionListener} and wait for an amount equal to MAX_MESSAGES
+     * of {@see DynamicGlobalProperties} objects to be returned.
+     *
+     * The test will be deemed successfull if no errors arise in the meantime.
+     */
     @Test
     public void testGlobalPropertiesDeserializer(){
-        ArrayList<ObjectType> interestingObjects = new ArrayList();
-        interestingObjects.add(ObjectType.TRANSACTION_OBJECT);
-        interestingObjects.add(ObjectType.DYNAMIC_GLOBAL_PROPERTY_OBJECT);
         try{
-            mMessagesHub = new SubscriptionMessagesHub("", "", interestingObjects, mErrorListener);
+            mMessagesHub = new SubscriptionMessagesHub("", "", true, mErrorListener);
             mMessagesHub.addSubscriptionListener(new SubscriptionListener() {
                 private int MAX_MESSAGES = 10;
                 private int messageCounter = 0;
@@ -107,6 +173,8 @@ public class SubscriptionMessagesHubTest extends BaseApiTest {
 
     /**
      * This is a basic test that will only display a count of operations per received broadcasted transactions.
+     *
+     * The test will be deemed successfull if we get to receive MAX_MESSAGES transaction objects without errors.
      */
     @Test
     public void testBroadcastedTransactionDeserializer(){

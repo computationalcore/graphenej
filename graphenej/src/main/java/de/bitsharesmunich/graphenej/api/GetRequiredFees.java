@@ -23,18 +23,50 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by nelson on 11/15/16.
+ *  Class that implements get_required_fees request handler.
+ *
+ *  For each operation calculate the required fee in the specified asset type.
+ *
+ *  @see <a href="https://goo.gl/MB4TXq">get_required_fees API doc</a>
  */
-public class GetRequiredFees extends WebSocketAdapter {
+public class GetRequiredFees extends BaseGrapheneHandler {
 
     private WitnessResponseListener mListener;
     private List<BaseOperation> operations;
     private Asset asset;
 
-    public GetRequiredFees(List<BaseOperation> operations, Asset asset, WitnessResponseListener listener){
+    private boolean mOneTime;
+
+    /**
+     * Default Constructor
+     *
+     * @param operations    list of operations that fee should be calculated
+     * @param asset         specify the asset of the operations
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public GetRequiredFees(List<BaseOperation> operations, Asset asset, boolean oneTime, WitnessResponseListener listener){
+        super(listener);
         this.operations = operations;
         this.asset = asset;
+        this.mOneTime = oneTime;
         this.mListener = listener;
+    }
+
+    /**
+     * Using this constructor the WebSocket connection closes after the response.
+     *
+     * @param operations    list of operations that fee should be calculated
+     * @param asset         specify the asset of the operations
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public GetRequiredFees(List<BaseOperation> operations, Asset asset, WitnessResponseListener listener){
+        this(operations, asset, true, listener);
     }
 
     @Override
@@ -66,12 +98,16 @@ public class GetRequiredFees extends WebSocketAdapter {
     @Override
     public void onError(WebSocket websocket, WebSocketException cause) throws Exception {
         mListener.onError(new BaseResponse.Error(cause.getMessage()));
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 
     @Override
     public void handleCallbackError(WebSocket websocket, Throwable cause) throws Exception {
         mListener.onError(new BaseResponse.Error(cause.getMessage()));
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 }

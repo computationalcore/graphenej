@@ -19,14 +19,12 @@ import java.util.Map;
 /**
  * WebSocketAdapter class used to send a request a 'list_assets' API call to the witness node.
  *
- * @see: <a href="http://docs.bitshares.org/development/namespaces/app.html"></a>
- *
  * The API imposes a limit of of 100 assets per request, but if the user of this class wants
  * to get a list of all assets, the LIST_ALL constant must be used as second argument in the
  * constructor. Internally we are going to perform multiple calls in order to satisfy the user's
  * request.
  *
- * Created by nelson on 1/5/17.
+ * @see: <a href="http://docs.bitshares.org/development/namespaces/app.html"></a>
  */
 public class ListAssets extends BaseGrapheneHandler {
     /**
@@ -45,16 +43,41 @@ public class ListAssets extends BaseGrapheneHandler {
     private int limit;
     private int requestCounter = 0;
 
+    private boolean mOneTime;
+
     /**
      * Constructor
-     * @param lowerBoundSymbol: Lower bound of symbol names to retrieve
-     * @param limit: Maximum number of assets to fetch, if the constant LIST_ALL
-     *             is passed, all existing assets will be retrieved.
+     *
+     * @param lowerBoundSymbol  Lower bound of symbol names to retrieve
+     * @param limit             Maximum number of assets to fetch, if the constant LIST_ALL
+     *                          is passed, all existing assets will be retrieved.
+     * @param oneTime           boolean value indicating if WebSocket must be closed (true) or not
+     *                          (false) after the response
+     * @param listener          A class implementing the WitnessResponseListener interface. This
+     *                          should be implemented by the party interested in being notified
+     *                          about the success/failure of the operation.
      */
-    public ListAssets(String lowerBoundSymbol, int limit, WitnessResponseListener listener){
+    public ListAssets(String lowerBoundSymbol, int limit, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.lowerBound = lowerBoundSymbol;
         this.limit = limit;
+        this.mOneTime = oneTime;
+    }
+
+    /**
+     * Using this constructor the WebSocket connection closes after the response.
+     *
+     * @param lowerBoundSymbol  Lower bound of symbol names to retrieve
+     * @param limit             Maximum number of assets to fetch, if the constant LIST_ALL
+     *                          is passed, all existing assets will be retrieved.
+     * @param oneTime           boolean value indicating if WebSocket must be closed (true) or not
+     *                          (false) after the response
+     * @param listener          A class implementing the WitnessResponseListener interface. This
+     *                          should be implemented by the party interested in being notified
+     *                          about the success/failure of the operation.
+     */
+    public ListAssets(String lowerBoundSymbol, int limit, WitnessResponseListener listener){
+        this(lowerBoundSymbol, limit, true, listener);
     }
 
     @Override
@@ -81,7 +104,9 @@ public class ListAssets extends BaseGrapheneHandler {
             // If the requested number of assets was below
             // the limit, we just call the listener.
             mListener.onSuccess(witnessResponse);
-            websocket.disconnect();
+            if(mOneTime){
+                websocket.disconnect();
+            }
         }else{
             // Updating counter to keep track of how many batches we already retrieved.
             requestCounter++;
@@ -96,12 +121,16 @@ public class ListAssets extends BaseGrapheneHandler {
                 // we got less than the requested amount.
                 witnessResponse.result = this.assets;
                 mListener.onSuccess(witnessResponse);
-                websocket.disconnect();
+                if(mOneTime){
+                    websocket.disconnect();
+                }
             }else if(this.assets.size() == this.limit){
                 // We already have the required amount of assets
                 witnessResponse.result = this.assets;
                 mListener.onSuccess(witnessResponse);
-                websocket.disconnect();
+                if(mOneTime){
+                    websocket.disconnect();
+                }
             }else{
                 // We still need to fetch some more assets
                 this.lowerBound = this.assets.get(this.assets.size() - 1).getSymbol();

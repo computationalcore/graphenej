@@ -118,8 +118,8 @@ public class TransferOperation extends BaseOperation {
         JsonObject jsonObject = new JsonObject();
         if(fee != null)
             jsonObject.add(KEY_FEE, fee.toJsonObject());
-        jsonObject.addProperty(KEY_FROM, from.toJsonString());
-        jsonObject.addProperty(KEY_TO, to.toJsonString());
+        jsonObject.addProperty(KEY_FROM, from.getObjectId());
+        jsonObject.addProperty(KEY_TO, to.getObjectId());
         jsonObject.add(KEY_AMOUNT, amount.toJsonObject());
         jsonObject.add(KEY_MEMO, memo.toJsonObject());
         jsonObject.add(KEY_EXTENSIONS, new JsonArray());
@@ -191,6 +191,13 @@ public class TransferOperation extends BaseOperation {
                 UserAccount from = new UserAccount(jsonObject.get(KEY_FROM).getAsString());
                 UserAccount to = new UserAccount(jsonObject.get(KEY_TO).getAsString());
                 TransferOperation transfer = new TransferOperation(from, to, amount, fee);
+
+                // If the transfer had a memo, deserialize it
+                if(jsonObject.has(KEY_MEMO)){
+                    Memo memo = context.deserialize(jsonObject.get(KEY_MEMO), Memo.class);
+                    transfer.setMemo(memo);
+                }
+
                 return transfer;
             }
         }

@@ -21,25 +21,77 @@ import de.bitsharesmunich.graphenej.models.ApiCall;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 
 /**
+ *  Class that implements get_accounts request handler.
  *
- * @author henry
+ *  Get a list of accounts by ID.
+ *
+ *  The response returns the accounts corresponding to the provided IDs.
+ *
+ *  @see <a href="https://goo.gl/r5RqKG">get_accounts API doc</a>
  */
 public class GetAccounts extends BaseGrapheneHandler {
-
     private String accountId;
     private List<UserAccount> userAccounts;
     private WitnessResponseListener mListener;
+    private boolean mOneTime;
 
-    public GetAccounts(String accountId, WitnessResponseListener listener){
+    /**
+     * Constructor for one account only.
+     *
+     * @param accountId     ID of the account to retrieve
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public GetAccounts(String accountId, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.accountId = accountId;
+        this.mOneTime = oneTime;
         this.mListener = listener;
     }
 
-    public GetAccounts(List<UserAccount> accounts, WitnessResponseListener listener){
+    /**
+     * Constructor for account list.
+     *
+     * @param accounts      list with the accounts to retrieve
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public GetAccounts(List<UserAccount> accounts, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.userAccounts = accounts;
+        this.mOneTime = oneTime;
         this.mListener = listener;
+    }
+
+    /**
+     * Using this constructor the WebSocket connection closes after the response. (Account based)
+     *
+     * @param accountId     ID of the account to retrieve
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public GetAccounts(String accountId, WitnessResponseListener listener){
+        this(accountId, true, listener);
+    }
+
+    /**
+     * Using this constructor the WebSocket connection closes after the response. (Account List
+     * based)
+     *
+     * @param accounts      list with the accounts to retrieve
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public GetAccounts(List<UserAccount> accounts, WitnessResponseListener listener){
+        this(accounts, true, listener);
     }
 
     @Override
@@ -54,7 +106,7 @@ public class GetAccounts extends BaseGrapheneHandler {
             accountIds.add(accountId);
         }
         params.add(accountIds);
-        ApiCall getAccountByAddress = new ApiCall(0, RPC.CALL_GET_ACCOUNTS, params, RPC.VERSION, 1);
+        ApiCall getAccountByAddress = new ApiCall(0, RPC.CALL_GET_ACCOUNTS, params, RPC.VERSION, (int) requestId);
         websocket.sendText(getAccountByAddress.toJsonString());
     }
 
@@ -74,7 +126,9 @@ public class GetAccounts extends BaseGrapheneHandler {
         } else {
             this.mListener.onSuccess(witnessResponse);
         }
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 
     @Override
