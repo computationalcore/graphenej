@@ -77,7 +77,7 @@ public class AccountUpdateOperation extends BaseOperation {
 
         JsonObject accountUpdate = new JsonObject();
         accountUpdate.add(KEY_FEE, fee.toJsonObject());
-        accountUpdate.addProperty(KEY_ACCOUNT, account.toJsonString());
+        accountUpdate.addProperty(KEY_ACCOUNT, account.getObjectId());
         if(owner.isSet())
             accountUpdate.add(KEY_OWNER, owner.toJsonObject());
         if(active.isSet())

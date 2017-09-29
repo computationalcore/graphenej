@@ -28,14 +28,47 @@ import de.bitsharesmunich.graphenej.models.BitAssetData;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 
 /**
- * Created by nelson on 1/8/17.
+ *
+ *  Class that implements get_objects request handler.
+ *
+ *  Get the objects corresponding to the provided IDs.
+ *
+ *  The response returns a list of objects retrieved, in the order they are mentioned in ids
+ *
+ *  @see <a href="https://goo.gl/isRfeg">get_objects API doc</a>
+ *
  */
 public class GetObjects extends BaseGrapheneHandler {
     private List<String> ids;
 
-    public GetObjects(List<String> ids, WitnessResponseListener listener){
+    private boolean mOneTime;
+
+    /**
+     * Default Constructor
+     *
+     * @param ids           list of IDs of the objects to retrieve
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public GetObjects(List<String> ids, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.ids = ids;
+        this.mOneTime = oneTime;
+    }
+
+    /**
+     * Using this constructor the WebSocket connection closes after the response.
+     *
+     * @param ids           list of IDs of the objects to retrieve
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public GetObjects(List<String> ids, WitnessResponseListener listener){
+        this(ids, true, listener);
     }
 
     @Override
@@ -92,7 +125,9 @@ public class GetObjects extends BaseGrapheneHandler {
         WitnessResponse<List<GrapheneObject>> output = new WitnessResponse<>();
         output.result = parsedResult;
         mListener.onSuccess(output);
-        websocket.disconnect();
+        if(mOneTime){
+            websocket.disconnect();
+        }
     }
 
     @Override

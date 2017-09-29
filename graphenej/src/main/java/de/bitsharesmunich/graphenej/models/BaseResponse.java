@@ -4,7 +4,7 @@ package de.bitsharesmunich.graphenej.models;
  * Created by nelson on 11/12/16.
  */
 public class BaseResponse {
-    public int id;
+    public long id;
     public Error error;
 
     public static class Error {

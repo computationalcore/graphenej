@@ -23,7 +23,12 @@ import de.bitsharesmunich.graphenej.models.BucketObject;
 import de.bitsharesmunich.graphenej.models.WitnessResponse;
 
 /**
- * Created by nelson on 12/22/16.
+ *  Class that implements get_market_history request handler.
+ *
+ *  Get mar
+ *
+ *  @see <a href="https://goo.gl/hfVFBW">get_market_history API doc</a>
+ *
  */
 public class GetMarketHistory extends BaseGrapheneHandler {
 
@@ -44,14 +49,57 @@ public class GetMarketHistory extends BaseGrapheneHandler {
     private int apiId = -1;
     private int counter = 0;
 
-    public GetMarketHistory(Asset base, Asset quote, long bucket, Date start, Date end, WitnessResponseListener listener){
+    private boolean mOneTime;
+
+    /**
+     * Default Constructor
+     *
+     * @param base          asset which history is desired
+     * @param quote         asset which the base price asset will be compared to
+     * @param bucket        the time interval (in seconds) for each point should be (analog to
+     *                      candles on a candle stick graph).
+     *                      Note: The bucket value is discrete and node dependent. The default value
+     *                      is 3600s. To get the available buckets of a node use
+     *                      get_all_asset_holders API call.
+     * @param start         datetime of of the most recent operation to retrieve (Note: The name is
+     *                      counter intuitive, but it follow the original API parameter name)
+     * @param end           datetime of the the earliest operation to retrieve
+     * @param oneTime       boolean value indicating if WebSocket must be closed (true) or not
+     *                      (false) after the response
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public GetMarketHistory(Asset base, Asset quote, long bucket, Date start, Date end, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.base = base;
         this.quote = quote;
         this.bucket = bucket;
         this.start = start;
         this.end = end;
+        this.mOneTime = oneTime;
         this.mListener = listener;
+    }
+
+    /**
+     * Using this constructor the WebSocket connection closes after the response.
+     *
+     * @param base          asset which history is desired
+     * @param quote         asset which the base price asset will be compared to
+     * @param bucket        the time interval (in seconds) for each point should be (analog to
+     *                      candles on a candle stick graph).
+     *                      Note: The bucket value is discrete and node dependent. The default value
+     *                      is 3600s. To get the available buckets of a node use
+     *                      get_all_asset_holders API call.
+     * @param start         datetime of of the most recent operation to retrieve (Note: The name is
+     *                      counter intuitive, but it follow the original API parameter name)
+     * @param end           datetime of the the earliest operation to retrieve
+     * @param listener      A class implementing the WitnessResponseListener interface. This should
+     *                      be implemented by the party interested in being notified about the
+     *                      success/failure of the operation.
+     */
+    public GetMarketHistory(Asset base, Asset quote, long bucket, Date start, Date end, WitnessResponseListener listener){
+        this(base, quote, bucket, start, end, true, listener);
     }
 
     public Asset getBase() {
@@ -131,7 +179,9 @@ public class GetMarketHistory extends BaseGrapheneHandler {
         BaseResponse baseResponse = gson.fromJson(response, BaseResponse.class);
         if(baseResponse.error != null){
             mListener.onError(baseResponse.error);
-            websocket.disconnect();
+            if(mOneTime){
+                websocket.disconnect();
+            }
         }else{
             currentId++;
             ArrayList<Serializable> emptyParams = new ArrayList<>();
