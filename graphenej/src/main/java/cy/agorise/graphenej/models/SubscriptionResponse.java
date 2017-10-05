@@ -111,13 +111,15 @@ public class SubscriptionResponse {
          *                            to be removed from the list.
          */
         public void removeSubscriptionListener(SubscriptionListener subscriptionListener){
-            int currentCount = listenerTypeCount.get(subscriptionListener.getInterestObjectType());
-            if(currentCount != 0){
-                this.listenerTypeCount.put(subscriptionListener.getInterestObjectType(), currentCount);
-            }else{
-                System.out.println("Trying to remove subscription listener, but none is registered!");
+            if(listenerTypeCount.containsKey(subscriptionListener.getInterestObjectType())){
+                int currentCount = listenerTypeCount.get(subscriptionListener.getInterestObjectType());
+                if(currentCount > 0){
+                    this.listenerTypeCount.put(subscriptionListener.getInterestObjectType(), currentCount - 1);
+                    this.mListeners.remove(subscriptionListener);
+                }else{
+                    System.out.println("Trying to remove subscription listener, but none is registered!");
+                }
             }
-            this.mListeners.remove(subscriptionListener);
         }
 
         /**
