@@ -89,7 +89,13 @@ public class OrderBook {
                 }else{
                     // If the offered amount is less than what we need, we exchange the whole order
                     totalBought += orderAmount;
-                    totalSold += order.getSellPrice().quote.getAmount().longValue();
+
+                    // The amount specified in the price ratio is not always all for sale. So in order to calculate
+                    // the amount actually sold we have to do:
+                    // actually_sold = for_sale * quote / base
+                    double sellRatio = ((double) orderAmount) / ((double) order.getSellPrice().base.getAmount().longValue());
+
+                    totalSold += Math.floor(order.getSellPrice().quote.getAmount().doubleValue() * sellRatio);
                 }
             }
         }

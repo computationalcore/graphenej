@@ -10,11 +10,11 @@ import javax.net.ssl.SSLContext;
 import cy.agorise.graphenej.test.NaiveSSLContext;
 
 /**
- * Created by nelson on 4/14/17.
+ * Base class that every test that involves any communication with the API must extend
  */
 
 public class BaseApiTest {
-    protected String BLOCK_PAY_DE = System.getenv("OPENLEDGER_EU");
+    protected String NODE_URL = System.getenv("NODE_URL");
 
     protected SSLContext context;
     protected WebSocket mWebSocket;
@@ -27,7 +27,7 @@ public class BaseApiTest {
         // Set the custom SSL context.
         factory.setSSLContext(context);
 
-        mWebSocket = factory.createSocket(BLOCK_PAY_DE);
+        mWebSocket = factory.createSocket(NODE_URL);
     }
 
 }
