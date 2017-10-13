@@ -4,24 +4,30 @@ import com.google.common.primitives.UnsignedLong;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFactory;
+
+import org.bitcoinj.core.ECKey;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.net.ssl.SSLContext;
+
 import cy.agorise.graphenej.api.GetLimitOrders;
 import cy.agorise.graphenej.api.TransactionBroadcastSequence;
 import cy.agorise.graphenej.interfaces.WitnessResponseListener;
 import cy.agorise.graphenej.models.BaseResponse;
 import cy.agorise.graphenej.models.WitnessResponse;
 import cy.agorise.graphenej.objects.Memo;
-import cy.agorise.graphenej.operations.*;
+import cy.agorise.graphenej.operations.LimitOrderCancelOperation;
+import cy.agorise.graphenej.operations.LimitOrderCreateOperation;
+import cy.agorise.graphenej.operations.TransferOperation;
+import cy.agorise.graphenej.operations.TransferOperationBuilder;
 import cy.agorise.graphenej.test.NaiveSSLContext;
-import org.bitcoinj.core.ECKey;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import javax.net.ssl.SSLContext;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by nelson on 3/6/17.
@@ -138,7 +144,7 @@ public class TransactionTest {
         // Creating memo
         long nonce = 1;
         byte[] encryptedMessage = Memo.encryptMessage(sourcePrivateKey, to1, nonce, "another message");
-        Memo memo = new Memo(new Address(ECKey.fromPublicOnly(sourcePrivateKey.getPubKey())), new Address(to1.getKey()), nonce, encryptedMessage);
+        Memo memo = new Memo(new Address(ECKey.fromPublicOnly(sourcePrivateKey.getPubKey())), new Address(to1.getKey()), UnsignedLong.valueOf(nonce), encryptedMessage);
 
         // Creating operation 1
         TransferOperation transferOperation1 = new TransferOperationBuilder()

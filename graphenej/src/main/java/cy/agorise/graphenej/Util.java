@@ -1,7 +1,22 @@
 package cy.agorise.graphenej;
 
 import com.google.common.primitives.Bytes;
-import org.tukaani.xz.*;
+import com.google.common.primitives.UnsignedLong;
+
+import org.spongycastle.crypto.DataLengthException;
+import org.spongycastle.crypto.InvalidCipherTextException;
+import org.spongycastle.crypto.engines.AESFastEngine;
+import org.spongycastle.crypto.modes.CBCBlockCipher;
+import org.spongycastle.crypto.paddings.PaddedBufferedBlockCipher;
+import org.spongycastle.crypto.params.KeyParameter;
+import org.spongycastle.crypto.params.ParametersWithIV;
+import org.tukaani.xz.CorruptedInputException;
+import org.tukaani.xz.FinishableOutputStream;
+import org.tukaani.xz.LZMA2Options;
+import org.tukaani.xz.LZMAInputStream;
+import org.tukaani.xz.LZMAOutputStream;
+import org.tukaani.xz.XZInputStream;
+import org.tukaani.xz.XZOutputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -13,13 +28,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.spongycastle.crypto.DataLengthException;
-import org.spongycastle.crypto.InvalidCipherTextException;
-import org.spongycastle.crypto.engines.AESFastEngine;
-import org.spongycastle.crypto.modes.CBCBlockCipher;
-import org.spongycastle.crypto.paddings.PaddedBufferedBlockCipher;
-import org.spongycastle.crypto.params.KeyParameter;
-import org.spongycastle.crypto.params.ParametersWithIV;
 
 /**
  * Class used to encapsulate common utility methods
@@ -208,6 +216,15 @@ public class Util {
      */
     public static byte[] revertLong(Long input) {
         return ByteBuffer.allocate(Long.SIZE / 8).putLong(Long.reverseBytes(input)).array();
+    }
+
+    /**
+     * Same operation as in the revertInteger function, but with an UnsignedLong object as argument.
+     * @param input An UnsignedLong class instance
+     * @return The array of bytes that represent this value in the reverse format.
+     */
+    public static byte[] revertUnsignedLong(UnsignedLong input){
+        return ByteBuffer.allocate(Long.SIZE / 8).putLong(Long.reverseBytes(input.longValue())).array();
     }
 
     public static byte[] revertBytes(byte[] array){

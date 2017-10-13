@@ -1,19 +1,12 @@
 package cy.agorise.graphenej.objects;
 
 import com.google.common.primitives.Bytes;
+import com.google.common.primitives.UnsignedLong;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-
-import cy.agorise.graphenej.Address;
-import cy.agorise.graphenej.PublicKey;
-import cy.agorise.graphenej.Util;
-import cy.agorise.graphenej.errors.ChecksumException;
-import cy.agorise.graphenej.errors.MalformedAddressException;
-import cy.agorise.graphenej.interfaces.ByteSerializable;
-import cy.agorise.graphenej.interfaces.JsonSerializable;
 
 import org.bitcoinj.core.ECKey;
 import org.spongycastle.math.ec.ECPoint;
@@ -23,8 +16,17 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
+import cy.agorise.graphenej.Address;
+import cy.agorise.graphenej.PublicKey;
+import cy.agorise.graphenej.Util;
+import cy.agorise.graphenej.errors.ChecksumException;
+import cy.agorise.graphenej.errors.MalformedAddressException;
+import cy.agorise.graphenej.interfaces.ByteSerializable;
+import cy.agorise.graphenej.interfaces.JsonSerializable;
+
 /**
- * Created by nelson on 11/9/16.
+ * Class used to represent a memo data structure
+ * {@url https://bitshares.org/doxygen/structgraphene_1_1chain_1_1memo__data.html}
  */
 public class Memo implements ByteSerializable, JsonSerializable {
     public final static String TAG = "Memo";
@@ -35,7 +37,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
 
     private Address from;
     private Address to;
-    private long nonce;
+    private UnsignedLong nonce;
     private byte[] message;
     private String plaintextMessage;
 
@@ -66,7 +68,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
      * @param nonce: Nonce used in the encryption.
      * @param message: Message in ciphertext.
      */
-    public Memo(Address from, Address to, long nonce, byte[] message){
+    public Memo(Address from, Address to, UnsignedLong nonce, byte[] message){
         this.from = from;
         this.to = to;
         this.nonce = nonce;
@@ -89,7 +91,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
         return this.to;
     }
 
-    public long getNonce(){
+    public UnsignedLong getNonce(){
         return this.nonce;
     }
 
@@ -235,7 +237,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
                     new byte[]{(byte) this.message.length},
                     this.message);
         } else {
-            byte[] nonceBytes = Util.revertLong(nonce);
+            byte[] nonceBytes = Util.revertUnsignedLong(nonce);
 
             ECPoint senderPoint = ECKey.compressPoint(from.getPublicKey().getKey().getPubKeyPoint());
             PublicKey senderPublicKey = new PublicKey(ECKey.fromPublicOnly(senderPoint));
@@ -287,7 +289,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
             JsonObject jsonObject = json.getAsJsonObject();
             String fromAddress = jsonObject.get(KEY_FROM).getAsString();
             String toAddress = jsonObject.get(KEY_TO).getAsString();
-            long nonce = jsonObject.get(KEY_NONCE).getAsLong();
+            UnsignedLong nonce = UnsignedLong.valueOf(jsonObject.get(KEY_NONCE).getAsString());
             String msg = jsonObject.get(KEY_MESSAGE).getAsString();
 
             Memo memo = null;
@@ -295,6 +297,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
                 Address from = new Address(fromAddress);
                 Address to = new Address(toAddress);
                 byte[] message = Util.hexToBytes(msg);
+
                 memo = new Memo(from, to, nonce, message);
             }catch(MalformedAddressException e){
                 System.out.println("MalformedAddressException. Msg: "+e.getMessage());

@@ -1,14 +1,18 @@
 package cy.agorise.graphenej.objects;
 
+import com.google.common.primitives.UnsignedLong;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
+import org.bitcoinj.core.DumpedPrivateKey;
+import org.bitcoinj.core.ECKey;
+import org.junit.Before;
+import org.junit.Test;
+
 import cy.agorise.graphenej.Address;
 import cy.agorise.graphenej.PublicKey;
 import cy.agorise.graphenej.Util;
 import cy.agorise.graphenej.errors.ChecksumException;
-import org.bitcoinj.core.DumpedPrivateKey;
-import org.bitcoinj.core.ECKey;
-import org.junit.*;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -130,7 +134,7 @@ public class MemoTest {
     @Test
     public void shouldBeJsonObjectSerializable(){
         byte[] encrypted = Memo.encryptMessage(sourcePrivate, destinationAddress, 1, shortMessage);
-        Memo memo = new Memo(sourceAddress, destinationAddress, 1, encrypted);
+        Memo memo = new Memo(sourceAddress, destinationAddress, UnsignedLong.ONE, encrypted);
         JsonElement jsonObject = memo.toJsonObject();
         JsonObject reference = new JsonObject();
         reference.addProperty("from", "BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY");
@@ -144,7 +148,7 @@ public class MemoTest {
     public void shouldBeByteSerializable(){
         String byteReference = "0103d1fb8c7421db64d46fba7e36f428854ca06eff65698b293f37c7ffaa54e2c2b203aece7c31616c02fcc96b50d3397c0e8d33d6384655d477c300d9196c728a5ee20100000000000000104c81c2db6ebc61e3f9e0ead65c0559dd";
         byte[] encrypted = Memo.encryptMessage(sourcePrivate, destinationAddress, 1, shortMessage);
-        Memo memo = new Memo(sourceAddress, destinationAddress, 1, encrypted);
+        Memo memo = new Memo(sourceAddress, destinationAddress, UnsignedLong.ONE, encrypted);
         byte[] memoBytes = memo.toBytes();
         assertEquals("Memo instance should generate a valid byte array", byteReference, Util.bytesToHex(memoBytes));
     }
