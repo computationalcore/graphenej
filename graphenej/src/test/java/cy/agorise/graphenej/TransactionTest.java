@@ -144,7 +144,7 @@ public class TransactionTest {
         // Creating memo
         long nonce = 1;
         byte[] encryptedMessage = Memo.encryptMessage(sourcePrivateKey, to1, nonce, "another message");
-        Memo memo = new Memo(new Address(ECKey.fromPublicOnly(sourcePrivateKey.getPubKey())), new Address(to1.getKey()), UnsignedLong.valueOf(nonce), encryptedMessage);
+        Memo memo = new Memo(new Address(ECKey.fromPublicOnly(sourcePrivateKey.getPubKey())), new Address(to1.getKey()), nonce, encryptedMessage);
 
         // Creating operation 1
         TransferOperation transferOperation1 = new TransferOperationBuilder()

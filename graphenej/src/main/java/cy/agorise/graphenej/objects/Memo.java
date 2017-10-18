@@ -1,7 +1,6 @@
 package cy.agorise.graphenej.objects;
 
 import com.google.common.primitives.Bytes;
-import com.google.common.primitives.UnsignedLong;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -37,7 +36,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
 
     private Address from;
     private Address to;
-    private UnsignedLong nonce;
+    private long nonce;
     private byte[] message;
     private String plaintextMessage;
 
@@ -68,7 +67,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
      * @param nonce: Nonce used in the encryption.
      * @param message: Message in ciphertext.
      */
-    public Memo(Address from, Address to, UnsignedLong nonce, byte[] message){
+    public Memo(Address from, Address to, long nonce, byte[] message){
         this.from = from;
         this.to = to;
         this.nonce = nonce;
@@ -91,7 +90,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
         return this.to;
     }
 
-    public UnsignedLong getNonce(){
+    public long getNonce(){
         return this.nonce;
     }
 
@@ -237,7 +236,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
                     new byte[]{(byte) this.message.length},
                     this.message);
         } else {
-            byte[] nonceBytes = Util.revertUnsignedLong(nonce);
+            byte[] nonceBytes = Util.revertLong(nonce);
 
             ECPoint senderPoint = ECKey.compressPoint(from.getPublicKey().getKey().getPubKeyPoint());
             PublicKey senderPublicKey = new PublicKey(ECKey.fromPublicOnly(senderPoint));
@@ -273,7 +272,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
         }else{
             memoObject.addProperty(KEY_FROM, this.from.toString());
             memoObject.addProperty(KEY_TO, this.to.toString());
-            memoObject.addProperty(KEY_NONCE, String.format("%d", this.nonce));
+            memoObject.addProperty(KEY_NONCE, String.format("%x", this.nonce));
             memoObject.addProperty(KEY_MESSAGE, Util.bytesToHex(this.message));
         }
         return memoObject;
@@ -289,9 +288,8 @@ public class Memo implements ByteSerializable, JsonSerializable {
             JsonObject jsonObject = json.getAsJsonObject();
             String fromAddress = jsonObject.get(KEY_FROM).getAsString();
             String toAddress = jsonObject.get(KEY_TO).getAsString();
-            UnsignedLong nonce = UnsignedLong.valueOf(jsonObject.get(KEY_NONCE).getAsString());
+            long nonce = Long.parseLong(jsonObject.get(KEY_NONCE).getAsString(), 16);
             String msg = jsonObject.get(KEY_MESSAGE).getAsString();
-
             Memo memo = null;
             try{
                 Address from = new Address(fromAddress);

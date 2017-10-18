@@ -131,10 +131,11 @@ public class TransferOperation extends BaseOperation {
 
         @Override
         public JsonElement serialize(TransferOperation transfer, Type type, JsonSerializationContext jsonSerializationContext) {
-            JsonArray arrayRep = new JsonArray();
-            arrayRep.add(transfer.getId());
-            arrayRep.add(transfer.toJsonObject());
-            return arrayRep;
+//            JsonArray arrayRep = new JsonArray();
+//            arrayRep.add(transfer.getId());
+//            arrayRep.add(transfer.toJsonObject());
+//            return arrayRep;
+            return transfer.toJsonObject();
         }
     }
 
