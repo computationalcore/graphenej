@@ -11,6 +11,7 @@ import org.bitcoinj.core.ECKey;
 import org.spongycastle.math.ec.ECPoint;
 
 import java.lang.reflect.Type;
+import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -36,7 +37,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
 
     private Address from;
     private Address to;
-    private long nonce;
+    private BigInteger nonce;
     private byte[] message;
     private String plaintextMessage;
 
@@ -67,7 +68,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
      * @param nonce: Nonce used in the encryption.
      * @param message: Message in ciphertext.
      */
-    public Memo(Address from, Address to, long nonce, byte[] message){
+    public Memo(Address from, Address to, BigInteger nonce, byte[] message){
         this.from = from;
         this.to = to;
         this.nonce = nonce;
@@ -90,7 +91,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
         return this.to;
     }
 
-    public long getNonce(){
+    public BigInteger getNonce(){
         return this.nonce;
     }
 
@@ -113,15 +114,17 @@ public class Memo implements ByteSerializable, JsonSerializable {
      * @param message: Plaintext message.
      * @return: The encrypted version of the message.
      */
-    public static byte[] encryptMessage(ECKey privateKey, PublicKey publicKey, long nonce, String message){
+    public static byte[] encryptMessage(ECKey privateKey, PublicKey publicKey, BigInteger nonce, String message){
         byte[] encrypted = null;
         try {
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
             MessageDigest sha512 = MessageDigest.getInstance("SHA-512");
 
             // Getting nonce bytes
-            String stringNonce = String.format("%d", nonce);
-            byte[] nonceBytes = Arrays.copyOfRange(Util.hexlify(stringNonce), 0, stringNonce.length());
+            byte[] paddedNonceBytes = new byte[8];
+            byte[] originalNonceBytes = nonce.toByteArray();
+            System.arraycopy(originalNonceBytes, 0, paddedNonceBytes, 8 - originalNonceBytes.length, originalNonceBytes.length);
+//            byte[] nonceBytes = nonce.toByteArray();
 
             // Getting shared secret
             byte[] secret = publicKey.getKey().getPubKeyPoint().multiply(privateKey.getPrivKey()).normalize().getXCoord().getEncoded();
@@ -129,7 +132,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
             // SHA-512 of shared secret
             byte[] ss = sha512.digest(secret);
 
-            byte[] seed = Bytes.concat(nonceBytes, Util.hexlify(Util.bytesToHex(ss)));
+            byte[] seed = Bytes.concat(paddedNonceBytes, Util.hexlify(Util.bytesToHex(ss)));
 
             // Calculating checksum
             byte[] sha256Msg = sha256.digest(message.getBytes());
@@ -154,7 +157,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
      * @param message: Plaintext message.
      * @return: The encrypted version of the message.
      */
-    public static byte[] encryptMessage(ECKey privateKey, Address destinationAddress, long nonce, String message){
+    public static byte[] encryptMessage(ECKey privateKey, Address destinationAddress, BigInteger nonce, String message){
         return encryptMessage(privateKey, destinationAddress.getPublicKey(), nonce, message);
     }
 
@@ -168,15 +171,19 @@ public class Memo implements ByteSerializable, JsonSerializable {
      * @return: The plaintext version of the enrcrypted message.
      * @throws ChecksumException
      */
-    public static String decryptMessage(ECKey privateKey, PublicKey publicKey, long nonce, byte[] message) throws ChecksumException {
+    public static String decryptMessage(ECKey privateKey, PublicKey publicKey, BigInteger nonce, byte[] message) throws ChecksumException {
         String plaintext = "";
         try {
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
             MessageDigest sha512 = MessageDigest.getInstance("SHA-512");
 
             // Getting nonce bytes
-            String stringNonce = String.format("%d", nonce);
-            byte[] nonceBytes = Arrays.copyOfRange(Util.hexlify(stringNonce), 0, stringNonce.length());
+            byte[] paddedNonceBytes = new byte[8];
+            byte[] originalNonceBytes = nonce.toByteArray();
+            System.arraycopy(originalNonceBytes, 0, paddedNonceBytes, 8 - originalNonceBytes.length, originalNonceBytes.length);
+            System.out.println("Nonce Bytes length......: "+originalNonceBytes.length);
+            System.out.println("Templated Bytes.........: "+Util.bytesToHex(originalNonceBytes));
+            System.out.println("Nonce bytes.............: "+Util.bytesToHex(paddedNonceBytes));
 
             // Getting shared secret
             byte[] secret = publicKey.getKey().getPubKeyPoint().multiply(privateKey.getPrivKey()).normalize().getXCoord().getEncoded();
@@ -184,7 +191,8 @@ public class Memo implements ByteSerializable, JsonSerializable {
             // SHA-512 of shared secret
             byte[] ss = sha512.digest(secret);
 
-            byte[] seed = Bytes.concat(nonceBytes, Util.hexlify(Util.bytesToHex(ss)));
+            byte[] seed = Bytes.concat(paddedNonceBytes, Util.hexlify(Util.bytesToHex(ss)));
+            System.out.println("seed: "+Util.bytesToHex(seed));
 
             // Calculating checksum
             byte[] sha256Msg = sha256.digest(message);
@@ -215,7 +223,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
      * @return: The plaintext version of the enrcrypted message.
      * @throws ChecksumException
      */
-    public static String decryptMessage(ECKey privateKey, Address sourceAddress, long nonce, byte[] message) throws ChecksumException {
+    public static String decryptMessage(ECKey privateKey, Address sourceAddress, BigInteger nonce, byte[] message) throws ChecksumException {
         return decryptMessage(privateKey, sourceAddress.getPublicKey(), nonce, message);
     }
 
@@ -236,7 +244,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
                     new byte[]{(byte) this.message.length},
                     this.message);
         } else {
-            byte[] nonceBytes = Util.revertLong(nonce);
+            byte[] nonceBytes = Util.revertBytes(nonce.toByteArray());
 
             ECPoint senderPoint = ECKey.compressPoint(from.getPublicKey().getKey().getPubKeyPoint());
             PublicKey senderPublicKey = new PublicKey(ECKey.fromPublicOnly(senderPoint));
@@ -288,7 +296,13 @@ public class Memo implements ByteSerializable, JsonSerializable {
             JsonObject jsonObject = json.getAsJsonObject();
             String fromAddress = jsonObject.get(KEY_FROM).getAsString();
             String toAddress = jsonObject.get(KEY_TO).getAsString();
-            long nonce = Long.parseLong(jsonObject.get(KEY_NONCE).getAsString(), 16);
+            BigInteger nonce;
+            System.out.println("Trying to deserialize memo with nonce: <"+jsonObject.get(KEY_NONCE).getAsString()+">");
+            try{
+                nonce = new BigInteger(jsonObject.get(KEY_NONCE).getAsString(), 10);
+            }catch(NumberFormatException e){
+                nonce = new BigInteger(jsonObject.get(KEY_NONCE).getAsString(), 16);
+            }
             String msg = jsonObject.get(KEY_MESSAGE).getAsString();
             Memo memo = null;
             try{
