@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cy.agorise.graphenej.Address;
+import cy.agorise.graphenej.MemoTestAccounts;
 import cy.agorise.graphenej.PublicKey;
 import cy.agorise.graphenej.Util;
 import cy.agorise.graphenej.errors.ChecksumException;
@@ -29,26 +30,19 @@ public class MemoTest {
     private ECKey destinationPrivate;
     private Address destinationAddress;
 
-    private long nonce;
-    private String sourceWIF = System.getenv("SOURCE_WIF");
-    private String destinationWIF = System.getenv("DESTINATION_WIF");
-    private byte[] memoEncryptedEnvMessage;
-    //private String sourceWIF = "5J96pne45qWM1WpektoeazN6k9Mt93jQ7LyueRxFfEMTiy6yxjM";
-    //private String destinationWIF = "5HuGQT8qwHScBgD4XsGbQUmXQF18MrbzxaQDiGGXFNRrCtqgT5Q";
+    private String sourceWIF = MemoTestAccounts.Bilthon16.WIF;
+    private String destinationWIF = MemoTestAccounts.Bilthon7.WIF;
     private String shortMessage = "test";
     private String longerMessage = "testing now longer string with some special charaters é ç o ú á í Í mMno!!";
 
-    private byte[] shortEncryptedMessage = Util.hexToBytes("4c81c2db6ebc61e3f9e0ead65c0559dd");
-    private byte[] longerEncryptedMessage = Util.hexToBytes("1f8a08f1ff53dcefd48eeb052d26fba425f2a917f508ce61fc3d5696b10efa17");
+    private byte[] shortEncryptedMessage = Util.hexToBytes("93c398e05f2a36a535f82880032a062d");
+    private long shortEncryptedMessageNonce = 386471255144360L;
 
-    private String decodedMessage;
+    private byte[] longerEncryptedMessage = Util.hexToBytes("8ba8f5ed85ad9f7675bd30408a28d6f6ba138476d1e995dd61c01f0041ab25911e04d93fe4ce30e4f6c9a5134cceb67d653e140aa542da19ce2fc646bcde46e088da06a9327eaac79ffe8bc9d71d586195c04bb023995f18e66c9f9e5c6b0d7c");
+    private long longEncryptedMessageNonce = 386469162162343L;
 
     @Before
     public void setUp() throws Exception {
-        if(System.getenv("MEMO_MESSAGE") != null){
-            memoEncryptedEnvMessage = Util.hexToBytes(System.getenv("MEMO_MESSAGE"));
-        }
-
         if(sourceWIF != null && destinationWIF != null){
             //Source
             sourcePrivate = DumpedPrivateKey.fromBase58(null, sourceWIF).getKey();
@@ -60,35 +54,21 @@ public class MemoTest {
             publicKey = new PublicKey(ECKey.fromPublicOnly(destinationPrivate.getPubKey()));
             destinationAddress = new Address(publicKey.getKey());
         }
-
-        //memo.getNonce()
-        nonce = 5;
     }
 
     @Test
-    public void shouldMatchPredefinedChiphertext(){
-        byte[] encrypted = Memo.encryptMessage(sourcePrivate, destinationAddress, 1, shortMessage);
+    public void shouldMatchPredefinedCiphertext(){
+        byte[] encrypted = Memo.encryptMessage(sourcePrivate, destinationAddress, shortEncryptedMessageNonce, shortMessage);
         assertArrayEquals("Testing with short message and nonce 1", encrypted, shortEncryptedMessage);
 
-        byte[] encryptedLong = Memo.encryptMessage(sourcePrivate, destinationAddress, 1, longerMessage);
+        byte[] encryptedLong = Memo.encryptMessage(sourcePrivate, destinationAddress, longEncryptedMessageNonce, longerMessage);
         assertArrayEquals("Testing with longer message and nonce 1", encryptedLong, longerEncryptedMessage);
-    }
-
-    @Test
-    public void shouldDecryptEnvMessage(){
-        try {
-            String decrypted = Memo.decryptMessage(destinationPrivate, sourceAddress, nonce, memoEncryptedEnvMessage);
-            System.out.println("Short Decrypted Message: " + decrypted);
-            assertEquals("Decrypted message must be equal to original", decrypted, shortMessage);
-        } catch (ChecksumException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
     public void shouldDecryptShortMessage(){
         try {
-            String decrypted = Memo.decryptMessage(destinationPrivate, sourceAddress, nonce, shortEncryptedMessage);
+            String decrypted = Memo.decryptMessage(destinationPrivate, sourceAddress, shortEncryptedMessageNonce, shortEncryptedMessage);
             System.out.println("Short Decrypted Message: " + decrypted);
             assertEquals("Decrypted message must be equal to original", decrypted, shortMessage);
         } catch (ChecksumException e) {
@@ -99,7 +79,11 @@ public class MemoTest {
     @Test
     public void shouldDecryptLongerMessage(){
         try{
-            String longDecrypted = Memo.decryptMessage(destinationPrivate, sourceAddress, nonce, longerEncryptedMessage);
+            System.out.println("Source address: "+sourceAddress.toString());
+            System.out.println("Dest address..: "+new Address(ECKey.fromPublicOnly(ECKey.fromPrivate(destinationPrivate.getPrivKeyBytes()).getPubKey())).toString());
+            System.out.println("Nonce.........: "+longEncryptedMessageNonce);
+            System.out.println("Encrypted msg.: "+Util.bytesToHex(longerEncryptedMessage));
+            String longDecrypted = Memo.decryptMessage(destinationPrivate, sourceAddress, longEncryptedMessageNonce, longerEncryptedMessage);
             System.out.println("Long Decrypted Message: " + longDecrypted);
             assertEquals("The longer message must be equal to the original", longerMessage, longDecrypted);
         } catch (ChecksumException e) {
@@ -110,6 +94,7 @@ public class MemoTest {
     @Test
     public void shouldEncryptAndDecryptShortMessage(){
         try {
+            long nonce = 1;
             byte[] encrypted = Memo.encryptMessage(sourcePrivate, destinationAddress, nonce, shortMessage);
             String decrypted = Memo.decryptMessage(destinationPrivate, sourceAddress, nonce, encrypted);
             System.out.println("Short Decrypted Message: " + decrypted);
@@ -122,6 +107,7 @@ public class MemoTest {
     @Test
     public void shouldEncryptAndDecryptLongerMessage(){
         try{
+            long nonce = 1;
             byte[] longEncrypted = Memo.encryptMessage(sourcePrivate, destinationAddress, nonce, longerMessage);
             String longDecrypted = Memo.decryptMessage(destinationPrivate, sourceAddress, nonce, longEncrypted);
             System.out.println("Long Decrypted Message: " + longDecrypted);
@@ -133,22 +119,22 @@ public class MemoTest {
 
     @Test(expected = ChecksumException.class)
     public void shouldThrowException() throws ChecksumException {
-        byte[] corrupted = Memo.encryptMessage(sourcePrivate, destinationAddress, nonce, longerMessage);
+        byte[] corrupted = Memo.encryptMessage(sourcePrivate, destinationAddress, longEncryptedMessageNonce, longerMessage);
         corrupted[0] = 0;
-        String longDecrypted = Memo.decryptMessage(destinationPrivate, sourceAddress, nonce, corrupted);
+        String longDecrypted = Memo.decryptMessage(destinationPrivate, sourceAddress, longEncryptedMessageNonce, corrupted);
     }
 
     @Test
     public void shouldBeJsonObjectSerializable(){
-        byte[] encrypted = Memo.encryptMessage(sourcePrivate, destinationAddress, 1, shortMessage);
-        Memo memo = new Memo(sourceAddress, destinationAddress, 1, encrypted);
+        byte[] encrypted = Memo.encryptMessage(sourcePrivate, destinationAddress, shortEncryptedMessageNonce, shortMessage);
+        Memo memo = new Memo(sourceAddress, destinationAddress, shortEncryptedMessageNonce, encrypted);
         JsonElement jsonObject = memo.toJsonObject();
-        JsonObject reference = new JsonObject();
-        reference.addProperty("from", "BTS8RiFgs8HkcVPVobHLKEv6yL3iXcC9SWjbPVS15dDAXLG9GYhnY");
-        reference.addProperty("to", "BTS8ADjGaswhfFoxMGxqCdBtzhTBJsrGadCLoc9Ey5AGc8eoVZ5bV");
-        reference.addProperty("nonce", "1");
-        reference.addProperty("message", "4c81c2db6ebc61e3f9e0ead65c0559dd");
-        assertEquals("Memo instance should generate a valid JsonObject",jsonObject, reference);
+        JsonObject expected = new JsonObject();
+        expected.addProperty("from", new Address(ECKey.fromPublicOnly(ECKey.fromPrivate(DumpedPrivateKey.fromBase58(null, MemoTestAccounts.Bilthon16.WIF).getKey().getPrivKeyBytes()).getPubKey())).toString());
+        expected.addProperty("to", new Address(ECKey.fromPublicOnly(ECKey.fromPrivate(DumpedPrivateKey.fromBase58(null, MemoTestAccounts.Bilthon7.WIF).getKey().getPrivKeyBytes()).getPubKey())).toString());
+        expected.addProperty("nonce", String.format("%d", shortEncryptedMessageNonce));
+        expected.addProperty("message", "93c398e05f2a36a535f82880032a062d");
+        assertEquals("Memo instance should generate a valid JsonObject",expected, jsonObject);
     }
 
     @Test
