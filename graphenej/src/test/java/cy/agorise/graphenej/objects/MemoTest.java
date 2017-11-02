@@ -137,7 +137,7 @@ public class MemoTest {
 
     @Test
     public void shouldBeByteSerializable(){
-        String byteReference = "0103d1fb8c7421db64d46fba7e36f428854ca06eff65698b293f37c7ffaa54e2c2b203aece7c31616c02fcc96b50d3397c0e8d33d6384655d477c300d9196c728a5ee20100000000000000104c81c2db6ebc61e3f9e0ead65c0559dd";
+        String byteReference = "01029392096400eafe5f5ce7e2ab74134c3422fc49e5853bdeb298fb096258e26f6303d1fb8c7421db64d46fba7e36f428854ca06eff65698b293f37c7ffaa54e2c2b20100000000000000104ccbca3750fd2e531441de02b23fe6c7";
         byte[] encrypted = Memo.encryptMessage(sourcePrivate, destinationAddress, 1, shortMessage);
         Memo memo = new Memo(sourceAddress, destinationAddress, 1, encrypted);
         byte[] memoBytes = memo.toBytes();
