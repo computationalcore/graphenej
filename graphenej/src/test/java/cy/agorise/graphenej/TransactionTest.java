@@ -33,12 +33,11 @@ import cy.agorise.graphenej.test.NaiveSSLContext;
  * Created by nelson on 3/6/17.
  */
 public class TransactionTest {
-    private final String BILTHON_15_BRAIN_KEY = System.getenv("BILTHON_15_BRAINKEY");
-    private final String BILTHON_5_BRAIN_KEY = System.getenv("BILTHON_5_BRAINKEY");
-    private final String BILTHON_16_BRAIN_KEY = System.getenv("BILTHON_16_BRAINKEY");
+    private final String BILTHON_7_BRAIN_KEY = TestAccounts.Bilthon7.BRAINKEY;
+    private final String BILTHON_5_BRAIN_KEY = TestAccounts.Bilthon5.BRAINKEY;
+    private final String BILTHON_16_BRAIN_KEY = TestAccounts.Bilthon16.BRAINKEY;
 
-    private final String BLOCK_PAY_DE = System.getenv("BLOCKPAY_DE");
-    private final String BLOCK_PAY_FR = System.getenv("BLOCKPAY_FR");
+    private final String NODE_URL = "wss://eu.openledger.info/ws";
 
     // Transfer operation transaction
     private final Asset CORE_ASSET = new Asset("1.3.0");
@@ -52,6 +51,8 @@ public class TransactionTest {
     private AssetAmount amountToSell = new AssetAmount(UnsignedLong.valueOf(100000), CORE_ASSET);
     private AssetAmount minToReceive = new AssetAmount(UnsignedLong.valueOf(520), BIT_USD);
     private long expiration;
+
+    private final long FEE_AMOUNT = 21851;
 
     // Lock object
     private static final class Lock { }
@@ -106,7 +107,7 @@ public class TransactionTest {
             // Set the custom SSL context.
             factory.setSSLContext(context);
 
-            WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
+            WebSocket mWebSocket = factory.createSocket(NODE_URL);
 
             mWebSocket.addListener(new TransactionBroadcastSequence(transaction, CORE_ASSET, responseListener));
             mWebSocket.connect();
@@ -137,7 +138,7 @@ public class TransactionTest {
 
     @Test
     public void testTransferTransaction(){
-        ECKey sourcePrivateKey = new BrainKey(BILTHON_15_BRAIN_KEY, 0).getPrivateKey();
+        ECKey sourcePrivateKey = new BrainKey(BILTHON_7_BRAIN_KEY, 0).getPrivateKey();
         PublicKey to1 = new PublicKey(ECKey.fromPublicOnly(new BrainKey(BILTHON_5_BRAIN_KEY, 0).getPublicKey()));
         PublicKey to2 = new PublicKey(ECKey.fromPublicOnly(new BrainKey(BILTHON_16_BRAIN_KEY, 0).getPublicKey()));
 
@@ -151,7 +152,7 @@ public class TransactionTest {
                 .setTransferAmount(new AssetAmount(UnsignedLong.valueOf(1), CORE_ASSET))
                 .setSource(bilthon_15)
                 .setDestination(bilthon_5) // bilthon-5
-                .setFee(new AssetAmount(UnsignedLong.valueOf(264174), CORE_ASSET))
+                .setFee(new AssetAmount(UnsignedLong.valueOf(FEE_AMOUNT), CORE_ASSET))
                 .build();
 
         // Creating operation 2
@@ -159,7 +160,7 @@ public class TransactionTest {
                 .setTransferAmount(new AssetAmount(UnsignedLong.valueOf(1), CORE_ASSET))
                 .setSource(bilthon_15) // bilthon-15
                 .setDestination(bilthon_16) // bilthon-16
-                .setFee(new AssetAmount(UnsignedLong.valueOf(264174), CORE_ASSET))
+                .setFee(new AssetAmount(UnsignedLong.valueOf(FEE_AMOUNT), CORE_ASSET))
                 .build();
 
 
@@ -174,7 +175,7 @@ public class TransactionTest {
 
     @Test
     public void testLimitOrderCreateTransaction(){
-        ECKey privateKey = new BrainKey(BILTHON_15_BRAIN_KEY, 0).getPrivateKey();
+        ECKey privateKey = new BrainKey(BILTHON_7_BRAIN_KEY, 0).getPrivateKey();
         expiration = (System.currentTimeMillis() / 1000) + 60 * 60;
 
         // Creating limit order creation operation
@@ -210,7 +211,7 @@ public class TransactionTest {
     public void testLimitOrderCancelTransaction() throws NoSuchAlgorithmException, IOException, WebSocketException {
 
         // We first must create a limit order for this test
-        ECKey privateKey = new BrainKey(BILTHON_15_BRAIN_KEY, 0).getPrivateKey();
+        ECKey privateKey = new BrainKey(BILTHON_7_BRAIN_KEY, 0).getPrivateKey();
         expiration = (System.currentTimeMillis() / 1000) + 60 * 5;
 
         // Creating limit order creation operation
@@ -237,7 +238,7 @@ public class TransactionTest {
 
                     // Set the custom SSL context.
                     factory.setSSLContext(context);
-                    WebSocket mWebSocket = factory.createSocket(BLOCK_PAY_DE);
+                    WebSocket mWebSocket = factory.createSocket(NODE_URL);
 
                     // Requesting limit order to cancel (Task 2)
                     mWebSocket.addListener(new GetLimitOrders(base.getObjectId(), quote.getObjectId(), 100, new WitnessResponseListener() {
@@ -250,7 +251,7 @@ public class TransactionTest {
                                 if(order.getSeller().getObjectId().equals(bilthon_15.getObjectId())){
 
                                     // Instantiating a private key for bilthon-15
-                                    ECKey privateKey = new BrainKey(BILTHON_15_BRAIN_KEY, 0).getPrivateKey();
+                                    ECKey privateKey = new BrainKey(BILTHON_7_BRAIN_KEY, 0).getPrivateKey();
 
                                     // Creating limit order cancellation operation
                                     LimitOrderCancelOperation operation = new LimitOrderCancelOperation(order, bilthon_15);

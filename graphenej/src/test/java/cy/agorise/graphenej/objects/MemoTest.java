@@ -11,7 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cy.agorise.graphenej.Address;
-import cy.agorise.graphenej.MemoTestAccounts;
+import cy.agorise.graphenej.TestAccounts;
 import cy.agorise.graphenej.PublicKey;
 import cy.agorise.graphenej.Util;
 import cy.agorise.graphenej.errors.ChecksumException;
@@ -30,8 +30,8 @@ public class MemoTest {
     private ECKey destinationPrivate;
     private Address destinationAddress;
 
-    private String sourceWIF = MemoTestAccounts.Bilthon16.WIF;
-    private String destinationWIF = MemoTestAccounts.Bilthon7.WIF;
+    private String sourceWIF = TestAccounts.Bilthon16.WIF;
+    private String destinationWIF = TestAccounts.Bilthon7.WIF;
     private String shortMessage = "test";
     private String longerMessage = "testing now longer string with some special charaters é ç o ú á í Í mMno!!";
 
@@ -130,8 +130,8 @@ public class MemoTest {
         Memo memo = new Memo(sourceAddress, destinationAddress, shortEncryptedMessageNonce, encrypted);
         JsonElement jsonObject = memo.toJsonObject();
         JsonObject expected = new JsonObject();
-        expected.addProperty("from", new Address(ECKey.fromPublicOnly(ECKey.fromPrivate(DumpedPrivateKey.fromBase58(null, MemoTestAccounts.Bilthon16.WIF).getKey().getPrivKeyBytes()).getPubKey())).toString());
-        expected.addProperty("to", new Address(ECKey.fromPublicOnly(ECKey.fromPrivate(DumpedPrivateKey.fromBase58(null, MemoTestAccounts.Bilthon7.WIF).getKey().getPrivKeyBytes()).getPubKey())).toString());
+        expected.addProperty("from", new Address(ECKey.fromPublicOnly(ECKey.fromPrivate(DumpedPrivateKey.fromBase58(null, TestAccounts.Bilthon16.WIF).getKey().getPrivKeyBytes()).getPubKey())).toString());
+        expected.addProperty("to", new Address(ECKey.fromPublicOnly(ECKey.fromPrivate(DumpedPrivateKey.fromBase58(null, TestAccounts.Bilthon7.WIF).getKey().getPrivKeyBytes()).getPubKey())).toString());
         expected.addProperty("nonce", String.format("%d", shortEncryptedMessageNonce));
         expected.addProperty("message", "93c398e05f2a36a535f82880032a062d");
         assertEquals("Memo instance should generate a valid JsonObject",expected, jsonObject);
