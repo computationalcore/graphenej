@@ -1,0 +1,53 @@
+diff --git a/graphenej/src/test/java/cy/agorise/graphenej/objects/MemoTest.java b/graphenej/src/test/java/cy/agorise/graphenej/objects/MemoTest.java
+index fa787e0..288be8f 100644
+--- a/graphenej/src/test/java/cy/agorise/graphenej/objects/MemoTest.java
++++ b/graphenej/src/test/java/cy/agorise/graphenej/objects/MemoTest.java
+@@ -2,13 +2,16 @@ package cy.agorise.graphenej.objects;
+ 
+ import com.google.gson.JsonElement;
+ import com.google.gson.JsonObject;
++
++import org.bitcoinj.core.DumpedPrivateKey;
++import org.bitcoinj.core.ECKey;
++import org.junit.Before;
++import org.junit.Test;
++
+ import cy.agorise.graphenej.Address;
+ import cy.agorise.graphenej.PublicKey;
+ import cy.agorise.graphenej.Util;
+ import cy.agorise.graphenej.errors.ChecksumException;
+-import org.bitcoinj.core.DumpedPrivateKey;
+-import org.bitcoinj.core.ECKey;
+-import org.junit.*;
+ 
+ import static org.junit.Assert.assertArrayEquals;
+ import static org.junit.Assert.assertEquals;
+@@ -34,7 +37,7 @@ public class MemoTest {
+     private String longerMessage = "testing now longer string with some special charaters é ç o ú á í Í mMno!!";
+ 
+     private byte[] shortEncryptedMessage = Util.hexToBytes("4c81c2db6ebc61e3f9e0ead65c0559dd");
+-    private byte[] longerEncryptedMessage = Util.hexToBytes("1f8a08f1ff53dcefd48eeb052d26fba425f2a917f508ce61fc3d5696b10efa17");
++    private byte[] longerEncryptedMessage = Util.hexToBytes("8ba8f5ed85ad9f7675bd30408a28d6f6ba138476d1e995dd61c01f0041ab25911e04d93fe4ce30e4f6c9a5134cceb67d653e140aa542da19ce2fc646bcde46e088da06a9327eaac79ffe8bc9d71d586195c04bb023995f18e66c9f9e5c6b0d7c");
+ 
+     private String decodedMessage;
+ 
+@@ -51,7 +54,7 @@ public class MemoTest {
+         destinationAddress = new Address(publicKey.getKey());
+ 
+         //memo.getNonce()
+-        nonce = 5;
++        nonce = 386469162162343L;
+     }
+ 
+     @Test
+@@ -88,6 +91,10 @@ public class MemoTest {
+     @Test
+     public void shouldDecryptLongerMessage(){
+         try{
++            System.out.println("Source address: "+sourceAddress.toString());
++            System.out.println("Dest address..: "+new Address(ECKey.fromPublicOnly(ECKey.fromPrivate(destinationPrivate.getPrivKeyBytes()).getPubKey())).toString());
++            System.out.println("Nonce.........: "+nonce);
++            System.out.println("Encrypted msg.: "+Util.bytesToHex(longerEncryptedMessage));
+             String longDecrypted = Memo.decryptMessage(destinationPrivate, sourceAddress, nonce, longerEncryptedMessage);
+             System.out.println("Long Decrypted Message: " + longDecrypted);
+             assertEquals("The longer message must be equal to the original", longerMessage, longDecrypted);

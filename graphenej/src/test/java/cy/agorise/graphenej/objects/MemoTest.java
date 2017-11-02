@@ -43,17 +43,15 @@ public class MemoTest {
 
     @Before
     public void setUp() throws Exception {
-        if(sourceWIF != null && destinationWIF != null){
-            //Source
-            sourcePrivate = DumpedPrivateKey.fromBase58(null, sourceWIF).getKey();
-            PublicKey publicKey = new PublicKey(ECKey.fromPublicOnly(sourcePrivate.getPubKey()));
-            sourceAddress = new Address(publicKey.getKey());
+        //Source
+        sourcePrivate = DumpedPrivateKey.fromBase58(null, sourceWIF).getKey();
+        PublicKey publicKey = new PublicKey(ECKey.fromPublicOnly(sourcePrivate.getPubKey()));
+        sourceAddress = new Address(publicKey.getKey());
 
-            //Destination
-            destinationPrivate = DumpedPrivateKey.fromBase58(null, destinationWIF).getKey();
-            publicKey = new PublicKey(ECKey.fromPublicOnly(destinationPrivate.getPubKey()));
-            destinationAddress = new Address(publicKey.getKey());
-        }
+        //Destination
+        destinationPrivate = DumpedPrivateKey.fromBase58(null, destinationWIF).getKey();
+        publicKey = new PublicKey(ECKey.fromPublicOnly(destinationPrivate.getPubKey()));
+        destinationAddress = new Address(publicKey.getKey());
     }
 
     @Test
