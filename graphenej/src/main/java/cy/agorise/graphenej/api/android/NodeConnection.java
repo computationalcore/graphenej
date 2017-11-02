@@ -67,8 +67,7 @@ public class NodeConnection {
      * @param urlList: List of URLs of the nodes
      */
     public void addNodeUrls(List<String> urlList){
-        List<String> newList = new ArrayList<String>(mUrlList);
-        newList.addAll(urlList);
+        mUrlList.addAll(urlList);
     }
 
     /**
@@ -91,7 +90,7 @@ public class NodeConnection {
         @Override
         public void onError(BaseResponse.Error error) {
             System.out.println("NodeConnect Error. Msg: "+error);
-
+            mUrlIndex++;
             connect(mUser, mPassword, mSubscribe, mErrorListener);
         }
     };
@@ -114,18 +113,23 @@ public class NodeConnection {
      *                          about the failure of the desired broadcast operation.
      */
     public void connect(String user, String password, boolean subscribe, WitnessResponseListener errorListener) {
-        if(this.mUrlList.size() > 0){
-            mUser = user;
-            mPassword = password;
-            mSubscribe = subscribe;
-            System.out.println("Connecting to: "+ this.mUrlList.get(mUrlIndex));
-            mErrorListener = errorListener;
-            mThread = new WebsocketWorkerThread(this.mUrlList.get(mUrlIndex), mInternalErrorListener);
-            mUrlIndex = mUrlIndex + 1 % this.mUrlList.size();
+        if(mUrlList.size() > 0){
+            if(mUrlIndex < mUrlList.size()){
+                System.out.println("Connecting to: "+ this.mUrlList.get(mUrlIndex));
+                mUser = user;
+                mPassword = password;
+                mSubscribe = subscribe;
+                mErrorListener = errorListener;
+                mThread = new WebsocketWorkerThread(this.mUrlList.get(mUrlIndex), mInternalErrorListener);
 
-            mMessagesHub = new SubscriptionMessagesHub(user, password, subscribe, mInternalErrorListener);
-            mThread.addListener(mMessagesHub);
-            mThread.start();
+                mMessagesHub = new SubscriptionMessagesHub(user, password, subscribe, mInternalErrorListener);
+                mThread.addListener(mMessagesHub);
+                mThread.start();
+            }else{
+                errorListener.onError(new BaseResponse.Error("Can't connect, ran out of URLs!"));
+            }
+        }else{
+            errorListener.onError(new BaseResponse.Error("Can't connect, missing URL"));
         }
     }
 

@@ -63,6 +63,7 @@ public class WebsocketWorkerThread extends Thread {
      *                          about the failure of the connection.
      */
     public WebsocketWorkerThread(String url, NodeErrorListener errorListener){
+        mErrorListener = errorListener;
         try {
             WebSocketFactory factory = new WebSocketFactory().setConnectionTimeout(TIMEOUT);
 
@@ -74,13 +75,18 @@ public class WebsocketWorkerThread extends Thread {
             }
 
             mWebSocket = factory.createSocket(url);
-            mErrorListener = errorListener;
         } catch (IOException e) {
             System.out.println("IOException. Msg: "+e.getMessage());
+            mErrorListener.onError(new BaseResponse.Error(e.getMessage()));
         } catch(NullPointerException e){
             System.out.println("NullPointerException at WebsocketWorkerThreas. Msg: "+e.getMessage());
+            mErrorListener.onError(new BaseResponse.Error(e.getMessage()));
         } catch (NoSuchAlgorithmException e) {
             System.out.println("NoSuchAlgorithmException. Msg: "+e.getMessage());
+            mErrorListener.onError(new BaseResponse.Error(e.getMessage()));
+        } catch(IllegalArgumentException e){
+            System.out.println("IllegalArgumentException. Msg: "+e.getMessage());
+            mErrorListener.onError(new BaseResponse.Error(e.getMessage()));
         }
     }
 

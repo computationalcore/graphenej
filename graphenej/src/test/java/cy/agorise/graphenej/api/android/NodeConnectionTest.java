@@ -58,17 +58,20 @@ public class NodeConnectionTest {
     private String NODE_URL_3 = System.getenv("NODE_URL_3");
     private String NODE_URL_4 = System.getenv("NODE_URL_4");
     private String TEST_ACCOUNT_BRAIN_KEY = System.getenv("TEST_ACCOUNT_BRAIN_KEY");
-    private String ACCOUNT_ID_1 = System.getenv("ACCOUNT_ID_1");
-    private String ACCOUNT_ID_2 = System.getenv("ACCOUNT_ID_2");
-    private String ACCOUNT_NAME = System.getenv("ACCOUNT_NAME");
-    private long BlOCK_TEST_NUMBER = Long.parseLong(System.getenv("BlOCK_TEST_NUMBER"));
+    private String ACCOUNT_ID_1 = "1.2.140994";
+    private String ACCOUNT_ID_2 = "1.2.138632";
+    private String ACCOUNT_NAME = "bilthon-7";
+    private long BlOCK_TEST_NUMBER = 11000000;
     private Asset BTS = new Asset("1.3.0");
     private Asset BLOCKPAY = new Asset("1.3.1072");
     private Asset BITDOLAR = new Asset("1.3.121"); //USD Smartcoin
     private Asset BITEURO = new Asset("1.3.120"); //EUR Smartcoin
     private NodeConnection nodeConnection;
 
-    private TimerTask scheduleTask = new TimerTask() {
+    /**
+     * Sample task to be scheduled
+     */
+    private TimerTask getAccountsTask = new TimerTask() {
         @Override
         public void run() {
             System.out.println("Adding request here");
@@ -91,6 +94,9 @@ public class NodeConnectionTest {
         }
     };
 
+    /**
+     * Task that will release the worker thread, effectively terminating this test
+     */
     private TimerTask releaseTask = new TimerTask() {
         @Override
         public void run() {
@@ -103,12 +109,13 @@ public class NodeConnectionTest {
 
     @Test
     public void testNodeConnection(){
+        System.out.println("** Testing simple node connection **");
         nodeConnection = NodeConnection.getInstance();
         nodeConnection.addNodeUrl(NODE_URL_1);
         nodeConnection.connect("", "", true, mErrorListener);
 
         Timer timer = new Timer();
-        timer.schedule(scheduleTask, 5000);
+        timer.schedule(getAccountsTask, 5000);
         timer.schedule(releaseTask, 30000);
 
         try{
@@ -121,30 +128,29 @@ public class NodeConnectionTest {
         }
     }
 
-    @Test
     /**
      * Test for NodeConnection's addNodeUrl and addNodeUrls working together.
      *
-     * Need to setup the NODE_URL_(1 to 4) env to work. Some of the nodes may have invalid nodes
-     * websockets URL just to test the hop.
+     * Need to setup the NODE_URL_2 env to work. The first hard-coded URL is wrong and will
+     * fail. The NodeConnection instance should recover and try the next one in the list.
      *
      */
+    @Test
     public void testNodeHopFeature(){
+        System.out.println("** Testing node hopping **");
         nodeConnection = NodeConnection.getInstance();
-        //nodeConnection.addNodeUrl(NODE_URL_4);
+
         //Test adding a "sublist"
         ArrayList<String> urlList = new ArrayList<String>(){{
-            add(NODE_URL_3);
-            add(NODE_URL_3);
+            add("wss://eu.openledger.info/wrong");
+            add(NODE_URL_2);
         }};
-        //nodeConnection.addNodeUrls(urlList);
-        nodeConnection.addNodeUrl(NODE_URL_1);
+        nodeConnection.addNodeUrls(urlList);
 
         nodeConnection.connect("", "", true, mErrorListener);
 
         Timer timer = new Timer();
-        timer.schedule(scheduleTask, 5000);
-        timer.schedule(releaseTask, 30000);
+        timer.schedule(releaseTask, 15000);
 
         try{
             // Holding this thread while we get update notifications
