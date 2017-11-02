@@ -41,13 +41,13 @@ public class TransactionTest {
 
     // Transfer operation transaction
     private final Asset CORE_ASSET = new Asset("1.3.0");
-    private final UserAccount bilthon_15 = new UserAccount("1.2.143563");
+    private final UserAccount bilthon_7 = new UserAccount("1.2.140994");
     private final UserAccount bilthon_5 = new UserAccount("1.2.139313");
     private final UserAccount bilthon_16 = new UserAccount("1.2.143569");
 
     // Limit order create transaction
     private final Asset BIT_USD = new Asset("1.3.121");
-    private UserAccount seller = bilthon_15;
+    private UserAccount seller = bilthon_7;
     private AssetAmount amountToSell = new AssetAmount(UnsignedLong.valueOf(100000), CORE_ASSET);
     private AssetAmount minToReceive = new AssetAmount(UnsignedLong.valueOf(520), BIT_USD);
     private long expiration;
@@ -150,7 +150,7 @@ public class TransactionTest {
         // Creating operation 1
         TransferOperation transferOperation1 = new TransferOperationBuilder()
                 .setTransferAmount(new AssetAmount(UnsignedLong.valueOf(1), CORE_ASSET))
-                .setSource(bilthon_15)
+                .setSource(bilthon_7)
                 .setDestination(bilthon_5) // bilthon-5
                 .setFee(new AssetAmount(UnsignedLong.valueOf(FEE_AMOUNT), CORE_ASSET))
                 .build();
@@ -158,7 +158,7 @@ public class TransactionTest {
         // Creating operation 2
         TransferOperation transferOperation2 = new TransferOperationBuilder()
                 .setTransferAmount(new AssetAmount(UnsignedLong.valueOf(1), CORE_ASSET))
-                .setSource(bilthon_15) // bilthon-15
+                .setSource(bilthon_7) // bilthon-15
                 .setDestination(bilthon_16) // bilthon-16
                 .setFee(new AssetAmount(UnsignedLong.valueOf(FEE_AMOUNT), CORE_ASSET))
                 .build();
@@ -248,13 +248,13 @@ public class TransactionTest {
                             System.out.println("onSuccess.1");
                             List<LimitOrder> orders = (List<LimitOrder>) response.result;
                             for(LimitOrder order : orders){
-                                if(order.getSeller().getObjectId().equals(bilthon_15.getObjectId())){
+                                if(order.getSeller().getObjectId().equals(bilthon_7.getObjectId())){
 
                                     // Instantiating a private key for bilthon-15
                                     ECKey privateKey = new BrainKey(BILTHON_7_BRAIN_KEY, 0).getPrivateKey();
 
                                     // Creating limit order cancellation operation
-                                    LimitOrderCancelOperation operation = new LimitOrderCancelOperation(order, bilthon_15);
+                                    LimitOrderCancelOperation operation = new LimitOrderCancelOperation(order, bilthon_7);
                                     ArrayList<BaseOperation> operationList = new ArrayList<>();
                                     operationList.add(operation);
 
