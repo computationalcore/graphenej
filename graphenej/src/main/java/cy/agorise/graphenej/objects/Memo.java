@@ -294,13 +294,12 @@ public class Memo implements ByteSerializable, JsonSerializable {
             JsonObject jsonObject = json.getAsJsonObject();
             String fromAddress = jsonObject.get(KEY_FROM).getAsString();
             String toAddress = jsonObject.get(KEY_TO).getAsString();
-            BigInteger nonce;
-            System.out.println("Trying to deserialize memo with nonce: <"+jsonObject.get(KEY_NONCE).getAsString()+">");
-            try{
-                nonce = new BigInteger(jsonObject.get(KEY_NONCE).getAsString(), 10);
-            }catch(NumberFormatException e){
-                nonce = new BigInteger(jsonObject.get(KEY_NONCE).getAsString(), 16);
-            }
+
+            // Apparently the nonce is always coming from the full node as a string containing a
+            // decimal number. This is at odds with the result of the #toJsonObject method
+            // which encodes this data in hexadecimal.
+            BigInteger nonce = new BigInteger(jsonObject.get(KEY_NONCE).getAsString(), 10);
+
             String msg = jsonObject.get(KEY_MESSAGE).getAsString();
             Memo memo = null;
             try{

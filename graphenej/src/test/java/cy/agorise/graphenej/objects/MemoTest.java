@@ -132,7 +132,7 @@ public class MemoTest {
         JsonObject expected = new JsonObject();
         expected.addProperty("from", new Address(ECKey.fromPublicOnly(ECKey.fromPrivate(DumpedPrivateKey.fromBase58(null, TestAccounts.Bilthon16.WIF).getKey().getPrivKeyBytes()).getPubKey())).toString());
         expected.addProperty("to", new Address(ECKey.fromPublicOnly(ECKey.fromPrivate(DumpedPrivateKey.fromBase58(null, TestAccounts.Bilthon7.WIF).getKey().getPrivKeyBytes()).getPubKey())).toString());
-        expected.addProperty("nonce", String.format("%d", shortEncryptedMessageNonce));
+        expected.addProperty("nonce", String.format("%x", shortEncryptedMessageNonce));
         expected.addProperty("message", "93c398e05f2a36a535f82880032a062d");
         assertEquals("Memo instance should generate a valid JsonObject",expected, jsonObject);
     }
