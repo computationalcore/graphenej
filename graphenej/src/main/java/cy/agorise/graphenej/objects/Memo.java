@@ -121,10 +121,8 @@ public class Memo implements ByteSerializable, JsonSerializable {
             MessageDigest sha512 = MessageDigest.getInstance("SHA-512");
 
             // Getting nonce bytes
-            byte[] paddedNonceBytes = new byte[8];
-            byte[] originalNonceBytes = nonce.toByteArray();
-            System.arraycopy(originalNonceBytes, 0, paddedNonceBytes, 8 - originalNonceBytes.length, originalNonceBytes.length);
-//            byte[] nonceBytes = nonce.toByteArray();
+            String stringNonce = nonce.toString();
+            byte[] nonceBytes = Arrays.copyOfRange(Util.hexlify(stringNonce), 0, stringNonce.length());
 
             // Getting shared secret
             byte[] secret = publicKey.getKey().getPubKeyPoint().multiply(privateKey.getPrivKey()).normalize().getXCoord().getEncoded();
@@ -132,7 +130,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
             // SHA-512 of shared secret
             byte[] ss = sha512.digest(secret);
 
-            byte[] seed = Bytes.concat(paddedNonceBytes, Util.hexlify(Util.bytesToHex(ss)));
+            byte[] seed = Bytes.concat(nonceBytes, Util.hexlify(Util.bytesToHex(ss)));
 
             // Calculating checksum
             byte[] sha256Msg = sha256.digest(message.getBytes());
@@ -178,12 +176,8 @@ public class Memo implements ByteSerializable, JsonSerializable {
             MessageDigest sha512 = MessageDigest.getInstance("SHA-512");
 
             // Getting nonce bytes
-            byte[] paddedNonceBytes = new byte[8];
-            byte[] originalNonceBytes = nonce.toByteArray();
-            System.arraycopy(originalNonceBytes, 0, paddedNonceBytes, 8 - originalNonceBytes.length, originalNonceBytes.length);
-            System.out.println("Nonce Bytes length......: "+originalNonceBytes.length);
-            System.out.println("Templated Bytes.........: "+Util.bytesToHex(originalNonceBytes));
-            System.out.println("Nonce bytes.............: "+Util.bytesToHex(paddedNonceBytes));
+            String stringNonce = nonce.toString();
+            byte[] nonceBytes = Arrays.copyOfRange(Util.hexlify(stringNonce), 0, stringNonce.length());
 
             // Getting shared secret
             byte[] secret = publicKey.getKey().getPubKeyPoint().multiply(privateKey.getPrivKey()).normalize().getXCoord().getEncoded();
@@ -191,8 +185,7 @@ public class Memo implements ByteSerializable, JsonSerializable {
             // SHA-512 of shared secret
             byte[] ss = sha512.digest(secret);
 
-            byte[] seed = Bytes.concat(paddedNonceBytes, Util.hexlify(Util.bytesToHex(ss)));
-            System.out.println("seed: "+Util.bytesToHex(seed));
+            byte[] seed = Bytes.concat(nonceBytes, Util.hexlify(Util.bytesToHex(ss)));
 
             // Calculating checksum
             byte[] sha256Msg = sha256.digest(message);
@@ -244,7 +237,12 @@ public class Memo implements ByteSerializable, JsonSerializable {
                     new byte[]{(byte) this.message.length},
                     this.message);
         } else {
-            byte[] nonceBytes = Util.revertBytes(nonce.toByteArray());
+
+            byte[] paddedNonceBytes = new byte[8];
+            byte[] originalNonceBytes = nonce.toByteArray();
+            System.arraycopy(originalNonceBytes, 0, paddedNonceBytes, 8 - originalNonceBytes.length, originalNonceBytes.length);
+            byte[] nonceBytes = Util.revertBytes(paddedNonceBytes);
+//            byte[] nonceBytes = Util.revertBytes(nonce.toByteArray());
 
             ECPoint senderPoint = ECKey.compressPoint(from.getPublicKey().getKey().getPubKeyPoint());
             PublicKey senderPublicKey = new PublicKey(ECKey.fromPublicOnly(senderPoint));
