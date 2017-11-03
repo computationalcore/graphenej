@@ -7,7 +7,6 @@ import cy.agorise.graphenej.api.BaseGrapheneHandler;
 import cy.agorise.graphenej.api.SubscriptionMessagesHub;
 import cy.agorise.graphenej.errors.RepeatedRequestIdException;
 import cy.agorise.graphenej.interfaces.NodeErrorListener;
-import cy.agorise.graphenej.interfaces.WitnessResponseListener;
 import cy.agorise.graphenej.models.BaseResponse;
 
 /**
@@ -17,10 +16,12 @@ import cy.agorise.graphenej.models.BaseResponse;
  *  be used as a singleton under an application.
  */
 public class NodeConnection {
+
     /**
      * List of URLs of the nodes
      */
     private List<String> mUrlList;
+
     /**
      * Index of the current node from the list
      */
@@ -28,8 +29,11 @@ public class NodeConnection {
     private WebsocketWorkerThread mThread;
     private SubscriptionMessagesHub mMessagesHub;
     private long requestCounter = SubscriptionMessagesHub.MANUAL_SUBSCRIPTION_ID + 1;
-    private WitnessResponseListener mErrorListener;
+    private NodeErrorListener mErrorListener;
 
+    /**
+     * Singleton instance
+     */
     private static NodeConnection instance;
 
     private String mUser;
@@ -56,7 +60,6 @@ public class NodeConnection {
      * @param url: URL of the node
      */
     public void addNodeUrl(String url){
-        System.out.println("addNodeUrl: "+url);
         this.mUrlList.add(url);
     }
 
@@ -112,7 +115,7 @@ public class NodeConnection {
      *                          should be implemented by the party interested in being notified
      *                          about the failure of the desired broadcast operation.
      */
-    public void connect(String user, String password, boolean subscribe, WitnessResponseListener errorListener) {
+    public void connect(String user, String password, boolean subscribe, NodeErrorListener errorListener) {
         if(mUrlList.size() > 0){
             if(mUrlIndex < mUrlList.size()){
                 System.out.println("Connecting to: "+ this.mUrlList.get(mUrlIndex));

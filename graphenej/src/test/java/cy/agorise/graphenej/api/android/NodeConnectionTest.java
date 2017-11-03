@@ -42,6 +42,7 @@ import cy.agorise.graphenej.api.LookupAssetSymbols;
 import cy.agorise.graphenej.api.TransactionBroadcastSequence;
 import cy.agorise.graphenej.errors.MalformedAddressException;
 import cy.agorise.graphenej.errors.RepeatedRequestIdException;
+import cy.agorise.graphenej.interfaces.NodeErrorListener;
 import cy.agorise.graphenej.interfaces.WitnessResponseListener;
 import cy.agorise.graphenej.models.BaseResponse;
 import cy.agorise.graphenej.models.WitnessResponse;
@@ -995,13 +996,7 @@ public class NodeConnectionTest {
     }
 
 
-    private WitnessResponseListener mErrorListener = new WitnessResponseListener() {
-
-        @Override
-        public void onSuccess(WitnessResponse response) {
-            System.out.println("onSuccess");
-        }
-
+    private NodeErrorListener mErrorListener = new NodeErrorListener() {
         @Override
         public void onError(BaseResponse.Error error) {
             System.out.println("onError");
