@@ -1,5 +1,5 @@
-group 'de.bitsharesmunich'
-version '0.4.2-SNAPSHOT'
+group 'cy.agorise'
+version '0.4.5'
 
 apply plugin: 'com.android.library'
 apply from: 'maven-push.gradle'
@@ -21,8 +21,8 @@ android {
     defaultConfig {
         minSdkVersion 9
         targetSdkVersion 24
-        versionCode 4
-        versionName "0.4.2"
+        versionCode 8
+        versionName "0.4.6-alpha0"
 
         vectorDrawables.useSupportLibrary = true
     }
