@@ -67,8 +67,8 @@ public class NodeConnectionTest {
     private long BlOCK_TEST_NUMBER = 11000000;
     private Asset BTS = new Asset("1.3.0");
     private Asset BLOCKPAY = new Asset("1.3.1072");
-    private Asset BITDOLAR = new Asset("1.3.121"); //USD Smartcoin
-    private Asset BITEURO = new Asset("1.3.120"); //EUR Smartcoin
+    private Asset BITUSD = new Asset("1.3.121"); //USD Smartcoin
+    private Asset BITEUR = new Asset("1.3.120"); //EUR Smartcoin
     private NodeConnection nodeConnection;
 
     /**
@@ -198,17 +198,20 @@ public class NodeConnectionTest {
      */
     @Test
     public void testGetAccountBalancesRequest(){
+        System.out.println("** Testing GetAccountBalances request **");
+        int callbackCount = 0;
         nodeConnection = NodeConnection.getInstance();
         nodeConnection.addNodeUrl(NODE_URL_1);
         nodeConnection.connect("", "", false, mErrorListener);
 
         System.out.println("Adding GetAccountBalances here");
+        // Trying to get the balances of ACCOUNT_ID_1 for BTS, bitUSD & bitEUR
         try{
             UserAccount userAccount = new UserAccount(ACCOUNT_ID_1);
             ArrayList<Asset> assetList = new ArrayList<>();
             assetList.add(BTS);
-            assetList.add(BITDOLAR);
-            assetList.add(BITEURO);
+            assetList.add(BITUSD);
+            assetList.add(BITEUR);
             System.out.println("Test: Request to discrete asset list");
             nodeConnection.addRequestHandler(new GetAccountBalances(userAccount, assetList, false, new WitnessResponseListener(){
                 @Override
@@ -225,6 +228,7 @@ public class NodeConnectionTest {
             System.out.println("RepeatedRequestIdException. Msg: "+e.getMessage());
         }
 
+        // Trying to get the balances of ACCOUNT_ID_1 for all assets
         try{
             UserAccount userAccount = new UserAccount(ACCOUNT_ID_1);
             System.out.println("Test: Request to all account' assets balance");
@@ -243,6 +247,8 @@ public class NodeConnectionTest {
             System.out.println("RepeatedRequestIdException. Msg: "+e.getMessage());
         }
 
+        Timer timer = new Timer();
+        timer.schedule(releaseTask, 10000);
         try{
             // Holding this thread while we get update notifications
             synchronized (this){
@@ -618,7 +624,7 @@ public class NodeConnectionTest {
         ArrayList<String> objectList = new ArrayList<String>(){{
             add(BLOCKPAY.getBitassetId());
             add(BTS.getBitassetId());
-            add(BITEURO.getBitassetId());
+            add(BITEUR.getBitassetId());
         }};
 
         System.out.println("Adding GetObjects request");
@@ -916,7 +922,7 @@ public class NodeConnectionTest {
         ArrayList<Asset> assetList = new ArrayList<Asset>(){{
             add(BLOCKPAY);
             add(BTS);
-            add(BITEURO);
+            add(BITEUR);
         }};
 
         System.out.println("Adding LookupAssetSymbols request");
@@ -960,7 +966,7 @@ public class NodeConnectionTest {
         ArrayList<Asset> assetList = new ArrayList<Asset>(){{
             add(BLOCKPAY);
             add(BTS);
-            add(BITEURO);
+            add(BITEUR);
         }};
 
         ECKey privateKey = new BrainKey(TEST_ACCOUNT_BRAIN_KEY, 0).getPrivateKey();
