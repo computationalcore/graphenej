@@ -28,7 +28,7 @@ import cy.agorise.graphenej.models.WitnessResponse;
  */
 public class LookupAssetSymbols extends BaseGrapheneHandler {
     private WitnessResponseListener mListener;
-    private List<Asset> assets;
+    private List<? extends Object> assets;
 
     private boolean mOneTime;
 
@@ -42,7 +42,7 @@ public class LookupAssetSymbols extends BaseGrapheneHandler {
      *                      be implemented by the party interested in being notified about the
      *                      success/failure of the operation.
      */
-    public LookupAssetSymbols(List<Asset> assets, boolean oneTime, WitnessResponseListener listener){
+    public LookupAssetSymbols(List<? extends Object> assets, boolean oneTime, WitnessResponseListener listener){
         super(listener);
         this.assets = assets;
         this.mOneTime = oneTime;
@@ -57,7 +57,7 @@ public class LookupAssetSymbols extends BaseGrapheneHandler {
      *                      be implemented by the party interested in being notified about the
      *                      success/failure of the operation.
      */
-    public LookupAssetSymbols(List<Asset> assets, WitnessResponseListener listener){
+    public LookupAssetSymbols(List<Object> assets, WitnessResponseListener listener){
         this(assets, true, listener);
     }
 
@@ -65,8 +65,13 @@ public class LookupAssetSymbols extends BaseGrapheneHandler {
     public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
         ArrayList<Serializable> params = new ArrayList<>();
         ArrayList<String> subArray = new ArrayList<>();
-        for(Asset asset : this.assets){
-            subArray.add(asset.getObjectId());
+        for(int i = 0; i < assets.size(); i++){
+            Object obj = assets.get(i);
+            if(obj instanceof String){
+                subArray.add((String) obj);
+            }else{
+                subArray.add(((Asset) obj).getObjectId());
+            }
             params.add(subArray);
         }
         ApiCall loginCall = new ApiCall(0, RPC.CALL_LOOKUP_ASSET_SYMBOLS, params, RPC.VERSION, 0);
