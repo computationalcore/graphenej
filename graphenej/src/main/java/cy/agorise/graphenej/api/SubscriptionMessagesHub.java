@@ -140,17 +140,17 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
         String message = frame.getPayloadText();
         System.out.println("<< "+message);
         if(currentId == LOGIN_ID){
+            currentId = GET_DATABASE_ID;
             ArrayList<Serializable> emptyParams = new ArrayList<>();
             ApiCall getDatabaseId = new ApiCall(1, RPC.CALL_DATABASE, emptyParams, RPC.VERSION, currentId);
             websocket.sendText(getDatabaseId.toJsonString());
-            currentId++;
         }else if(currentId == GET_DATABASE_ID){
             Type ApiIdResponse = new TypeToken<WitnessResponse<Integer>>() {}.getType();
             WitnessResponse<Integer> witnessResponse = gson.fromJson(message, ApiIdResponse);
             databaseApiId = witnessResponse.result;
 
             subscribe();
-        } else if(currentId == SUBSCRIPTION_REQUEST){
+        } else if(currentId >= SUBSCRIPTION_REQUEST){
             List<SubscriptionListener> subscriptionListeners = mSubscriptionDeserializer.getSubscriptionListeners();
 
             if(!isUnsubscribing){
@@ -204,12 +204,12 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
     private void subscribe(){
         isUnsubscribing = false;
 
+        currentId++;
         ArrayList<Serializable> subscriptionParams = new ArrayList<>();
         subscriptionParams.add(String.format("%d", SUBSCRIPTION_NOTIFICATION));
         subscriptionParams.add(clearFilter);
-        ApiCall getDatabaseId = new ApiCall(databaseApiId, RPC.CALL_SET_SUBSCRIBE_CALLBACK, subscriptionParams, RPC.VERSION, SUBSCRIPTION_REQUEST);
+        ApiCall getDatabaseId = new ApiCall(databaseApiId, RPC.CALL_SET_SUBSCRIBE_CALLBACK, subscriptionParams, RPC.VERSION, currentId);
         mWebsocket.sendText(getDatabaseId.toJsonString());
-        currentId = SUBSCRIPTION_REQUEST;
     }
 
     /**
@@ -235,7 +235,8 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
         isSubscribed = false;
         isUnsubscribing = true;
 
-        ApiCall unsubscribe = new ApiCall(databaseApiId, RPC.CALL_CANCEL_ALL_SUBSCRIPTIONS, new ArrayList<Serializable>(), RPC.VERSION, SUBSCRIPTION_REQUEST);
+        currentId++;
+        ApiCall unsubscribe = new ApiCall(databaseApiId, RPC.CALL_CANCEL_ALL_SUBSCRIPTIONS, new ArrayList<Serializable>(), RPC.VERSION, currentId);
         mWebsocket.sendText(unsubscribe.toJsonString());
 
         // Clearing all subscription listeners

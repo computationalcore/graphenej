@@ -20,6 +20,7 @@ import cy.agorise.graphenej.models.SubscriptionResponse;
 
 /**
  * Class used to encapsulate all tests that relate to the {@see SubscriptionMessagesHub} class.
+ * This test requires setting up the NODE_URL environment variable
  */
 public class SubscriptionMessagesHubTest extends BaseApiTest {
 
