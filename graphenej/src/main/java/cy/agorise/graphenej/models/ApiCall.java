@@ -6,12 +6,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-import cy.agorise.graphenej.interfaces.JsonSerializable;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+
+import cy.agorise.graphenej.interfaces.JsonSerializable;
 
 /**
  * Class used to build a Graphene websocket API call.
@@ -28,9 +29,9 @@ public class ApiCall implements JsonSerializable {
     public String jsonrpc;
     public List<Serializable> params;
     public int apiId;
-    public int sequenceId;
+    public long sequenceId;
 
-    public ApiCall(int apiId, String methodToCall, List<Serializable> params, String jsonrpc, int sequenceId){
+    public ApiCall(int apiId, String methodToCall, List<Serializable> params, String jsonrpc, long sequenceId){
         this.apiId = apiId;
         this.method = "call";
         this.methodToCall = methodToCall;
@@ -39,7 +40,7 @@ public class ApiCall implements JsonSerializable {
         this.sequenceId = sequenceId;
     }
 
-    public ApiCall(int apiId, String method, String methodToCall, List<Serializable> params, String jsonrpc, int sequenceId){
+    public ApiCall(int apiId, String method, String methodToCall, List<Serializable> params, String jsonrpc, long sequenceId){
         this.apiId = apiId;
         this.method = method;
         this.methodToCall = methodToCall;
