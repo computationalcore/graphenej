@@ -5,6 +5,8 @@ import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFactory;
 
+import junit.framework.Assert;
+
 import org.bitcoinj.core.ECKey;
 import org.junit.Test;
 
@@ -118,6 +120,31 @@ public class NodeConnectionTest {
         Timer timer = new Timer();
         timer.schedule(getAccountsTask, 5000);
         timer.schedule(releaseTask, 30000);
+
+        try{
+            // Holding this thread while we get update notifications
+            synchronized (this){
+                wait();
+            }
+        }catch(InterruptedException e){
+            System.out.println("InterruptedException. Msg: "+e.getMessage());
+        }
+    }
+
+    @Test
+    public void testWrongUrl(){
+        System.out.println("** Testing simple node connection with wrong URL **");
+        nodeConnection = NodeConnection.getInstance();
+        nodeConnection.addNodeUrl("wss://non-existing-host");
+        nodeConnection.connect("", "", true, new NodeErrorListener() {
+            @Override
+            public void onError(BaseResponse.Error error) {
+                Assert.assertEquals("Can't connect, ran out of URLs!", error.message);
+            }
+        });
+
+        Timer timer = new Timer();
+        timer.schedule(releaseTask, 5000);
 
         try{
             // Holding this thread while we get update notifications
