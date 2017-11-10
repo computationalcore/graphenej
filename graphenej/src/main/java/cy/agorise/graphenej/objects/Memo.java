@@ -1,11 +1,14 @@
 package cy.agorise.graphenej.objects;
 
 import com.google.common.primitives.Bytes;
+import com.google.gson.Gson;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
 import org.bitcoinj.core.ECKey;
 import org.spongycastle.math.ec.ECPoint;
@@ -259,21 +262,36 @@ public class Memo implements ByteSerializable, JsonSerializable {
         }
     }
 
+    /**
+     * Converts a memo instance to a String.
+     *
+     * The nonce is always encoded as a decimal number in a string field.
+     * @return
+     */
     @Override
     public String toJsonString() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Gson gson = new Gson();
+        return gson.toJson(toJson(true));
     }
 
+    /**
+     * Converts a memo instance into a JsonElement.
+     *
+     * This method differs from the {@link #toJson(boolean)} in that here the nonce is encoded as an
+     * hexadecimal number, while in that one we offer the user to choose either the decimal or hexadecimal
+     * representations.
+     *
+     * @return JsonObject instance representing this memo
+     */
     @Override
     public JsonElement toJsonObject() {
         JsonObject memoObject = new JsonObject();
         if ((this.from == null) && (this.to == null)) {
-            // Public memo
-            // TODO: Add public memo support
-//            memoObject.addProperty(KEY_FROM, "");
-//            memoObject.addProperty(KEY_TO, "");
-//            memoObject.addProperty(KEY_NONCE, "");
-//            memoObject.addProperty(KEY_MESSAGE, Util.bytesToHex(this.message));
+            // TODO: Check if this public memo serialization is accepted
+            memoObject.addProperty(KEY_FROM, "");
+            memoObject.addProperty(KEY_TO, "");
+            memoObject.addProperty(KEY_NONCE, "");
+            memoObject.addProperty(KEY_MESSAGE, Util.bytesToHex(this.message));
             return null;
         }else{
             memoObject.addProperty(KEY_FROM, this.from.toString());
@@ -282,6 +300,22 @@ public class Memo implements ByteSerializable, JsonSerializable {
             memoObject.addProperty(KEY_MESSAGE, Util.bytesToHex(this.message));
         }
         return memoObject;
+    }
+
+    /**
+     * Method that converts the memo into a JsonObject.
+     *
+     * @param decimal If true, the nonce is saved as string containing a decimal number representation.
+     * @return JsonObject instance representing this memo
+     */
+    public JsonElement toJson(boolean decimal){
+        JsonElement jsonElement = toJsonObject();
+        if(decimal){
+            JsonObject jsonObject = (JsonObject) jsonElement;
+            BigInteger nonce = new BigInteger(jsonObject.get(KEY_NONCE).getAsString(), 16);
+            jsonObject.addProperty(KEY_NONCE, nonce.toString());
+        }
+        return jsonElement;
     }
 
     /**
@@ -314,4 +348,15 @@ public class Memo implements ByteSerializable, JsonSerializable {
             return memo;
         }
     }
-}
+
+    /**
+     * Class used to serialize a memo
+     */
+    public static class MemoSerializer implements JsonSerializer<Memo> {
+
+        @Override
+        public JsonElement serialize(Memo memo, Type typeOfSrc, JsonSerializationContext context) {
+            return memo.toJson(true);
+        }
+    }
+ }

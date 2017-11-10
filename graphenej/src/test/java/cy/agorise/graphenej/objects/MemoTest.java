@@ -13,8 +13,8 @@ import org.junit.Test;
 import java.math.BigInteger;
 
 import cy.agorise.graphenej.Address;
-import cy.agorise.graphenej.TestAccounts;
 import cy.agorise.graphenej.PublicKey;
+import cy.agorise.graphenej.TestAccounts;
 import cy.agorise.graphenej.Util;
 import cy.agorise.graphenej.errors.ChecksumException;
 
@@ -148,12 +148,17 @@ public class MemoTest {
 
     @Test
     public void shouldDeserializeFromString(){
-        String jsonMemo = "{\"from\": \"BTS6nB7gw1EawYXRofLvuivLsboVmh2inXroQgSQqYfAc5Bamk4Vq\",\"to\": \"BTS4xAQGg2ePLeDGZvQFpsh9CjMhQvRnVkPp6jPoE6neVPotRfZX9\",\"nonce\": \"8000000000000000\",\"message\": \"b9aeb7632f1f4281eedcf28a684828a42d02de71254fb88e13ddcb9a79adf51d9770c58d7e7efcdbb1515f1136c3be3e\"}";
-        GsonBuilder gsonBuilder = new GsonBuilder().registerTypeAdapter(Memo.class, new Memo.MemoDeserializer());
+        String jsonMemo = "{\"from\":\"BTS6nB7gw1EawYXRofLvuivLsboVmh2inXroQgSQqYfAc5Bamk4Vq\",\"to\":\"BTS4xAQGg2ePLeDGZvQFpsh9CjMhQvRnVkPp6jPoE6neVPotRfZX9\",\"nonce\":\"8000000000000000\",\"message\":\"b9aeb7632f1f4281eedcf28a684828a42d02de71254fb88e13ddcb9a79adf51d9770c58d7e7efcdbb1515f1136c3be3e\"}";
+        GsonBuilder gsonBuilder = new GsonBuilder()
+                .registerTypeAdapter(Memo.class, new Memo.MemoSerializer())
+                .registerTypeAdapter(Memo.class, new Memo.MemoDeserializer());
         Memo memo = gsonBuilder.create().fromJson(jsonMemo, Memo.class);
         Assert.assertEquals("Source address should match the serialized one", "BTS6nB7gw1EawYXRofLvuivLsboVmh2inXroQgSQqYfAc5Bamk4Vq", memo.getSource().toString());
         Assert.assertEquals("Destination address should match the serialized one", "BTS4xAQGg2ePLeDGZvQFpsh9CjMhQvRnVkPp6jPoE6neVPotRfZX9", memo.getDestination().toString());
         Assert.assertEquals("Nonce should match serialized one", new BigInteger("8000000000000000", 10), memo.getNonce());
         Assert.assertArrayEquals(Util.hexToBytes("b9aeb7632f1f4281eedcf28a684828a42d02de71254fb88e13ddcb9a79adf51d9770c58d7e7efcdbb1515f1136c3be3e"), memo.getByteMessage());
+
+        String json = gsonBuilder.create().toJson(memo);
+        Assert.assertEquals("Serialized memo matches the original one", jsonMemo, json);
     }
 }
