@@ -30,7 +30,7 @@ import cy.agorise.graphenej.models.WitnessResponse;
  *
  */
 public class GetAccountBalances extends BaseGrapheneHandler {
-    
+
     private UserAccount mUserAccount;
     private List<Asset> mAssetList;
     private boolean mOneTime;

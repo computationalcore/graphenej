@@ -1,5 +1,5 @@
 group 'cy.agorise'
-version '0.4.6-alpha1'
+version '0.4.6-alpha2'
 
 apply plugin: 'com.android.library'
 apply from: 'maven-push.gradle'
