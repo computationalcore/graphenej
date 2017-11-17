@@ -1,5 +1,6 @@
 package cy.agorise.graphenej;
 
+import com.google.common.primitives.UnsignedLong;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -28,7 +29,7 @@ public class LimitOrder extends GrapheneObject implements ByteSerializable {
 
     private String expiration;
     private UserAccount seller;
-    private long forSale;
+    private UnsignedLong forSale;
     private long deferredFee;
     private Price sellPrice;
 
@@ -52,11 +53,11 @@ public class LimitOrder extends GrapheneObject implements ByteSerializable {
         this.seller = seller;
     }
 
-    public long getForSale() {
+    public UnsignedLong getForSale() {
         return forSale;
     }
 
-    public void setForSale(long forSale) {
+    public void setForSale(UnsignedLong forSale) {
         this.forSale = forSale;
     }
 
@@ -127,7 +128,7 @@ public class LimitOrder extends GrapheneObject implements ByteSerializable {
             LimitOrder limitOrder = new LimitOrder(id);
             limitOrder.setExpiration(expiration);
             limitOrder.setSeller(seller);
-            limitOrder.setForSale(Long.parseLong(forSale));
+            limitOrder.setForSale(UnsignedLong.valueOf(forSale));
             limitOrder.setSellPrice(price);
             limitOrder.setDeferredFee(deferredFee);
             return limitOrder;
