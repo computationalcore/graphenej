@@ -17,6 +17,7 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import cy.agorise.graphenej.errors.IncompatibleOperation;
@@ -91,7 +92,9 @@ public class AssetAmount implements ByteSerializable, JsonSerializable {
      * @return The same AssetAmount instance, but with the changed amount value.
      */
     public AssetAmount multiplyBy(double factor, RoundingMode roundingMode){
-        this.amount = UnsignedLong.valueOf(DoubleMath.roundToLong(this.amount.longValue() * factor, roundingMode));
+        BigDecimal originalAmount = new BigDecimal(amount.bigIntegerValue());
+        BigDecimal decimalResult = originalAmount.multiply(new BigDecimal(factor));
+        this.amount = UnsignedLong.valueOf(DoubleMath.roundToBigInteger(decimalResult.doubleValue(), roundingMode));
         return this;
     }
 
@@ -111,7 +114,9 @@ public class AssetAmount implements ByteSerializable, JsonSerializable {
      * @return: The same AssetAMount instance, but with the divided amount value
      */
     public AssetAmount dividedBy(double divisor, RoundingMode roundingMode){
-        this.amount = UnsignedLong.valueOf(DoubleMath.roundToLong(this.amount.longValue() / divisor, roundingMode));
+        BigDecimal originalAmount = new BigDecimal(amount.bigIntegerValue());
+        BigDecimal decimalAmount = originalAmount.divide(new BigDecimal(divisor), 18, RoundingMode.HALF_UP);
+        this.amount = UnsignedLong.valueOf(DoubleMath.roundToBigInteger(decimalAmount.doubleValue(), roundingMode));
         return this;
     }
 
