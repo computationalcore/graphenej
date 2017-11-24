@@ -47,12 +47,12 @@ public class AssetAmountTest {
     @Test
     public void testDivision(){
         // Testing a simple division by a double
-        AssetAmount result = large.dividedBy(0.5);
+        AssetAmount result = large.divideBy(0.5);
         assertEquals(2000, result.getAmount().longValue());
 
         // Testing a division of a number that would normally give an overflow
         AssetAmount max = new AssetAmount(UnsignedLong.valueOf(Long.MAX_VALUE), testAsset);
-        AssetAmount overMaxLong = max.dividedBy(0.8);
+        AssetAmount overMaxLong = max.divideBy(0.8);
         assertEquals("11529215046068469760", overMaxLong.getAmount().toString());
 
         assertNotSame("Making sure the result and original references point to different instances",result, large);
