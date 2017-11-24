@@ -25,7 +25,7 @@ import cy.agorise.graphenej.interfaces.ByteSerializable;
 import cy.agorise.graphenej.interfaces.JsonSerializable;
 
 /**
- * Created by nelson on 11/7/16.
+ * Class used to represent a specific amount of a certain asset
  */
 public class AssetAmount implements ByteSerializable, JsonSerializable {
     /**
@@ -37,9 +37,23 @@ public class AssetAmount implements ByteSerializable, JsonSerializable {
     private UnsignedLong amount;
     private Asset asset;
 
+    /**
+     * Class constructor
+     * @param amount The amount
+     * @param asset The asset
+     */
     public AssetAmount(UnsignedLong amount, Asset asset){
         this.amount = amount;
         this.asset = asset;
+    }
+
+    /**
+     * Copy constructor
+     * @param assetAmount The other instance
+     */
+    public AssetAmount(AssetAmount assetAmount){
+        this.amount = UnsignedLong.valueOf(assetAmount.getAmount().toString());
+        this.asset = new Asset(assetAmount.getAsset());
     }
 
     /**
@@ -94,8 +108,8 @@ public class AssetAmount implements ByteSerializable, JsonSerializable {
     public AssetAmount multiplyBy(double factor, RoundingMode roundingMode){
         BigDecimal originalAmount = new BigDecimal(amount.bigIntegerValue());
         BigDecimal decimalResult = originalAmount.multiply(new BigDecimal(factor));
-        this.amount = UnsignedLong.valueOf(DoubleMath.roundToBigInteger(decimalResult.doubleValue(), roundingMode));
-        return this;
+        UnsignedLong resultingAmount = UnsignedLong.valueOf(DoubleMath.roundToBigInteger(decimalResult.doubleValue(), roundingMode));
+        return new AssetAmount(resultingAmount, new Asset(asset));
     }
 
     /**
@@ -113,11 +127,11 @@ public class AssetAmount implements ByteSerializable, JsonSerializable {
      * @param divisor: The divisor
      * @return: The same AssetAMount instance, but with the divided amount value
      */
-    public AssetAmount dividedBy(double divisor, RoundingMode roundingMode){
+    public AssetAmount divideBy(double divisor, RoundingMode roundingMode){
         BigDecimal originalAmount = new BigDecimal(amount.bigIntegerValue());
         BigDecimal decimalAmount = originalAmount.divide(new BigDecimal(divisor), 18, RoundingMode.HALF_UP);
-        this.amount = UnsignedLong.valueOf(DoubleMath.roundToBigInteger(decimalAmount.doubleValue(), roundingMode));
-        return this;
+        UnsignedLong resultingAmount = UnsignedLong.valueOf(DoubleMath.roundToBigInteger(decimalAmount.doubleValue(), roundingMode));
+        return new AssetAmount(resultingAmount, new Asset(asset));
     }
 
 
@@ -127,8 +141,8 @@ public class AssetAmount implements ByteSerializable, JsonSerializable {
      * @param divisor: The divisor
      * @return: The same AssetAMount instance, but with the divided amount value
      */
-    public AssetAmount dividedBy(double divisor){
-        return this.dividedBy(divisor, RoundingMode.HALF_DOWN);
+    public AssetAmount divideBy(double divisor){
+        return this.divideBy(divisor, RoundingMode.HALF_DOWN);
     }
 
     public void setAmount(UnsignedLong amount){
@@ -140,6 +154,10 @@ public class AssetAmount implements ByteSerializable, JsonSerializable {
     }
 
     public Asset getAsset(){ return this.asset; }
+
+    public void setAsset(Asset asset){
+        this.asset = asset;
+    }
 
     @Override
     public byte[] toBytes() {

@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
 
 /**
  * Testing AssetAmount operations.
@@ -39,6 +40,8 @@ public class AssetAmountTest {
         AssetAmount max = new AssetAmount(UnsignedLong.valueOf(Long.MAX_VALUE), testAsset);
         AssetAmount overMaxLong = max.multiplyBy(1.5);
         assertEquals("13835058055282163712", overMaxLong.getAmount().toString(10));
+
+        assertNotSame("Making sure the result and original references point to different instances",result, large);
     }
 
     @Test
@@ -51,5 +54,7 @@ public class AssetAmountTest {
         AssetAmount max = new AssetAmount(UnsignedLong.valueOf(Long.MAX_VALUE), testAsset);
         AssetAmount overMaxLong = max.dividedBy(0.8);
         assertEquals("11529215046068469760", overMaxLong.getAmount().toString());
+
+        assertNotSame("Making sure the result and original references point to different instances",result, large);
     }
 }

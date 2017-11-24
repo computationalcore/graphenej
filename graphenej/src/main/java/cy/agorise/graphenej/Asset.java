@@ -10,7 +10,7 @@ import com.google.gson.JsonParseException;
 import java.lang.reflect.Type;
 
 /**
- * Created by nelson on 11/9/16.
+ * Class used to represent a specific asset on the Graphene platform
  */
 public class Asset extends GrapheneObject {
     public final static String TAG = "Asset";
@@ -83,6 +83,22 @@ public class Asset extends GrapheneObject {
         this.issuer = issuer;
     }
 
+    /**
+     * Copy constructor
+     * @param asset Another asset instance
+     */
+    public Asset(Asset asset){
+        super(asset.getObjectId());
+        this.symbol = asset.getSymbol();
+        this.precision = asset.getPrecision();
+        this.issuer = asset.getIssuer();
+        this.description = asset.getDescription();
+        this.dynamic_asset_data_id = asset.getDynamicAssetDataId();
+        this.options = asset.getAssetOptions();
+        this.bitasset_data_id = asset.getBitassetId();
+        this.mAssetType = asset.getAssetType();
+    }
+
     public String getSymbol(){
         return this.symbol;
     }
@@ -109,6 +125,14 @@ public class Asset extends GrapheneObject {
 
     public String getDescription() {
         return description;
+    }
+
+    public String getDynamicAssetDataId() {
+        return dynamic_asset_data_id;
+    }
+
+    public void setDynamicAssetDataId(String dynamic_asset_data_id) {
+        this.dynamic_asset_data_id = dynamic_asset_data_id;
     }
 
     public void setAssetOptions(AssetOptions options){
