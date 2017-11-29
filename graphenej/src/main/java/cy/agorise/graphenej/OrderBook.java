@@ -93,7 +93,7 @@ public class OrderBook {
                 }else{
                     // This order consumes all our base asset
                     // obtained_quote = obtained_quote + (my base * order_base / order_quote)
-                    obtainedQuote = obtainedQuote.plus(myBase.times(orderBase.dividedBy(orderQuote)));
+                    obtainedQuote = obtainedQuote.plus(myBase.times(orderBase).dividedBy(orderQuote));
                     myBase = UnsignedLong.ZERO;
                 }
             }
