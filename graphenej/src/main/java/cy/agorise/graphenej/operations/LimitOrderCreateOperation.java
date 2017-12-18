@@ -208,7 +208,7 @@ public class LimitOrderCreateOperation extends BaseOperation {
                 JsonObject jsonObject = json.getAsJsonObject();
 
                 AssetAmount fee = context.deserialize(jsonObject.get(KEY_FEE), AssetAmount.class);
-                UserAccount seller = context.deserialize(jsonObject.get(KEY_SELLER), UserAccount.class);
+                UserAccount seller = new UserAccount(jsonObject.get(KEY_SELLER).getAsString());
                 AssetAmount amountToSell = context.deserialize(jsonObject.get(KEY_AMOUNT_TO_SELL), AssetAmount.class);
                 AssetAmount minToReceive = context.deserialize(jsonObject.get(KEY_MIN_TO_RECEIVE), AssetAmount.class);
                 String expiration = jsonObject.get(KEY_EXPIRATION).getAsString();
