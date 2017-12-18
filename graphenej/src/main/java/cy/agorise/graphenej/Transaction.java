@@ -11,6 +11,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
+import cy.agorise.graphenej.operations.CustomOperation;
 import org.bitcoinj.core.DumpedPrivateKey;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.Sha256Hash;
@@ -343,7 +344,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
                     } else if (operationId == OperationType.WORKER_CREATE_OPERATION.ordinal()) {
                         //TODO: Add operation deserialization support
                     } else if (operationId == OperationType.CUSTOM_OPERATION.ordinal()) {
-                        //TODO: Add operation deserialization support
+                        operation = context.deserialize(jsonOperation, CustomOperation.class);
                     } else if (operationId == OperationType.ASSERT_OPERATION.ordinal()) {
                         //TODO: Add operation deserialization support
                     } else if (operationId == OperationType.BALANCE_CLAIM_OPERATION.ordinal()) {

@@ -13,6 +13,8 @@ import cy.agorise.graphenej.models.ApiCall;
 import cy.agorise.graphenej.models.BaseResponse;
 import cy.agorise.graphenej.models.Block;
 import cy.agorise.graphenej.models.WitnessResponse;
+import cy.agorise.graphenej.operations.CustomOperation;
+import cy.agorise.graphenej.operations.LimitOrderCreateOperation;
 import cy.agorise.graphenej.operations.TransferOperation;
 
 import java.io.Serializable;
@@ -88,6 +90,8 @@ public class GetBlock extends BaseGrapheneHandler {
                 gson = new GsonBuilder()
                         .registerTypeAdapter(Transaction.class, new Transaction.TransactionDeserializer())
                         .registerTypeAdapter(TransferOperation.class, new TransferOperation.TransferDeserializer())
+                        .registerTypeAdapter(LimitOrderCreateOperation.class, new LimitOrderCreateOperation.LimitOrderCreateDeserializer())
+                        .registerTypeAdapter(CustomOperation.class, new CustomOperation.CustomOperationDeserializer())
                         .registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer())
                         .create();
                 WitnessResponse<Block> blockResponse = gson.fromJson(response, BlockResponse);
