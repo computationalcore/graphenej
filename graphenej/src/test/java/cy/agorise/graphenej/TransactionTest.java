@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.net.ssl.SSLContext;
@@ -24,6 +25,7 @@ import cy.agorise.graphenej.interfaces.WitnessResponseListener;
 import cy.agorise.graphenej.models.BaseResponse;
 import cy.agorise.graphenej.models.WitnessResponse;
 import cy.agorise.graphenej.objects.Memo;
+import cy.agorise.graphenej.operations.CustomOperation;
 import cy.agorise.graphenej.operations.LimitOrderCancelOperation;
 import cy.agorise.graphenej.operations.LimitOrderCreateOperation;
 import cy.agorise.graphenej.operations.TransferOperation;
@@ -52,6 +54,13 @@ public class TransactionTest {
     private AssetAmount amountToSell = new AssetAmount(UnsignedLong.valueOf(100000), CORE_ASSET);
     private AssetAmount minToReceive = new AssetAmount(UnsignedLong.valueOf(520), BIT_USD);
     private long expiration;
+
+    // Custom operation transaction
+    private final AssetAmount fee = new AssetAmount(UnsignedLong.valueOf(100000), CORE_ASSET);
+    private final UserAccount payer = bilthon_7;
+    private final Integer operationId = 61166;
+    private final List<UserAccount> requiredAuths = Collections.singletonList(payer);
+    private final String data = "some data";
 
     private final long FEE_AMOUNT = 21851;
 
@@ -321,5 +330,20 @@ public class TransactionTest {
                 }
             }
         }, lockObject);
+    }
+
+    @Test
+    public void testCustomOperationTransaction(){
+        ECKey sourcePrivateKey = new BrainKey(BILTHON_7_BRAIN_KEY, 0).getPrivateKey();
+
+        // Creating custom operation
+        CustomOperation customOperation = new CustomOperation(fee, payer, operationId, requiredAuths, data);
+
+        // Adding operation to the operation list
+        ArrayList<BaseOperation> operationList = new ArrayList<>();
+        operationList.add(customOperation);
+
+        // Broadcasting transaction
+        broadcastTransaction(sourcePrivateKey, operationList, listener, null);
     }
 }

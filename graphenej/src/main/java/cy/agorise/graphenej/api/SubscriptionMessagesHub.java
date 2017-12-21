@@ -26,6 +26,7 @@ import cy.agorise.graphenej.models.DynamicGlobalProperties;
 import cy.agorise.graphenej.models.SubscriptionResponse;
 import cy.agorise.graphenej.models.WitnessResponse;
 import cy.agorise.graphenej.objects.Memo;
+import cy.agorise.graphenej.operations.CustomOperation;
 import cy.agorise.graphenej.operations.LimitOrderCreateOperation;
 import cy.agorise.graphenej.operations.TransferOperation;
 
@@ -89,6 +90,7 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
         builder.registerTypeAdapter(Transaction.class, new Transaction.TransactionDeserializer());
         builder.registerTypeAdapter(TransferOperation.class, new TransferOperation.TransferDeserializer());
         builder.registerTypeAdapter(LimitOrderCreateOperation.class, new LimitOrderCreateOperation.LimitOrderCreateDeserializer());
+        builder.registerTypeAdapter(CustomOperation.class, new CustomOperation.CustomOperationDeserializer());
         builder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer());
         builder.registerTypeAdapter(UserAccount.class, new UserAccount.UserAccountSimpleDeserializer());
         builder.registerTypeAdapter(DynamicGlobalProperties.class, new DynamicGlobalProperties.DynamicGlobalPropertiesDeserializer());
