@@ -11,7 +11,6 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
-import cy.agorise.graphenej.operations.CustomOperation;
 import org.bitcoinj.core.DumpedPrivateKey;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.Sha256Hash;
@@ -27,6 +26,7 @@ import java.util.TimeZone;
 
 import cy.agorise.graphenej.interfaces.ByteSerializable;
 import cy.agorise.graphenej.interfaces.JsonSerializable;
+import cy.agorise.graphenej.operations.CustomOperation;
 import cy.agorise.graphenej.operations.LimitOrderCreateOperation;
 import cy.agorise.graphenej.operations.TransferOperation;
 
@@ -46,29 +46,43 @@ public class Transaction implements ByteSerializable, JsonSerializable {
     public static final String KEY_REF_BLOCK_NUM = "ref_block_num";
     public static final String KEY_REF_BLOCK_PREFIX = "ref_block_prefix";
 
+    // Using the bitshares mainnet chain id by default
+    private byte[] chainId = Util.hexToBytes(Chains.BITSHARES.CHAIN_ID);
     private ECKey privateKey;
     private BlockData blockData;
     private List<BaseOperation> operations;
     private Extensions extensions;
 
     /**
-     * Transaction constructor.
-     * @param privateKey : Instance of a ECKey containing the private key that will be used to sign this transaction.
-     * @param blockData : Block data containing important information used to sign a transaction.
-     * @param operationList : List of operations to include in the transaction.
+     * Transaction constructor
+     * @param chainId       The chain id
+     * @param privateKey    Private key used to sign this transaction
+     * @param blockData     Block data
+     * @param operations    List of operations contained in this transaction
      */
-    public Transaction(ECKey privateKey, BlockData blockData, List<BaseOperation> operationList){
+    public Transaction(byte[] chainId, ECKey privateKey, BlockData blockData, List<BaseOperation> operations){
+        this.chainId = chainId;
         this.privateKey = privateKey;
         this.blockData = blockData;
-        this.operations = operationList;
+        this.operations = operations;
         this.extensions = new Extensions();
     }
 
     /**
      * Transaction constructor.
-     * @param wif: The user's private key in the base58 format.
-     * @param block_data: Block data containing important information used to sign a transaction.
-     * @param operation_list: List of operations to include in the transaction.
+     * @param privateKey    Instance of a ECKey containing the private key that will be used to sign this transaction.
+     * @param blockData     Block data containing important information used to sign a transaction.
+     * @param operationList List of operations to include in the transaction.
+     */
+    public Transaction(ECKey privateKey, BlockData blockData, List<BaseOperation> operationList){
+        this(Util.hexToBytes(Chains.BITSHARES.CHAIN_ID), privateKey, blockData, operationList);
+    }
+
+    /**
+     * Transaction constructor.
+     * @param wif               The user's private key in the base58 format.
+     * @param block_data        Block data containing important information used to sign a transaction.
+     * @param operation_list    List of operations to include in the transaction.
      */
     public Transaction(String wif, BlockData block_data, List<BaseOperation> operation_list){
         this(DumpedPrivateKey.fromBase58(null, wif).getKey(), block_data, operation_list);
@@ -77,8 +91,8 @@ public class Transaction implements ByteSerializable, JsonSerializable {
     /**
      * Constructor used to build a Transaction object without a private key. This kind of object
      * is used to represent a transaction data that we don't intend to serialize and sign.
-     * @param blockData: Block data instance, containing information about the location of this transaction in the blockchain.
-     * @param operationList: The list of operations included in this transaction.
+     * @param blockData     Block data instance, containing information about the location of this transaction in the blockchain.
+     * @param operationList The list of operations included in this transaction.
      */
     public Transaction(BlockData blockData, List<BaseOperation> operationList){
         this.blockData = blockData;
@@ -87,7 +101,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
 
     /**
      * Updates the block data
-     * @param blockData: New block data
+     * @param blockData New block data
      */
     public void setBlockData(BlockData blockData){
         this.blockData = blockData;
@@ -162,6 +176,18 @@ public class Transaction implements ByteSerializable, JsonSerializable {
         return sigData;
     }
 
+    public void setChainId(String chainId){
+        this.chainId = Util.hexToBytes(chainId);
+    }
+
+    public void setChainId(byte[] chainId){
+        this.chainId = chainId;
+    }
+
+    public byte[] getChainId(){
+        return this.chainId;
+    }
+
     /**
      * Method that creates a serialized byte array with compact information about this transaction
      * that is needed for the creation of a signature.
@@ -170,7 +196,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
     public byte[] toBytes(){
         // Creating a List of Bytes and adding the first bytes from the chain apiId
         List<Byte> byteArray = new ArrayList<Byte>();
-        byteArray.addAll(Bytes.asList(Util.hexToBytes(Chains.BITSHARES.CHAIN_ID)));
+        byteArray.addAll(Bytes.asList(chainId));
 
         // Adding the block data
         byteArray.addAll(Bytes.asList(this.blockData.toBytes()));
