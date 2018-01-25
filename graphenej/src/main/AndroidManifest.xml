@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="de.bitsharesmunich.graphenej"
-          android:versionCode="5"
-          android:versionName="0.4.3" >
-
+          package="cy.agorise.graphenej"
+          android:versionCode="9"
+          android:versionName="0.4.6" >
     <uses-sdk android:minSdkVersion="1" />
     <application/>
 </manifest>
