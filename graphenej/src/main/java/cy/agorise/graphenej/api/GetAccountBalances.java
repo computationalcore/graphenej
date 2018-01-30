@@ -4,6 +4,13 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketFrame;
+
+import java.io.Serializable;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import cy.agorise.graphenej.Asset;
 import cy.agorise.graphenej.AssetAmount;
 import cy.agorise.graphenej.RPC;
@@ -11,12 +18,6 @@ import cy.agorise.graphenej.UserAccount;
 import cy.agorise.graphenej.interfaces.WitnessResponseListener;
 import cy.agorise.graphenej.models.ApiCall;
 import cy.agorise.graphenej.models.WitnessResponse;
-
-import java.io.Serializable;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  *  Class that implements get_account_balances request handler.
@@ -71,12 +72,14 @@ public class GetAccountBalances extends BaseGrapheneHandler {
     public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
         ArrayList<Serializable> params = new ArrayList<>();
         ArrayList<Serializable> assetList = new ArrayList<>();
-        for(Asset asset : mAssetList){
-            assetList.add(asset.getObjectId());
+        if(mAssetList != null){
+            for(Asset asset : mAssetList){
+                assetList.add(asset.getObjectId());
+            }
         }
         params.add(mUserAccount.getObjectId());
         params.add(assetList);
-        ApiCall apiCall = new ApiCall(0, RPC.GET_ACCOUNT_BALANCES, params, RPC.VERSION, 0);
+        ApiCall apiCall = new ApiCall(0, RPC.GET_ACCOUNT_BALANCES, params, RPC.VERSION, requestId);
         websocket.sendText(apiCall.toJsonString());
     }
 

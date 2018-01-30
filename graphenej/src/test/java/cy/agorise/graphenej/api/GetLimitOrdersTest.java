@@ -33,7 +33,9 @@ public class GetLimitOrdersTest extends BaseApiTest {
 
     @Before
     public void setup(){
-        System.out.println("Connecting to node: "+NODE_URL);
+        if(NODE_URL != null){
+            System.out.println("Connecting to node: "+NODE_URL);
+        }
     }
 
     @Test
@@ -114,50 +116,6 @@ public class GetLimitOrdersTest extends BaseApiTest {
                     Assert.assertTrue(operation != null);
                     double price = (double) Math.pow(10, base.getPrecision() - quote.getPrecision()) * operation.getMinToReceive().getAmount().longValue() / operation.getAmountToSell().getAmount().longValue();
                     System.out.println("price: "+price);
-                    synchronized (GetLimitOrdersTest.this){
-                        GetLimitOrdersTest.this.notifyAll();
-                    }
-                }
-
-                @Override
-                public void onError(BaseResponse.Error error) {
-                    System.out.println("onError. Msg: "+error.message);
-                    synchronized (GetLimitOrdersTest.this){
-                        GetLimitOrdersTest.this.notifyAll();
-                    }
-                }
-            }));
-
-            mWebSocket.connect();
-
-            synchronized (this){
-                wait();
-            }
-
-        } catch (WebSocketException e) {
-            System.out.println("WebSocketException. Msg: " + e.getMessage());
-        } catch (InterruptedException e) {
-            System.out.println("InterruptedException. Msg: "+e.getMessage());
-        }
-    }
-
-    @Test
-    public void testRequiredBase(){
-        try {
-            final Asset _quote = new Asset("1.3.121", "USD", 4);
-            final Asset _base = new Asset("1.3.0", "BTS", 5);
-            mWebSocket.addListener(new GetLimitOrders(_base.getObjectId(), _quote.getObjectId(), 100, new WitnessResponseListener() {
-                @Override
-                public void onSuccess(WitnessResponse response) {
-                    List<LimitOrder> orders = (List<LimitOrder>) response.result;
-                    OrderBook orderBook = new OrderBook(orders);
-
-                    long _totalQuote = 1000;
-                    long _totalBase = orderBook.calculateRequiredBase(new AssetAmount(UnsignedLong.valueOf(_totalQuote), _quote));
-
-                    System.out.println(String.format("Base: %s, Quote: %s", _base.getObjectId(), _quote.getObjectId()));
-                    System.out.println(String.format("_totalQuote: %d, _totalBase: %d", _totalQuote, _totalBase));
-
                     synchronized (GetLimitOrdersTest.this){
                         GetLimitOrdersTest.this.notifyAll();
                     }

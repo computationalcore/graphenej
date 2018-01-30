@@ -121,20 +121,20 @@ public class TransferOperation extends BaseOperation {
         jsonObject.addProperty(KEY_FROM, from.getObjectId());
         jsonObject.addProperty(KEY_TO, to.getObjectId());
         jsonObject.add(KEY_AMOUNT, amount.toJsonObject());
-        jsonObject.add(KEY_MEMO, memo.toJsonObject());
+        if(memo.getByteMessage() != null)
+            jsonObject.add(KEY_MEMO, memo.toJsonObject());
         jsonObject.add(KEY_EXTENSIONS, new JsonArray());
         array.add(jsonObject);
         return array;
     }
 
+    /**
+     * Serializer used to convert this object into a {@link JsonElement} instance
+     */
     public static class TransferSerializer implements JsonSerializer<TransferOperation> {
 
         @Override
         public JsonElement serialize(TransferOperation transfer, Type type, JsonSerializationContext jsonSerializationContext) {
-//            JsonArray arrayRep = new JsonArray();
-//            arrayRep.add(transfer.getId());
-//            arrayRep.add(transfer.toJsonObject());
-//            return arrayRep;
             return transfer.toJsonObject();
         }
     }
@@ -198,7 +198,6 @@ public class TransferOperation extends BaseOperation {
                     Memo memo = context.deserialize(jsonObject.get(KEY_MEMO), Memo.class);
                     transfer.setMemo(memo);
                 }
-
                 return transfer;
             }
         }

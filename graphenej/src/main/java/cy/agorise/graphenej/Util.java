@@ -26,6 +26,8 @@ import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -90,6 +92,26 @@ public class Util {
             buffer.put((byte) letter);
         }
         return buffer.array();
+    }
+
+    /**
+     * Serializes long value to a byte array.
+     * @param data Long value.
+     * @return Array of bytes.
+     */
+    public static byte[] serializeLongToBytes(long data) {
+        List<Byte> bytes = new LinkedList<>();
+        long value = data;
+        do {
+            byte b = (byte)(value & 0x7F);
+            value >>= 7;
+            if (value != 0) {
+                b |= 0x80;
+            }
+            bytes.add(b);
+        } while (value != 0);
+
+        return Bytes.toArray(bytes);
     }
 
     /**

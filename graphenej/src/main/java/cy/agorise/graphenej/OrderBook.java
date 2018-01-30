@@ -1,9 +1,7 @@
 package cy.agorise.graphenej;
 
-import com.google.common.math.DoubleMath;
 import com.google.common.primitives.UnsignedLong;
 
-import java.math.RoundingMode;
 import java.util.List;
 
 import cy.agorise.graphenej.operations.LimitOrderCreateOperation;
@@ -14,9 +12,9 @@ import cy.agorise.graphenej.operations.LimitOrderCreateOperation;
  * It also provides a handy method that should return the appropriate LimitOrderCreateOperation
  * object needed in case the user wants to perform market-priced operations.
  *
- * It is important to keep the order book updated, ideally by listening to blockchain events, and calling the 'update' method.
+ * It is important to keep the order book updated, ideally by listening to blockchain events,
+ * and calling the 'update' method.
  *
- * Created by nelson on 3/25/17.
  */
 public class OrderBook {
     private List<LimitOrder> limitOrders;
@@ -52,53 +50,86 @@ public class OrderBook {
      * @return An instance of the LimitOrderCreateOperation class, which is ready to be broadcasted.
      */
     public LimitOrderCreateOperation exchange(UserAccount seller, Asset myBaseAsset, AssetAmount myQuoteAmount, int expiration){
-        AssetAmount toSell = new AssetAmount(UnsignedLong.valueOf(calculateRequiredBase(myQuoteAmount)), myBaseAsset);
+        AssetAmount toSell = new AssetAmount(calculateRequiredBase(myQuoteAmount), myBaseAsset);
         AssetAmount toReceive = myQuoteAmount;
         LimitOrderCreateOperation buyOrder = new LimitOrderCreateOperation(seller, toSell, toReceive, expiration, true);
 
         return buyOrder;
     }
 
+    public LimitOrderCreateOperation exchange(UserAccount seller, AssetAmount baseAmount, Asset quoteAsset, int expiration){
+        AssetAmount minToReceive = new AssetAmount(calculateObtainedQuote(baseAmount), quoteAsset);
+        return new LimitOrderCreateOperation(seller, baseAmount, minToReceive, expiration, true);
+    }
+
     /**
-     * Given a specific amount of a desired asset, this method will calculate how much of the corresponding
-     * asset we need to offer to perform a successful transaction with the current order book.
-     * @param quoteAmount: The amount of the desired asset.
-     * @return: The minimum amount of the base asset that we need to give away
+     * Method that calculates the amount of an asset that we will obtain (the quote amount) if we trade
+     * a known fixed amount of the asset we already have (the base amount).
+     *
+     * @param baseAmount The fixed amount of the asset we have and want to sell
+     * @return The equivalent amount to receive in exchange of the base amount
      */
-    public long calculateRequiredBase(AssetAmount quoteAmount){
-        long totalBought = 0;
-        long totalSold = 0;
-        for(int i = 0; i < this.limitOrders.size() && totalBought < quoteAmount.getAmount().longValue(); i++){
-            LimitOrder order = this.limitOrders.get(i);
+    public UnsignedLong calculateObtainedQuote(AssetAmount baseAmount){
+        UnsignedLong myBase = baseAmount.getAmount();
+        UnsignedLong obtainedQuote = UnsignedLong.ZERO;
+        for(int i = 0; i < limitOrders.size() && myBase.compareTo(UnsignedLong.ZERO) > 0; i++){
+            LimitOrder order = limitOrders.get(i);
 
-            // If the base asset is the same as our quote asset, we have a match
-            if(order.getSellPrice().base.getAsset().getObjectId().equals(quoteAmount.getAsset().getObjectId())){
-                // My quote amount, is the order's base amount
-                long orderAmount = order.getForSale();
+            // Checking to make sure the order matches our needs
+            if(order.getSellPrice().quote.getAsset().equals(baseAmount.getAsset())){
+                UnsignedLong orderBase = order.getSellPrice().base.getAmount();
+                UnsignedLong orderQuote = order.getSellPrice().quote.getAmount();
+                UnsignedLong availableBase = order.getForSale();
 
-                // The amount of the quote asset we still need
-                long stillNeed = quoteAmount.getAmount().longValue() - totalBought;
-
-                // If the offered amount is greater than what we still need, we exchange just what we need
-                if(orderAmount >= stillNeed) {
-                    totalBought += stillNeed;
-                    double additionalRatio = (double) stillNeed / (double) order.getSellPrice().base.getAmount().longValue();
-                    double additionalAmount = order.getSellPrice().quote.getAmount().longValue() * additionalRatio;
-                    long longAdditional = DoubleMath.roundToLong(additionalAmount, RoundingMode.HALF_UP);
-                    totalSold += longAdditional;
+                UnsignedLong myQuote = UnsignedLong.valueOf((long)(myBase.times(orderBase).doubleValue() / (orderQuote.doubleValue())));
+                if(myQuote.compareTo(availableBase) > 0){
+                    // We consume this order entirely
+                    // myBase = myBase - (for_sale) * (order_quote / order_base)
+                    myBase = myBase.minus(availableBase.times(orderQuote).dividedBy(orderBase));
+                    // We need more than this order can offer us, but have to take in consideration how much there really is.
+                    // (order base / order quote) x (available order base / order base)
+                    UnsignedLong thisBatch = UnsignedLong.valueOf((long)(orderBase.times(availableBase).doubleValue() / orderQuote.times(orderBase).doubleValue()));
+                    obtainedQuote = obtainedQuote.plus(thisBatch);
                 }else{
-                    // If the offered amount is less than what we need, we exchange the whole order
-                    totalBought += orderAmount;
-
-                    // The amount specified in the price ratio is not always all for sale. So in order to calculate
-                    // the amount actually sold we have to do:
-                    // actually_sold = for_sale * quote / base
-                    double sellRatio = ((double) orderAmount) / ((double) order.getSellPrice().base.getAmount().longValue());
-
-                    totalSold += Math.floor(order.getSellPrice().quote.getAmount().doubleValue() * sellRatio);
+                    // This order consumes all our base asset
+                    // obtained_quote = obtained_quote + (my base * order_base / order_quote)
+                    obtainedQuote = obtainedQuote.plus(myBase.times(orderBase).dividedBy(orderQuote));
+                    myBase = UnsignedLong.ZERO;
                 }
             }
         }
-        return totalSold;
+        return obtainedQuote;
+    }
+
+    /**
+     * Method that calculates the amount of an asset that we will consume (the base amount) if we want to obtain
+     * a known fixed amount of another asset (the quote amount).
+     * @param quoteAmount The fixed amount of an asset that we want to obtain
+     * @return The amount of an asset we already have that will be consumed by the trade
+     */
+    public UnsignedLong calculateRequiredBase(AssetAmount quoteAmount){
+        UnsignedLong myQuote = quoteAmount.getAmount();
+        UnsignedLong obtainedBase = UnsignedLong.ZERO;
+        for(int i = 0; i < limitOrders.size() && myQuote.compareTo(UnsignedLong.ZERO) > 0; i++){
+            LimitOrder order = limitOrders.get(i);
+
+            // Checking to make sure the order matches our needs
+            if(order.getSellPrice().base.getAsset().equals(quoteAmount.getAsset())){
+                UnsignedLong orderBase = order.getSellPrice().base.getAmount();
+                UnsignedLong orderQuote = order.getSellPrice().quote.getAmount();
+                UnsignedLong forSale = order.getForSale();
+
+                if(forSale.compareTo(myQuote) > 0){
+                    // Found an order that fills our requirements
+                    obtainedBase = obtainedBase.plus(UnsignedLong.valueOf((long) (myQuote.doubleValue() * orderQuote.doubleValue() / orderBase.doubleValue())));
+                    myQuote = UnsignedLong.ZERO;
+                }else{
+                    // Found an order that partially fills our needs
+                    obtainedBase = obtainedBase.plus(UnsignedLong.valueOf((long) (forSale.doubleValue() * orderQuote.doubleValue() / orderBase.doubleValue())));
+                    myQuote = myQuote.minus(forSale);
+                }
+            }
+        }
+        return obtainedBase;
     }
 }

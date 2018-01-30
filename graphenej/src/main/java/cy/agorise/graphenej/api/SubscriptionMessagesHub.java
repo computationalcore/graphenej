@@ -26,6 +26,7 @@ import cy.agorise.graphenej.models.DynamicGlobalProperties;
 import cy.agorise.graphenej.models.SubscriptionResponse;
 import cy.agorise.graphenej.models.WitnessResponse;
 import cy.agorise.graphenej.objects.Memo;
+import cy.agorise.graphenej.operations.CustomOperation;
 import cy.agorise.graphenej.operations.LimitOrderCreateOperation;
 import cy.agorise.graphenej.operations.TransferOperation;
 
@@ -59,6 +60,7 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
     private int databaseApiId = -1;
     private int subscriptionCounter = 0;
     private HashMap<Long, BaseGrapheneHandler> mHandlerMap = new HashMap<>();
+    private List<BaseGrapheneHandler> pendingHandlerList = new ArrayList<>();
 
     // State variables
     private boolean isUnsubscribing;
@@ -88,6 +90,7 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
         builder.registerTypeAdapter(Transaction.class, new Transaction.TransactionDeserializer());
         builder.registerTypeAdapter(TransferOperation.class, new TransferOperation.TransferDeserializer());
         builder.registerTypeAdapter(LimitOrderCreateOperation.class, new LimitOrderCreateOperation.LimitOrderCreateDeserializer());
+        builder.registerTypeAdapter(CustomOperation.class, new CustomOperation.CustomOperationDeserializer());
         builder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer());
         builder.registerTypeAdapter(UserAccount.class, new UserAccount.UserAccountSimpleDeserializer());
         builder.registerTypeAdapter(DynamicGlobalProperties.class, new DynamicGlobalProperties.DynamicGlobalPropertiesDeserializer());
@@ -140,17 +143,29 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
         String message = frame.getPayloadText();
         System.out.println("<< "+message);
         if(currentId == LOGIN_ID){
+            currentId = GET_DATABASE_ID;
             ArrayList<Serializable> emptyParams = new ArrayList<>();
             ApiCall getDatabaseId = new ApiCall(1, RPC.CALL_DATABASE, emptyParams, RPC.VERSION, currentId);
             websocket.sendText(getDatabaseId.toJsonString());
-            currentId++;
         }else if(currentId == GET_DATABASE_ID){
             Type ApiIdResponse = new TypeToken<WitnessResponse<Integer>>() {}.getType();
             WitnessResponse<Integer> witnessResponse = gson.fromJson(message, ApiIdResponse);
             databaseApiId = witnessResponse.result;
 
-            subscribe();
-        } else if(currentId == SUBSCRIPTION_REQUEST){
+            // Subscribing only if the clearFilter parameter is true
+            if(clearFilter){
+                subscribe();
+            }
+
+            // Dispatching the onConnected event to every pending handler
+            if(pendingHandlerList.size() > 0){
+                for(BaseGrapheneHandler handler : pendingHandlerList){
+                    handler.setRequestId(++currentId);
+                    dispatchConnectionEvent(handler);
+                }
+                pendingHandlerList.clear();
+            }
+        } else if(currentId >= SUBSCRIPTION_REQUEST){
             List<SubscriptionListener> subscriptionListeners = mSubscriptionDeserializer.getSubscriptionListeners();
 
             if(!isUnsubscribing){
@@ -204,12 +219,12 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
     private void subscribe(){
         isUnsubscribing = false;
 
+        currentId++;
         ArrayList<Serializable> subscriptionParams = new ArrayList<>();
         subscriptionParams.add(String.format("%d", SUBSCRIPTION_NOTIFICATION));
         subscriptionParams.add(clearFilter);
-        ApiCall getDatabaseId = new ApiCall(databaseApiId, RPC.CALL_SET_SUBSCRIBE_CALLBACK, subscriptionParams, RPC.VERSION, SUBSCRIPTION_REQUEST);
+        ApiCall getDatabaseId = new ApiCall(databaseApiId, RPC.CALL_SET_SUBSCRIBE_CALLBACK, subscriptionParams, RPC.VERSION, currentId);
         mWebsocket.sendText(getDatabaseId.toJsonString());
-        currentId = SUBSCRIPTION_REQUEST;
     }
 
     /**
@@ -235,7 +250,8 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
         isSubscribed = false;
         isUnsubscribing = true;
 
-        ApiCall unsubscribe = new ApiCall(databaseApiId, RPC.CALL_CANCEL_ALL_SUBSCRIPTIONS, new ArrayList<Serializable>(), RPC.VERSION, SUBSCRIPTION_REQUEST);
+        currentId++;
+        ApiCall unsubscribe = new ApiCall(databaseApiId, RPC.CALL_CANCEL_ALL_SUBSCRIPTIONS, new ArrayList<Serializable>(), RPC.VERSION, currentId);
         mWebsocket.sendText(unsubscribe.toJsonString());
 
         // Clearing all subscription listeners
@@ -263,13 +279,26 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
         subscriptionCounter = 0;
     }
 
-    public void addRequestHandler(BaseGrapheneHandler handler) throws RepeatedRequestIdException {
-        if(mHandlerMap.get(handler.getRequestId()) != null){
-            throw new RepeatedRequestIdException("Already registered handler with id: "+handler.getRequestId());
+    /**
+     * Adds a handler either to the map of handlers or to a list of pending ones
+     * @param handler The handler of a given request
+     * @throws RepeatedRequestIdException
+     */
+    public void addRequestHandler(BaseGrapheneHandler handler) {
+        if(mWebsocket != null && currentId > SUBSCRIPTION_REQUEST){
+            handler.setRequestId(++currentId);
+            mHandlerMap.put(handler.getRequestId(), handler);
+            dispatchConnectionEvent(handler);
+        }else{
+            pendingHandlerList.add(handler);
         }
+    }
 
-        mHandlerMap.put(handler.getRequestId(), handler);
-
+    /**
+     * Informing a handler that we have a connection with the full node.
+     * @param handler Handler that should be notified.
+     */
+    private void dispatchConnectionEvent(BaseGrapheneHandler handler){
         try {
             // Artificially calling the 'onConnected' method of the handler.
             // The underlying websocket was already connected, but from the WebSocketAdapter
@@ -278,6 +307,13 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
         } catch (Exception e) {
             System.out.println("Exception. Msg: "+e.getMessage());
             System.out.println("Exception type: "+e);
+            for(StackTraceElement el : e.getStackTrace()){
+                System.out.println(String.format("at %s.%s(%s:%s)",
+                        el.getClassName(),
+                        el.getMethodName(),
+                        el.getFileName(),
+                        el.getLineNumber()));
+            }
         }
     }
 }
