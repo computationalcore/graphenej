@@ -61,6 +61,7 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
     private int subscriptionCounter = 0;
     private HashMap<Long, BaseGrapheneHandler> mHandlerMap = new HashMap<>();
     private List<BaseGrapheneHandler> pendingHandlerList = new ArrayList<>();
+    private boolean printLogs;
 
     // State variables
     private boolean isUnsubscribing;
@@ -141,7 +142,7 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
     @Override
     public void onTextFrame(WebSocket websocket, WebSocketFrame frame) throws Exception {
         String message = frame.getPayloadText();
-        System.out.println("<< "+message);
+        if(printLogs) System.out.println("<< "+message);
         if(currentId == LOGIN_ID){
             currentId = GET_DATABASE_ID;
             ArrayList<Serializable> emptyParams = new ArrayList<>();
@@ -315,5 +316,13 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
                         el.getLineNumber()));
             }
         }
+    }
+
+    public void setPrintLogs(boolean printLogs){
+        this.printLogs = printLogs;
+    }
+
+    public boolean isPrintLogs(){
+        return this.printLogs;
     }
 }
