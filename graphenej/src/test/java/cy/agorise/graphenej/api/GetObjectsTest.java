@@ -11,6 +11,7 @@ import java.util.List;
 
 import cy.agorise.graphenej.Asset;
 import cy.agorise.graphenej.GrapheneObject;
+import cy.agorise.graphenej.Price;
 import cy.agorise.graphenej.UserAccount;
 import cy.agorise.graphenej.interfaces.WitnessResponseListener;
 import cy.agorise.graphenej.models.BaseResponse;
@@ -26,7 +27,7 @@ public class GetObjectsTest extends BaseApiTest{
     private final Asset asset = new Asset("1.3.0", "BTS", 5);
     private final UserAccount account = new UserAccount("1.2.116354");
     private final UserAccount bilthon_25 = new UserAccount("1.2.151069");
-    private final String bitAssetId = "2.4.13";
+    private final String[] bitAssetIds = new String[]{"2.4.21", "2.4.83"};
 
     @Test
     public void testGetAsset(){
@@ -112,20 +113,38 @@ public class GetObjectsTest extends BaseApiTest{
     public void testBitAssetData(){
         try{
             ArrayList<String> ids = new ArrayList<>();
-            ids.add(bitAssetId);
+            for(String bitAssetId : bitAssetIds){
+                ids.add(bitAssetId);
+            }
             mWebSocket.addListener(new GetObjects(ids, new WitnessResponseListener() {
 
                 @Override
                 public void onSuccess(WitnessResponse response) {
                     System.out.println("onSuccess");
-                    List<GrapheneObject> list = (List<GrapheneObject>) response.result;
-                    BitAssetData bitAssetData = (BitAssetData) list.get(0);
-                    System.out.println("feed time: " + bitAssetData.current_feed_publication_time);
+                    List<BitAssetData> list = (List<BitAssetData>) response.result;
+                    BitAssetData bitAssetData1 = list.get(0);
+                    BitAssetData bitAssetData2 = list.get(1);
+
+                    Price price1 = bitAssetData1.getCurrentFeed().getSettlementPrice();
+                    Price price2 = bitAssetData2.getCurrentFeed().getSettlementPrice();
+
+                    System.out.println("Bitasset data 1");
+                    System.out.println("Price 1: "+price1.toString());
+
+                    System.out.println("Bitasset data 2");
+                    System.out.println("Price 1: "+price2.toString());
+
+                    synchronized (GetObjectsTest.this){
+                        GetObjectsTest.this.notifyAll();
+                    }
                 }
 
                 @Override
                 public void onError(BaseResponse.Error error) {
                     System.out.println("onError");
+                    synchronized (GetObjectsTest.this){
+                        GetObjectsTest.this.notifyAll();
+                    }
                 }
             }));
 

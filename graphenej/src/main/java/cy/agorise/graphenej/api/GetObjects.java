@@ -24,7 +24,9 @@ import cy.agorise.graphenej.RPC;
 import cy.agorise.graphenej.UserAccount;
 import cy.agorise.graphenej.interfaces.WitnessResponseListener;
 import cy.agorise.graphenej.models.ApiCall;
+import cy.agorise.graphenej.models.AssetFeed;
 import cy.agorise.graphenej.models.BitAssetData;
+import cy.agorise.graphenej.models.ReportedAssetFeed;
 import cy.agorise.graphenej.models.WitnessResponse;
 
 /**
@@ -91,6 +93,8 @@ public class GetObjects extends BaseGrapheneHandler {
         String response = frame.getPayloadText();
         GsonBuilder gsonBuilder = new GsonBuilder();
 
+        gsonBuilder.registerTypeAdapter(AssetFeed.class, new AssetFeed.AssetFeedDeserializer());
+        gsonBuilder.registerTypeAdapter(ReportedAssetFeed.class, new ReportedAssetFeed.ReportedAssetFeedDeserializer());
         gsonBuilder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer());
         gsonBuilder.registerTypeAdapter(Asset.class, new Asset.AssetDeserializer());
         gsonBuilder.registerTypeAdapter(UserAccount.class, new UserAccount.UserAccountFullDeserializer());
@@ -117,8 +121,9 @@ public class GetObjects extends BaseGrapheneHandler {
                 case ASSET_BITASSET_DATA:
                     Type BitAssetDataType = new TypeToken<WitnessResponse<List<BitAssetData>>>(){}.getType();
                     WitnessResponse<List<BitAssetData>> witnessResponse = gsonBuilder.create().fromJson(response, BitAssetDataType);
-                    BitAssetData bitAssetData = witnessResponse.result.get(0);
-                    parsedResult.add(bitAssetData);
+                    for(BitAssetData bitAssetData : witnessResponse.result){
+                        parsedResult.add(bitAssetData);
+                    }
             }
         }
 

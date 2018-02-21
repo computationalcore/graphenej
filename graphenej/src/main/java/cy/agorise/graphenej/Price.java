@@ -18,4 +18,13 @@ package cy.agorise.graphenej;
 public class Price {
     public AssetAmount base;
     public AssetAmount quote;
+
+    @Override
+    public String toString() {
+        return String.format("base:[%s, %s], quote:[%s, %s]",
+                base.getAsset().getObjectId(),
+                base.getAmount().toString(),
+                quote.getAsset().getObjectId(),
+                quote.getAmount().toString());
+    }
 }
