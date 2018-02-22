@@ -122,6 +122,7 @@ public class GetObjectsTest extends BaseApiTest{
                 public void onSuccess(WitnessResponse response) {
                     System.out.println("onSuccess");
                     List<BitAssetData> list = (List<BitAssetData>) response.result;
+                    System.out.println("Response array length: "+list.size());
                     BitAssetData bitAssetData1 = list.get(0);
                     BitAssetData bitAssetData2 = list.get(1);
 

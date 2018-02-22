@@ -1,5 +1,5 @@
 group 'cy.agorise'
-version '0.4.6'
+version '0.4.7-alpha2'
 
 apply plugin: 'com.android.library'
 apply from: 'maven-push.gradle'
@@ -21,8 +21,8 @@ android {
     defaultConfig {
         minSdkVersion 9
         targetSdkVersion 24
-        versionCode 10
-        versionName "0.4.7-alpha1"
+        versionCode 12
+        versionName "0.4.7-alpha3"
         vectorDrawables.useSupportLibrary = true
     }
     buildTypes {

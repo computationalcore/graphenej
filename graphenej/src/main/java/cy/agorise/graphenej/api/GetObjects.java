@@ -5,12 +5,10 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketFrame;
 
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -93,6 +91,7 @@ public class GetObjects extends BaseGrapheneHandler {
         String response = frame.getPayloadText();
         GsonBuilder gsonBuilder = new GsonBuilder();
 
+        gsonBuilder.registerTypeAdapter(BitAssetData.class, new BitAssetData.BitAssetDataDeserializer());
         gsonBuilder.registerTypeAdapter(AssetFeed.class, new AssetFeed.AssetFeedDeserializer());
         gsonBuilder.registerTypeAdapter(ReportedAssetFeed.class, new ReportedAssetFeed.ReportedAssetFeedDeserializer());
         gsonBuilder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer());
@@ -106,7 +105,8 @@ public class GetObjects extends BaseGrapheneHandler {
 
         JsonParser parser = new JsonParser();
         JsonArray resultArray = parser.parse(response).getAsJsonObject().get(WitnessResponse.KEY_RESULT).getAsJsonArray();
-        for(JsonElement element : resultArray){
+        for(int i = 0; i < resultArray.size(); i++){
+            JsonElement element = resultArray.get(i);
             String id = element.getAsJsonObject().get(GrapheneObject.KEY_ID).getAsString();
             GrapheneObject grapheneObject = new GrapheneObject(id);
             switch (grapheneObject.getObjectType()){
@@ -119,11 +119,9 @@ public class GetObjects extends BaseGrapheneHandler {
                     parsedResult.add(account);
                     break;
                 case ASSET_BITASSET_DATA:
-                    Type BitAssetDataType = new TypeToken<WitnessResponse<List<BitAssetData>>>(){}.getType();
-                    WitnessResponse<List<BitAssetData>> witnessResponse = gsonBuilder.create().fromJson(response, BitAssetDataType);
-                    for(BitAssetData bitAssetData : witnessResponse.result){
-                        parsedResult.add(bitAssetData);
-                    }
+                    BitAssetData bitAssetData = gson.fromJson(element, BitAssetData.class);
+                    parsedResult.add(bitAssetData);
+                    break;
             }
         }
 
