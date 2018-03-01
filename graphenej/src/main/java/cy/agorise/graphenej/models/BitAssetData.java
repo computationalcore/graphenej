@@ -90,7 +90,7 @@ public class BitAssetData extends GrapheneObject {
         this.force_settled_volume = force_settled_volume;
     }
 
-    public boolean isIsPredictionMarket() {
+    public boolean isPredictionMarket() {
         return is_prediction_market;
     }
 
