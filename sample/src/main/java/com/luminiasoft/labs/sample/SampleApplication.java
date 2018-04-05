@@ -7,7 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 
-import cy.agorise.graphenej.api.ApiAccess;
+import cy.agorise.graphenej.api.android.NetworkService;
 
 /**
  * Sample application class
@@ -45,8 +45,6 @@ public class SampleApplication extends Application implements Application.Activi
     public void onCreate() {
         super.onCreate();
         Intent intent = new Intent(this, NetworkService.class);
-        int requestedApis = ApiAccess.API_DATABASE | ApiAccess.API_HISTORY | ApiAccess.API_NETWORK_BROADCAST;
-        intent.putExtra(NetworkService.KEY_REQUESTED_APIS, requestedApis);
         startService(intent);
 
         /*
