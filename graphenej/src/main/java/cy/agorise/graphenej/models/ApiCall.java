@@ -66,33 +66,35 @@ public class ApiCall implements JsonSerializable {
         paramsArray.add(this.methodToCall);
         JsonArray methodParams = new JsonArray();
 
-        for(int i = 0; i < this.params.size(); i++){
-            if(this.params.get(i) instanceof JsonSerializable) {
-                // Sometimes the parameters are objects
-                methodParams.add(((JsonSerializable) this.params.get(i)).toJsonObject());
-            }else if (Number.class.isInstance(this.params.get(i))){
-                // Other times they are numbers
-                methodParams.add( (Number) this.params.get(i));
-            }else if(this.params.get(i) instanceof String || this.params.get(i) == null){
-                // Other times they are plain strings
-                methodParams.add((String) this.params.get(i));
-            }else if(this.params.get(i) instanceof ArrayList) {
-                // Other times it might be an array
-                JsonArray array = new JsonArray();
-                ArrayList<Serializable> listArgument = (ArrayList<Serializable>) this.params.get(i);
-                for (int l = 0; l < listArgument.size(); l++) {
-                    Serializable element = listArgument.get(l);
-                    if (element instanceof JsonSerializable)
-                        array.add(((JsonSerializable) element).toJsonObject());
-                    else if (element instanceof String) {
-                        array.add((String) element);
+        if(this.params != null){
+            for(int i = 0; i < this.params.size(); i++){
+                if(this.params.get(i) instanceof JsonSerializable) {
+                    // Sometimes the parameters are objects
+                    methodParams.add(((JsonSerializable) this.params.get(i)).toJsonObject());
+                }else if (Number.class.isInstance(this.params.get(i))){
+                    // Other times they are numbers
+                    methodParams.add( (Number) this.params.get(i));
+                }else if(this.params.get(i) instanceof String || this.params.get(i) == null){
+                    // Other times they are plain strings
+                    methodParams.add((String) this.params.get(i));
+                }else if(this.params.get(i) instanceof ArrayList) {
+                    // Other times it might be an array
+                    JsonArray array = new JsonArray();
+                    ArrayList<Serializable> listArgument = (ArrayList<Serializable>) this.params.get(i);
+                    for (int l = 0; l < listArgument.size(); l++) {
+                        Serializable element = listArgument.get(l);
+                        if (element instanceof JsonSerializable)
+                            array.add(((JsonSerializable) element).toJsonObject());
+                        else if (element instanceof String) {
+                            array.add((String) element);
+                        }
                     }
+                    methodParams.add(array);
+                }else if(this.params.get(i) instanceof Boolean){
+                    methodParams.add((boolean) this.params.get(i));
+                }else{
+                    System.out.println("Skipping parameter of type: "+this.params.get(i).getClass());
                 }
-                methodParams.add(array);
-            }else if(this.params.get(i) instanceof Boolean){
-                methodParams.add((boolean) this.params.get(i));
-            }else{
-                System.out.println("Skipping parameter of type: "+this.params.get(i).getClass());
             }
         }
         paramsArray.add(methodParams);
