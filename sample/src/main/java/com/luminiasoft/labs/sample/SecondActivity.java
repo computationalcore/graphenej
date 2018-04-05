@@ -32,6 +32,7 @@ import cy.agorise.graphenej.models.JsonRpcResponse;
 import cy.agorise.graphenej.operations.LimitOrderCreateOperation;
 import cy.agorise.graphenej.operations.TransferOperation;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 
 public class SecondActivity extends AppCompatActivity {
@@ -46,14 +47,17 @@ public class SecondActivity extends AppCompatActivity {
 
     private Gson gson = new Gson();
 
+    private Disposable mDisposable;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_second);
+        Log.d(TAG,"onCreate");
 
         ButterKnife.bind(this);
 
-        RxBus.getBusInstance()
+        mDisposable = RxBus.getBusInstance()
                 .asFlowable()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<Object>() {
@@ -86,6 +90,12 @@ public class SecondActivity extends AppCompatActivity {
         unbindService(mConnection);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mDisposable.dispose();
+    }
+
     /** Defines callbacks for backend binding, passed to bindService() */
     private ServiceConnection mConnection = new ServiceConnection() {
 
@@ -107,25 +117,25 @@ public class SecondActivity extends AppCompatActivity {
     @OnClick(R.id.transfer_fee_usd)
     public void onTransferFeeUsdClicked(View v){
         List<BaseOperation> operations = getTransferOperation();
-        mService.sendMessage(new GetRequiredFees(operations, new Asset("1.3.121")));
+        mService.sendMessage(new GetRequiredFees(operations, new Asset("1.3.121")), GetRequiredFees.REQUIRED_API);
     }
 
     @OnClick(R.id.transfer_fee_bts)
     public void onTransferFeeBtsClicked(View v){
         List<BaseOperation> operations = getTransferOperation();
-        mService.sendMessage(new GetRequiredFees(operations, new Asset("1.3.0")));
+        mService.sendMessage(new GetRequiredFees(operations, new Asset("1.3.0")), GetRequiredFees.REQUIRED_API);
     }
 
     @OnClick(R.id.exchange_fee_usd)
     public void onExchangeFeeUsdClicked(View v){
         List<BaseOperation> operations = getExchangeOperation();
-        mService.sendMessage(new GetRequiredFees(operations, new Asset("1.3.121")));
+        mService.sendMessage(new GetRequiredFees(operations, new Asset("1.3.121")), GetRequiredFees.REQUIRED_API);
     }
 
     @OnClick(R.id.exchange_fee_bts)
     public void onExchangeFeeBtsClicked(View v){
         List<BaseOperation> operations = getExchangeOperation();
-        mService.sendMessage(new GetRequiredFees(operations, new Asset("1.3.0")));
+        mService.sendMessage(new GetRequiredFees(operations, new Asset("1.3.0")), GetRequiredFees.REQUIRED_API);
     }
 
     private List<BaseOperation> getTransferOperation(){
