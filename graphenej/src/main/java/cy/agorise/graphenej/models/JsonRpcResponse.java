@@ -1,13 +1,13 @@
 package cy.agorise.graphenej.models;
 
 /**
- * Base response class
- * @deprecated Use {@link JsonRpcResponse} instead
+ * Used to represent a JSON-RPC response object
  */
-public class BaseResponse {
+
+public class JsonRpcResponse<T> {
     public long id;
     public Error error;
-    public Object result;
+    public T result;
 
     public static class Error {
         public ErrorData data;

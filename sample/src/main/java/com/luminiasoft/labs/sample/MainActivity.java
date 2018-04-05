@@ -6,16 +6,22 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import cy.agorise.graphenej.api.ApiAccess;
 import cy.agorise.graphenej.api.ConnectionStatusUpdate;
 import cy.agorise.graphenej.api.android.RxBus;
+import cy.agorise.graphenej.api.calls.GetBlock;
+import cy.agorise.graphenej.models.JsonRpcResponse;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 
@@ -31,11 +37,23 @@ public class MainActivity extends AppCompatActivity {
     // In case we want to interact directly with the service
     private NetworkService mService;
 
+    private Gson gson = new Gson();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
+        // Specifying some important information regarding the connection, such as the
+        // credentials and the requested API accesses
+        int requestedApis = ApiAccess.API_DATABASE | ApiAccess.API_HISTORY | ApiAccess.API_NETWORK_BROADCAST;
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .edit()
+                .putString(NetworkService.KEY_USERNAME, "nelson")
+                .putString(NetworkService.KEY_PASSWORD, "secret")
+                .putInt(NetworkService.KEY_REQUESTED_APIS, requestedApis)
+                .apply();
 
         RxBus.getBusInstance()
             .asFlowable()
@@ -43,13 +61,15 @@ public class MainActivity extends AppCompatActivity {
             .subscribe(new Consumer<Object>() {
 
             @Override
-            public void accept(Object o) throws Exception {
-                if(o instanceof String){
-                    Log.d(TAG,"Got message");
-                    mResponse.setText(mResponse.getText() + ((String)o) + "\n");
-                }else if(o instanceof ConnectionStatusUpdate){
-                    Log.d(TAG,"Got connection update");
-                    mConnectionStatus.setText(((ConnectionStatusUpdate)o).getConnectionStatus());
+            public void accept(Object message) throws Exception {
+                if(message instanceof String){
+                    Log.d(TAG,"Got text message: "+(message));
+                    mResponse.setText(mResponse.getText() + ((String) message) + "\n");
+                }else if(message instanceof ConnectionStatusUpdate){
+                    Log.d(TAG,"Got connection update. Status: "+((ConnectionStatusUpdate)message).getConnectionStatus());
+                    mConnectionStatus.setText(((ConnectionStatusUpdate) message).getConnectionStatus());
+                }else if(message instanceof JsonRpcResponse){
+                    mResponse.setText(mResponse.getText() + gson.toJson(message, JsonRpcResponse.class) + "\n");
                 }
             }
         });
@@ -57,7 +77,8 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.send_message)
     public void onSendMesage(View v){
-        mService.sendMessage("Sample message");
+        GetBlock getBlock = new GetBlock(1000000);
+        mService.sendMessage(getBlock);
     }
 
     @OnClick(R.id.next_activity)
@@ -71,6 +92,8 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         // Bind to LocalService
         Intent intent = new Intent(this, NetworkService.class);
+        int requestedApis = ApiAccess.API_DATABASE | ApiAccess.API_HISTORY | ApiAccess.API_NETWORK_BROADCAST;
+        intent.putExtra(NetworkService.KEY_REQUESTED_APIS, requestedApis);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 

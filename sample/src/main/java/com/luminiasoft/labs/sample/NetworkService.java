@@ -2,14 +2,29 @@ package com.luminiasoft.labs.sample;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.Serializable;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import cy.agorise.graphenej.RPC;
+import cy.agorise.graphenej.api.ApiAccess;
 import cy.agorise.graphenej.api.ConnectionStatusUpdate;
 import cy.agorise.graphenej.api.android.RxBus;
 import cy.agorise.graphenej.api.bitshares.Nodes;
+import cy.agorise.graphenej.api.calls.ApiCallable;
+import cy.agorise.graphenej.models.ApiCall;
+import cy.agorise.graphenej.models.JsonRpcResponse;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -25,11 +40,34 @@ public class NetworkService extends Service {
 
     private static final int NORMAL_CLOSURE_STATUS = 1000;
 
+    public static final String KEY_USERNAME = "key_username";
+
+    public static final String KEY_PASSWORD = "key_password";
+
+    public static final String KEY_REQUESTED_APIS = "key_requested_apis";
+
     private final IBinder mBinder = new LocalBinder();
 
     private WebSocket mWebSocket;
 
     private int mSocketIndex;
+
+    // Username and password used to connect to a specific node
+    private String mUsername;
+    private String mPassword;
+
+    private boolean isLoggedIn = false;
+
+    private String mLastCall;
+    private int mCurrentId = 0;
+
+    // Requested APIs passed to this service
+    private int mRequestedApis;
+
+    // Variable used to keep track of the currently obtained API accesses
+    private HashMap<Integer, Integer> mApiIds = new HashMap();
+
+    private Gson gson = new Gson();
 
     private WebSocketListener mWebSocketListener = new WebSocketListener() {
 
@@ -38,13 +76,92 @@ public class NetworkService extends Service {
             super.onOpen(webSocket, response);
             mWebSocket = webSocket;
             RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.CONNECTED));
+
+            if(!isLoggedIn){
+                Log.d(TAG,"About to send login request");
+                ArrayList<Serializable> loginParams = new ArrayList<>();
+                loginParams.add(mUsername);
+                loginParams.add(mPassword);
+                ApiCall loginCall = new ApiCall(1, RPC.CALL_LOGIN, loginParams, RPC.VERSION, ++mCurrentId);
+                mLastCall = RPC.CALL_LOGIN;
+                sendMessage(loginCall.toJsonString());
+            }else{
+                Log.d(TAG,"Already logged in");
+            }
         }
 
         @Override
         public void onMessage(WebSocket webSocket, String text) {
             super.onMessage(webSocket, text);
-            Log.d(TAG,"onMessage. text: "+text);
-            RxBus.getBusInstance().send(text);
+            Log.v(TAG,"< "+text);
+            JsonRpcResponse<?> response = gson.fromJson(text, JsonRpcResponse.class);
+
+            // We will only handle messages that relate to the login and API accesses here.
+            if(response.result != null){
+                if(mLastCall == RPC.CALL_LOGIN){
+                    isLoggedIn = true;
+
+                    checkNextRequestedApiAccess();
+                }else if(mLastCall == RPC.CALL_DATABASE){
+                    // Deserializing integer response
+                    Type IntegerJsonResponse = new TypeToken<JsonRpcResponse<Integer>>(){}.getType();
+                    JsonRpcResponse<Integer> apiIdResponse = gson.fromJson(text, IntegerJsonResponse);
+
+                    // Storing the "database" api id
+                    mApiIds.put(ApiAccess.API_DATABASE, apiIdResponse.result);
+
+                    checkNextRequestedApiAccess();
+                }else if(mLastCall == RPC.CALL_HISTORY){
+                    // Deserializing integer response
+                    Type IntegerJsonResponse = new TypeToken<JsonRpcResponse<Integer>>(){}.getType();
+                    JsonRpcResponse<Integer> apiIdResponse = gson.fromJson(text, IntegerJsonResponse);
+
+                    // Storing the "history" api id
+                    mApiIds.put(ApiAccess.API_HISTORY, apiIdResponse.result);
+
+                    checkNextRequestedApiAccess();
+                }else if(mLastCall == RPC.CALL_NETWORK_BROADCAST){
+                    // Deserializing integer response
+                    Type IntegerJsonResponse = new TypeToken<JsonRpcResponse<Integer>>(){}.getType();
+                    JsonRpcResponse<Integer> apiIdResponse = gson.fromJson(text, IntegerJsonResponse);
+
+                    // Storing the "network_broadcast" api access
+                    mApiIds.put(ApiAccess.API_NETWORK_BROADCAST, apiIdResponse.result);
+
+                    // All calls have been handled at this point
+                    mLastCall = "";
+                }else{
+                    Log.d(TAG,"New unhandled message");
+                }
+            }else{
+                Log.w(TAG,"Error.Msg: "+response.error.message);
+            }
+            RxBus.getBusInstance().send(response);
+        }
+
+        private void checkNextRequestedApiAccess(){
+            if( (mRequestedApis & ApiAccess.API_DATABASE) == ApiAccess.API_DATABASE &&
+                    mApiIds.get(ApiAccess.API_DATABASE) == null){
+                // If we need the "database" api access and we don't yet have it
+
+                ApiCall apiCall = new ApiCall(1, RPC.CALL_DATABASE, null, RPC.VERSION, ++mCurrentId);
+                mLastCall = RPC.CALL_DATABASE;
+                sendMessage(apiCall.toJsonString());
+            } else if( (mRequestedApis & ApiAccess.API_HISTORY) == ApiAccess.API_HISTORY &&
+                    mApiIds.get(ApiAccess.API_HISTORY) == null){
+                // If we need the "history" api access and we don't yet have it
+
+                ApiCall apiCall = new ApiCall(1, RPC.CALL_HISTORY, null, RPC.VERSION, ++mCurrentId);
+                mLastCall = RPC.CALL_HISTORY;
+                sendMessage(apiCall.toJsonString());
+            }else if( (mRequestedApis & ApiAccess.API_NETWORK_BROADCAST) == ApiAccess.API_NETWORK_BROADCAST &&
+                    mApiIds.get(ApiAccess.API_NETWORK_BROADCAST) == null){
+                // If we need the "network_broadcast" api access and we don't yet have it
+
+                ApiCall apiCall = new ApiCall(1, RPC.CALL_NETWORK_BROADCAST, null, RPC.VERSION, ++mCurrentId);
+                mLastCall = RPC.CALL_NETWORK_BROADCAST;
+                sendMessage(apiCall.toJsonString());
+            }
         }
 
         @Override
@@ -52,12 +169,21 @@ public class NetworkService extends Service {
             super.onClosed(webSocket, code, reason);
             Log.d(TAG,"onClosed");
             RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.DISCONNECTED));
+
+            isLoggedIn = false;
         }
 
         @Override
         public void onFailure(WebSocket webSocket, Throwable t, Response response) {
             super.onFailure(webSocket, t, response);
-            Log.d(TAG,"onFailure. Msg: "+t.getMessage());
+            Log.e(TAG,"onFailure. Msg: "+t.getMessage());
+            isLoggedIn = false;
+            if(response != null){
+                Log.e(TAG,"Response: "+response.message());
+            }
+            for(StackTraceElement element : t.getStackTrace()){
+                Log.v(TAG,String.format("%s#%s:%d", element.getClassName(), element.getMethodName(), element.getLineNumber()));
+            }
             RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.DISCONNECTED));
             mSocketIndex++;
             connect();
@@ -68,24 +194,42 @@ public class NetworkService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.d(TAG,"onCreate");
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+        // Retrieving credentials and requested API data from the shared preferences
+        mUsername = pref.getString(NetworkService.KEY_USERNAME, "");
+        mPassword = pref.getString(NetworkService.KEY_PASSWORD, "");
+        mRequestedApis = pref.getInt(NetworkService.KEY_REQUESTED_APIS, -1);
+
         connect();
     }
 
     private void connect(){
         OkHttpClient client = new OkHttpClient();
         String url = Nodes.NODE_URLS[mSocketIndex % Nodes.NODE_URLS.length];
+        Log.d(TAG,"Trying to connect with: "+url);
         Request request = new Request.Builder().url(url).build();
         client.newWebSocket(request, mWebSocketListener);
     }
 
-    public void sendMessage(String message){
+    public int sendMessage(String message){
         if(mWebSocket.send(message)){
-            Log.d(TAG,"Message enqueued");
+            Log.v(TAG,"> " + message);
         }else{
             Log.w(TAG,"Message not enqueued");
         }
+        return mCurrentId;
     }
 
+    public int sendMessage(ApiCallable apiCallable){
+        ApiCall call = apiCallable.toApiCall(mApiIds.get(ApiAccess.API_DATABASE), mCurrentId);
+        if(mWebSocket.send(call.toJsonString())){
+            Log.v(TAG,"> "+call.toJsonString());
+        }else{
+            Log.w(TAG,"Message not enqueued");
+        }
+        return mCurrentId;
+    }
 
     @Override
     public void onDestroy() {
