@@ -9,6 +9,7 @@ import cy.agorise.graphenej.BaseOperation;
 import cy.agorise.graphenej.BlockData;
 import cy.agorise.graphenej.RPC;
 import cy.agorise.graphenej.Transaction;
+import cy.agorise.graphenej.api.ApiAccess;
 import cy.agorise.graphenej.models.ApiCall;
 
 /**
@@ -16,6 +17,8 @@ import cy.agorise.graphenej.models.ApiCall;
  */
 
 public class GetRequiredFees implements ApiCallable {
+
+    public static final int REQUIRED_API = ApiAccess.API_DATABASE;
 
     private Transaction mTransaction;
     private Asset mFeeAsset;

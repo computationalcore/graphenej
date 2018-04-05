@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
     @OnClick(R.id.send_message)
     public void onSendMesage(View v){
         GetBlock getBlock = new GetBlock(1000000);
-        mService.sendMessage(getBlock);
+        mService.sendMessage(getBlock, GetBlock.REQUIRED_API);
     }
 
     @OnClick(R.id.next_activity)
@@ -93,8 +93,6 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         // Bind to LocalService
         Intent intent = new Intent(this, NetworkService.class);
-        int requestedApis = ApiAccess.API_DATABASE | ApiAccess.API_HISTORY | ApiAccess.API_NETWORK_BROADCAST;
-        intent.putExtra(NetworkService.KEY_REQUESTED_APIS, requestedApis);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 

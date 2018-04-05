@@ -99,8 +99,12 @@ public class NetworkService extends Service {
         return mCurrentId;
     }
 
-    public int sendMessage(ApiCallable apiCallable){
-        ApiCall call = apiCallable.toApiCall(mApiIds.get(ApiAccess.API_DATABASE), mCurrentId);
+    public int sendMessage(ApiCallable apiCallable, int requiredApi){
+        int apiId = 0;
+        if(requiredApi != -1){
+            apiId = mApiIds.get(requiredApi);
+        }
+        ApiCall call = apiCallable.toApiCall(apiId, mCurrentId);
         if(mWebSocket.send(call.toJsonString())){
             Log.v(TAG,"> "+call.toJsonString());
         }else{
@@ -112,7 +116,8 @@ public class NetworkService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG,"onDestroy");
-        mWebSocket.close(NORMAL_CLOSURE_STATUS, null);
+        if(mWebSocket != null)
+            mWebSocket.close(NORMAL_CLOSURE_STATUS, null);
     }
 
     @Override
