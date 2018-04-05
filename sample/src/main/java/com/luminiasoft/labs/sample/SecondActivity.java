@@ -24,7 +24,6 @@ import cy.agorise.graphenej.Asset;
 import cy.agorise.graphenej.AssetAmount;
 import cy.agorise.graphenej.BaseOperation;
 import cy.agorise.graphenej.UserAccount;
-import cy.agorise.graphenej.api.ApiAccess;
 import cy.agorise.graphenej.api.android.NetworkService;
 import cy.agorise.graphenej.api.android.RxBus;
 import cy.agorise.graphenej.api.calls.GetRequiredFees;
@@ -79,8 +78,6 @@ public class SecondActivity extends AppCompatActivity {
         super.onStart();
         // Bind to LocalService
         Intent intent = new Intent(this, NetworkService.class);
-        int requestedApis = ApiAccess.API_DATABASE | ApiAccess.API_HISTORY | ApiAccess.API_NETWORK_BROADCAST;
-        intent.putExtra(NetworkService.KEY_REQUESTED_APIS, requestedApis);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
