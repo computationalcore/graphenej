@@ -19,6 +19,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import cy.agorise.graphenej.api.ApiAccess;
 import cy.agorise.graphenej.api.ConnectionStatusUpdate;
+import cy.agorise.graphenej.api.android.NetworkService;
 import cy.agorise.graphenej.api.android.RxBus;
 import cy.agorise.graphenej.api.calls.GetBlock;
 import cy.agorise.graphenej.models.JsonRpcResponse;
