@@ -101,7 +101,7 @@ public class NetworkService extends Service {
 
     public int sendMessage(ApiCallable apiCallable, int requiredApi){
         int apiId = 0;
-        if(requiredApi != -1){
+        if(requiredApi != -1 && mApiIds.containsKey(requiredApi)){
             apiId = mApiIds.get(requiredApi);
         }
         ApiCall call = apiCallable.toApiCall(apiId, mCurrentId);
@@ -173,40 +173,40 @@ public class NetworkService extends Service {
 
             // We will only handle messages that relate to the login and API accesses here.
             if(response.result != null){
-                if(mLastCall == RPC.CALL_LOGIN){
-                    isLoggedIn = true;
+                if(response.result instanceof Double || response.result instanceof Boolean){
+                    if(mLastCall == RPC.CALL_LOGIN){
+                        isLoggedIn = true;
 
-                    checkNextRequestedApiAccess();
-                }else if(mLastCall == RPC.CALL_DATABASE){
-                    // Deserializing integer response
-                    Type IntegerJsonResponse = new TypeToken<JsonRpcResponse<Integer>>(){}.getType();
-                    JsonRpcResponse<Integer> apiIdResponse = gson.fromJson(text, IntegerJsonResponse);
+                        checkNextRequestedApiAccess();
+                    }else if(mLastCall == RPC.CALL_DATABASE){
+                        // Deserializing integer response
+                        Type IntegerJsonResponse = new TypeToken<JsonRpcResponse<Integer>>(){}.getType();
+                        JsonRpcResponse<Integer> apiIdResponse = gson.fromJson(text, IntegerJsonResponse);
 
-                    // Storing the "database" api id
-                    mApiIds.put(ApiAccess.API_DATABASE, apiIdResponse.result);
+                        // Storing the "database" api id
+                        mApiIds.put(ApiAccess.API_DATABASE, apiIdResponse.result);
 
-                    checkNextRequestedApiAccess();
-                }else if(mLastCall == RPC.CALL_HISTORY){
-                    // Deserializing integer response
-                    Type IntegerJsonResponse = new TypeToken<JsonRpcResponse<Integer>>(){}.getType();
-                    JsonRpcResponse<Integer> apiIdResponse = gson.fromJson(text, IntegerJsonResponse);
+                        checkNextRequestedApiAccess();
+                    }else if(mLastCall == RPC.CALL_HISTORY){
+                        // Deserializing integer response
+                        Type IntegerJsonResponse = new TypeToken<JsonRpcResponse<Integer>>(){}.getType();
+                        JsonRpcResponse<Integer> apiIdResponse = gson.fromJson(text, IntegerJsonResponse);
 
-                    // Storing the "history" api id
-                    mApiIds.put(ApiAccess.API_HISTORY, apiIdResponse.result);
+                        // Storing the "history" api id
+                        mApiIds.put(ApiAccess.API_HISTORY, apiIdResponse.result);
 
-                    checkNextRequestedApiAccess();
-                }else if(mLastCall == RPC.CALL_NETWORK_BROADCAST){
-                    // Deserializing integer response
-                    Type IntegerJsonResponse = new TypeToken<JsonRpcResponse<Integer>>(){}.getType();
-                    JsonRpcResponse<Integer> apiIdResponse = gson.fromJson(text, IntegerJsonResponse);
+                        checkNextRequestedApiAccess();
+                    }else if(mLastCall == RPC.CALL_NETWORK_BROADCAST){
+                        // Deserializing integer response
+                        Type IntegerJsonResponse = new TypeToken<JsonRpcResponse<Integer>>(){}.getType();
+                        JsonRpcResponse<Integer> apiIdResponse = gson.fromJson(text, IntegerJsonResponse);
 
-                    // Storing the "network_broadcast" api access
-                    mApiIds.put(ApiAccess.API_NETWORK_BROADCAST, apiIdResponse.result);
+                        // Storing the "network_broadcast" api access
+                        mApiIds.put(ApiAccess.API_NETWORK_BROADCAST, apiIdResponse.result);
 
-                    // All calls have been handled at this point
-                    mLastCall = "";
-                }else{
-                    Log.d(TAG,"New unhandled message");
+                        // All calls have been handled at this point
+                        mLastCall = "";
+                    }
                 }
             }else{
                 Log.w(TAG,"Error.Msg: "+response.error.message);
