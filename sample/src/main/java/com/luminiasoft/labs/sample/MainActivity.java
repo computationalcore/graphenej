@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -17,7 +16,6 @@ import com.google.gson.Gson;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import cy.agorise.graphenej.api.ApiAccess;
 import cy.agorise.graphenej.api.ConnectionStatusUpdate;
 import cy.agorise.graphenej.api.android.NetworkService;
 import cy.agorise.graphenej.api.android.RxBus;
@@ -45,16 +43,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-
-        // Specifying some important information regarding the connection, such as the
-        // credentials and the requested API accesses
-        int requestedApis = ApiAccess.API_DATABASE | ApiAccess.API_HISTORY | ApiAccess.API_NETWORK_BROADCAST;
-        PreferenceManager.getDefaultSharedPreferences(this)
-                .edit()
-                .putString(NetworkService.KEY_USERNAME, "nelson")
-                .putString(NetworkService.KEY_PASSWORD, "secret")
-                .putInt(NetworkService.KEY_REQUESTED_APIS, requestedApis)
-                .apply();
 
         RxBus.getBusInstance()
             .asFlowable()
