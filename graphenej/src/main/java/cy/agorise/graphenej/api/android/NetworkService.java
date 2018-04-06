@@ -71,7 +71,6 @@ public class NetworkService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG,"onCreate");
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         // Retrieving credentials and requested API data from the shared preferences
@@ -104,9 +103,9 @@ public class NetworkService extends Service {
         if(requiredApi != -1 && mApiIds.containsKey(requiredApi)){
             apiId = mApiIds.get(requiredApi);
         }
-        ApiCall call = apiCallable.toApiCall(apiId, mCurrentId);
+        ApiCall call = apiCallable.toApiCall(apiId, ++mCurrentId);
         if(mWebSocket.send(call.toJsonString())){
-            Log.v(TAG,"> "+call.toJsonString());
+            Log.v(TAG,"-> "+call.toJsonString());
         }else{
             Log.w(TAG,"Message not enqueued");
         }
@@ -168,7 +167,7 @@ public class NetworkService extends Service {
         @Override
         public void onMessage(WebSocket webSocket, String text) {
             super.onMessage(webSocket, text);
-            Log.v(TAG,"< "+text);
+            Log.v(TAG,"<- "+text);
             JsonRpcResponse<?> response = gson.fromJson(text, JsonRpcResponse.class);
 
             // We will only handle messages that relate to the login and API accesses here.
