@@ -7,7 +7,6 @@ package cy.agorise.graphenej.models;
 public class BaseResponse {
     public long id;
     public Error error;
-    public Object result;
 
     public static class Error {
         public ErrorData data;
