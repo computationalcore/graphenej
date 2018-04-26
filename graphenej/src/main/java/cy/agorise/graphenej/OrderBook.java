@@ -132,4 +132,8 @@ public class OrderBook {
         }
         return obtainedBase;
     }
+
+    public List<LimitOrder> getLimitOrders(){
+        return limitOrders;
+    }
 }
