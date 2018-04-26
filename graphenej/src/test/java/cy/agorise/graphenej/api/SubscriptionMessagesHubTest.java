@@ -10,13 +10,13 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import cy.agorise.graphenej.ObjectType;
-import cy.agorise.graphenej.Transaction;
 import cy.agorise.graphenej.interfaces.NodeErrorListener;
 import cy.agorise.graphenej.interfaces.SubscriptionListener;
 import cy.agorise.graphenej.models.BaseResponse;
 import cy.agorise.graphenej.models.BroadcastedTransaction;
 import cy.agorise.graphenej.models.DynamicGlobalProperties;
 import cy.agorise.graphenej.models.SubscriptionResponse;
+import cy.agorise.graphenej.Transaction;
 
 /**
  * Class used to encapsulate all tests that relate to the {@see SubscriptionMessagesHub} class.
@@ -178,7 +178,7 @@ public class SubscriptionMessagesHubTest extends BaseApiTest {
     @Test
     public void testBroadcastedTransactionDeserializer(){
         try{
-            mMessagesHub = new SubscriptionMessagesHub("", "", mErrorListener);
+            mMessagesHub = new SubscriptionMessagesHub("", "", true, mErrorListener);
             mMessagesHub.addSubscriptionListener(new SubscriptionListener() {
                 private int MAX_MESSAGES = 15;
                 private int messageCounter = 0;

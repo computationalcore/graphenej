@@ -61,7 +61,7 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
     private int subscriptionCounter = 0;
     private HashMap<Long, BaseGrapheneHandler> mHandlerMap = new HashMap<>();
     private List<BaseGrapheneHandler> pendingHandlerList = new ArrayList<>();
-    private boolean printLogs;
+    private boolean printLogs = true;
 
     // State variables
     private boolean isUnsubscribing;

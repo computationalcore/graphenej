@@ -182,6 +182,8 @@ public class SubscriptionResponse {
                             broadcastedTransaction.setTransactionId(jsonObject.get(BroadcastedTransaction.KEY_TRX_ID).getAsString());
                             objectMap.put(ObjectType.TRANSACTION_OBJECT, true);
                             secondArgument.add(broadcastedTransaction);
+                        }else if(grapheneObject.getObjectType() == ObjectType.OPERATION_HISTORY_OBJECT){
+                            //TODO: Add support for other types of objects
                         }else{
                             //TODO: Add support for other types of objects
                         }
