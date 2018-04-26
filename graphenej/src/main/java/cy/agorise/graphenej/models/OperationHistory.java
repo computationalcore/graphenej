@@ -10,7 +10,7 @@ import cy.agorise.graphenej.operations.TransferOperation;
  * More operations types might be listed in the response of that method, but by using this class
  * those will be filtered out of the parsed result.
  */
-public class HistoricalTransfer {
+public class OperationHistory {
     private String id;
     private TransferOperation op;
     public Object[] result;
