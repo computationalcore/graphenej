@@ -16,6 +16,7 @@ import java.util.List;
 
 import cy.agorise.graphenej.GrapheneObject;
 import cy.agorise.graphenej.ObjectType;
+import cy.agorise.graphenej.OperationType;
 import cy.agorise.graphenej.Transaction;
 import cy.agorise.graphenej.interfaces.SubscriptionListener;
 
@@ -183,7 +184,13 @@ public class SubscriptionResponse {
                             objectMap.put(ObjectType.TRANSACTION_OBJECT, true);
                             secondArgument.add(broadcastedTransaction);
                         }else if(grapheneObject.getObjectType() == ObjectType.OPERATION_HISTORY_OBJECT){
-                            //TODO: Add support for other types of objects
+                            if(jsonObject.get(OperationHistory.KEY_OP).getAsJsonArray().get(0).getAsLong() == OperationType.TRANSFER_OPERATION.ordinal()){
+                                OperationHistory operationHistory = context.deserialize(jsonObject, OperationHistory.class);
+                                objectMap.put(ObjectType.OPERATION_HISTORY_OBJECT, true);
+                                secondArgument.add(operationHistory);
+                            }else{
+                                //TODO: Add support for other operations
+                            }
                         }else{
                             //TODO: Add support for other types of objects
                         }
