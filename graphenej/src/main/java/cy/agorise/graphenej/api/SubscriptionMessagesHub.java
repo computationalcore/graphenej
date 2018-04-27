@@ -23,6 +23,7 @@ import cy.agorise.graphenej.interfaces.SubscriptionHub;
 import cy.agorise.graphenej.interfaces.SubscriptionListener;
 import cy.agorise.graphenej.models.ApiCall;
 import cy.agorise.graphenej.models.DynamicGlobalProperties;
+import cy.agorise.graphenej.models.OperationHistory;
 import cy.agorise.graphenej.models.SubscriptionResponse;
 import cy.agorise.graphenej.models.WitnessResponse;
 import cy.agorise.graphenej.objects.Memo;
@@ -96,6 +97,7 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
         builder.registerTypeAdapter(UserAccount.class, new UserAccount.UserAccountSimpleDeserializer());
         builder.registerTypeAdapter(DynamicGlobalProperties.class, new DynamicGlobalProperties.DynamicGlobalPropertiesDeserializer());
         builder.registerTypeAdapter(Memo.class, new Memo.MemoDeserializer());
+        builder.registerTypeAdapter(OperationHistory.class, new OperationHistory.OperationHistoryDeserializer());
         this.gson = builder.create();
     }
 

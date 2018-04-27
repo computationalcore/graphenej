@@ -15,6 +15,7 @@ import cy.agorise.graphenej.interfaces.SubscriptionListener;
 import cy.agorise.graphenej.models.BaseResponse;
 import cy.agorise.graphenej.models.BroadcastedTransaction;
 import cy.agorise.graphenej.models.DynamicGlobalProperties;
+import cy.agorise.graphenej.models.OperationHistory;
 import cy.agorise.graphenej.models.SubscriptionResponse;
 import cy.agorise.graphenej.Transaction;
 
@@ -197,7 +198,7 @@ public class SubscriptionMessagesHubTest extends BaseApiTest {
                                 if(item instanceof BroadcastedTransaction){
                                     BroadcastedTransaction broadcastedTransaction = (BroadcastedTransaction) item;
                                     Transaction tx = broadcastedTransaction.getTransaction();
-                                    System.out.println(String.format("Got %d operations", tx.getOperations().size()));
+//                                    System.out.println(String.format("Got %d operations", tx.getOperations().size()));
                                 }
                             }
                         }
@@ -208,6 +209,30 @@ public class SubscriptionMessagesHubTest extends BaseApiTest {
                     if(messageCounter > MAX_MESSAGES){
                         synchronized (SubscriptionMessagesHubTest.this){
                             SubscriptionMessagesHubTest.this.notifyAll();
+                        }
+                    }
+                }
+            });
+
+            mMessagesHub.addSubscriptionListener(new SubscriptionListener() {
+
+                @Override
+                public ObjectType getInterestObjectType() {
+                    return ObjectType.OPERATION_HISTORY_OBJECT;
+                }
+
+                @Override
+                public void onSubscriptionUpdate(SubscriptionResponse response) {
+                    System.out.println("onSubscriptionUpdate. response.params.size: "+response.params.size());
+                    if(response.params.size() == 2){
+                        List<Serializable> payload = (List) response.params.get(1);
+                        if(payload.size() > 0){
+                            for(Serializable item : payload){
+                                if(item instanceof OperationHistory){
+                                    OperationHistory operationHistory = (OperationHistory) item;
+                                    System.out.println("Operation history: <id:"+operationHistory.getObjectId()+", op: "+operationHistory.getOperation().toJsonString()+">");
+                                }
+                            }
                         }
                     }
                 }
