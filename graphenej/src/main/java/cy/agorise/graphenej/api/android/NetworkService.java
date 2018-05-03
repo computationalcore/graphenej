@@ -45,6 +45,16 @@ public class NetworkService extends Service {
 
     public static final String KEY_REQUESTED_APIS = "key_requested_apis";
 
+    /**
+     * Constant used to pass a custom list of node URLs. This should be a simple
+     * comma separated list of URLs.
+     *
+     * For example:
+     *
+     *      wss://domain1.com/ws,wss://domain2.com/ws,wss://domain3.com/ws
+     */
+    public static final String KEY_CUSTOM_NODE_URLS = "key_custom_node_urls";
+
     private final IBinder mBinder = new LocalBinder();
 
     private WebSocket mWebSocket;
@@ -66,6 +76,8 @@ public class NetworkService extends Service {
     // Variable used to keep track of the currently obtained API accesses
     private HashMap<Integer, Integer> mApiIds = new HashMap();
 
+    private ArrayList<String> mNodeUrls = new ArrayList<>();
+
     private Gson gson = new Gson();
 
     @Override
@@ -78,12 +90,28 @@ public class NetworkService extends Service {
         mPassword = pref.getString(NetworkService.KEY_PASSWORD, "");
         mRequestedApis = pref.getInt(NetworkService.KEY_REQUESTED_APIS, -1);
 
+        // If the user of the library desires, a custom list of node URLs can
+        // be passed using the KEY_CUSTOM_NODE_URLS constant
+        String serializedNodeUrls = pref.getString(NetworkService.KEY_CUSTOM_NODE_URLS, "");
+
+        // Deciding whether to use an externally provided list of node URLs, or use our internal one
+        if(serializedNodeUrls.equals("")){
+            for(int i = 0; i < Nodes.NODE_URLS.length; i++){
+                mNodeUrls.add(Nodes.NODE_URLS[i]);
+            }
+        }else{
+            String[] urls = serializedNodeUrls.split(",");
+            for(String url : urls){
+                mNodeUrls.add(url);
+            }
+        }
+
         connect();
     }
 
     private void connect(){
         OkHttpClient client = new OkHttpClient();
-        String url = Nodes.NODE_URLS[mSocketIndex % Nodes.NODE_URLS.length];
+        String url = mNodeUrls.get(mSocketIndex % mNodeUrls.size());
         Log.d(TAG,"Trying to connect with: "+url);
         Request request = new Request.Builder().url(url).build();
         client.newWebSocket(request, mWebSocketListener);
@@ -92,7 +120,7 @@ public class NetworkService extends Service {
     public int sendMessage(String message){
         if(mWebSocket != null){
             if(mWebSocket.send(message)){
-                Log.v(TAG,"> " + message);
+                Log.v(TAG,"-> " + message);
             }
         }else{
             throw new RuntimeException("Websocket connection has not yet been established");
@@ -258,17 +286,30 @@ public class NetworkService extends Service {
         @Override
         public void onFailure(WebSocket webSocket, Throwable t, Response response) {
             super.onFailure(webSocket, t, response);
-            Log.e(TAG,"onFailure. Msg: "+t.getMessage());
+            Log.e(TAG,"onFailure. Exception: "+t.getClass().getName()+", Msg: "+t.getMessage());
+            // Logging error stack trace
+            for(StackTraceElement element : t.getStackTrace()){
+                Log.e(TAG,String.format("%s#%s:%s", element.getClassName(), element.getMethodName(), element.getLineNumber()));
+            }
+            // Registering current status
             isLoggedIn = false;
+            mCurrentId = 0;
+            mApiIds.clear();
+
+            // If there is a response, we print it
             if(response != null){
                 Log.e(TAG,"Response: "+response.message());
             }
-            for(StackTraceElement element : t.getStackTrace()){
-                Log.v(TAG,String.format("%s#%s:%d", element.getClassName(), element.getMethodName(), element.getLineNumber()));
-            }
+
             RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.DISCONNECTED));
             mSocketIndex++;
-            connect();
+
+            if(mSocketIndex > mNodeUrls.size() * 3){
+                Log.e(TAG,"Giving up on connections");
+                stopSelf();
+            }else{
+                connect();
+            }
         }
     };
 }
