@@ -19,6 +19,7 @@ import cy.agorise.graphenej.interfaces.JsonSerializable;
  * @see <a href="http://docs.bitshares.org/api/websocket.html">Websocket Calls & Notifications</a>
  */
 public class ApiCall implements JsonSerializable {
+
     public static final String KEY_SEQUENCE_ID = "id";
     public static final String KEY_METHOD = "method";
     public static final String KEY_PARAMS = "params";
@@ -65,7 +66,6 @@ public class ApiCall implements JsonSerializable {
         paramsArray.add(this.apiId);
         paramsArray.add(this.methodToCall);
         JsonArray methodParams = new JsonArray();
-
         if(this.params != null){
             for(int i = 0; i < this.params.size(); i++){
                 if(this.params.get(i) instanceof JsonSerializable) {
