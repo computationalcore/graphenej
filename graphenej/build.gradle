@@ -2,8 +2,7 @@ group 'cy.agorise'
 version '0.4.7-alpha2'
 
 apply plugin: 'com.android.library'
-apply from: 'maven-push.gradle'
-
+//apply from: 'maven-push.gradle'
 
 android {
     compileSdkVersion 24
