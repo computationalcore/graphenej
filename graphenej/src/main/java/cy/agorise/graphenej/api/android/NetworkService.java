@@ -90,10 +90,12 @@ public class NetworkService extends Service {
     }
 
     public int sendMessage(String message){
-        if(mWebSocket.send(message)){
-            Log.v(TAG,"> " + message);
+        if(mWebSocket != null){
+            if(mWebSocket.send(message)){
+                Log.v(TAG,"> " + message);
+            }
         }else{
-            Log.w(TAG,"Message not enqueued");
+            throw new RuntimeException("Websocket connection has not yet been established");
         }
         return mCurrentId;
     }
@@ -106,15 +108,20 @@ public class NetworkService extends Service {
         ApiCall call = apiCallable.toApiCall(apiId, ++mCurrentId);
         if(mWebSocket.send(call.toJsonString())){
             Log.v(TAG,"-> "+call.toJsonString());
-        }else{
-            Log.w(TAG,"Message not enqueued");
         }
         return mCurrentId;
     }
 
+    /**
+     * Method used to inform any external party a clue about the current connectivity status
+     * @return  True if the service is currently connected and logged in, false otherwise.
+     */
+    public boolean isConnected(){
+        return mWebSocket != null && isLoggedIn;
+    }
+
     @Override
     public void onDestroy() {
-        Log.d(TAG,"onDestroy");
         if(mWebSocket != null)
             mWebSocket.close(NORMAL_CLOSURE_STATUS, null);
     }
@@ -148,6 +155,7 @@ public class NetworkService extends Service {
         @Override
         public void onOpen(WebSocket webSocket, Response response) {
             super.onOpen(webSocket, response);
+            Log.d(TAG,"onOpen");
             mWebSocket = webSocket;
 
             // Notifying all listeners about the new connection status
@@ -173,11 +181,11 @@ public class NetworkService extends Service {
             // We will only handle messages that relate to the login and API accesses here.
             if(response.result != null){
                 if(response.result instanceof Double || response.result instanceof Boolean){
-                    if(mLastCall == RPC.CALL_LOGIN){
+                    if(mLastCall.equals(RPC.CALL_LOGIN)){
                         isLoggedIn = true;
 
                         checkNextRequestedApiAccess();
-                    }else if(mLastCall == RPC.CALL_DATABASE){
+                    }else if(mLastCall.equals(RPC.CALL_DATABASE)){
                         // Deserializing integer response
                         Type IntegerJsonResponse = new TypeToken<JsonRpcResponse<Integer>>(){}.getType();
                         JsonRpcResponse<Integer> apiIdResponse = gson.fromJson(text, IntegerJsonResponse);
@@ -186,7 +194,7 @@ public class NetworkService extends Service {
                         mApiIds.put(ApiAccess.API_DATABASE, apiIdResponse.result);
 
                         checkNextRequestedApiAccess();
-                    }else if(mLastCall == RPC.CALL_HISTORY){
+                    }else if(mLastCall.equals(RPC.CALL_HISTORY)){
                         // Deserializing integer response
                         Type IntegerJsonResponse = new TypeToken<JsonRpcResponse<Integer>>(){}.getType();
                         JsonRpcResponse<Integer> apiIdResponse = gson.fromJson(text, IntegerJsonResponse);
@@ -195,7 +203,7 @@ public class NetworkService extends Service {
                         mApiIds.put(ApiAccess.API_HISTORY, apiIdResponse.result);
 
                         checkNextRequestedApiAccess();
-                    }else if(mLastCall == RPC.CALL_NETWORK_BROADCAST){
+                    }else if(mLastCall.equals(RPC.CALL_NETWORK_BROADCAST)){
                         // Deserializing integer response
                         Type IntegerJsonResponse = new TypeToken<JsonRpcResponse<Integer>>(){}.getType();
                         JsonRpcResponse<Integer> apiIdResponse = gson.fromJson(text, IntegerJsonResponse);
