@@ -160,6 +160,7 @@ public class GetRelativeAccountHistory extends BaseGrapheneHandler {
             }else if(baseResponse.id >= GET_HISTORY_DATA){
                 Type RelativeAccountHistoryResponse = new TypeToken<WitnessResponse<List<OperationHistory>>>(){}.getType();
                 GsonBuilder gsonBuilder = new GsonBuilder();
+                gsonBuilder.registerTypeAdapter(OperationHistory.class, new OperationHistory.OperationHistoryDeserializer());
                 gsonBuilder.registerTypeAdapter(TransferOperation.class, new TransferOperation.TransferDeserializer());
                 gsonBuilder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer());
                 gsonBuilder.registerTypeAdapter(Memo.class, new Memo.MemoDeserializer());
