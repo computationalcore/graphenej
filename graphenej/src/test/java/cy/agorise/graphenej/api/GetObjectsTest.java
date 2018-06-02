@@ -27,6 +27,7 @@ public class GetObjectsTest extends BaseApiTest{
     private final Asset asset = new Asset("1.3.0", "BTS", 5);
     private final UserAccount account = new UserAccount("1.2.116354");
     private final UserAccount bilthon_25 = new UserAccount("1.2.151069");
+    private UserAccount ltmAccount = new UserAccount("1.2.99700");
     private final String[] bitAssetIds = new String[]{"2.4.21", "2.4.83"};
 
     @Test
@@ -98,6 +99,50 @@ public class GetObjectsTest extends BaseApiTest{
                 }
             }));
 
+            mWebSocket.connect();
+            synchronized (this){
+                wait();
+            }
+        }catch (WebSocketException e) {
+            System.out.println("WebSocketException. Msg: " + e.getMessage());
+        } catch (InterruptedException e) {
+            System.out.println("InterruptedException. Msg: "+e.getMessage());
+        }
+    }
+
+    @Test
+    public void testGetLtmAccount(){
+        ArrayList<String> ids = new ArrayList<>();
+        ids.add(ltmAccount.getObjectId());
+        mWebSocket.addListener(new GetObjects(ids, new WitnessResponseListener() {
+
+            @Override
+            public void onSuccess(WitnessResponse response) {
+                System.out.println("onSuccess");
+                List<GrapheneObject> result = (List<GrapheneObject>) response.result;
+                UserAccount userAccount = (UserAccount) result.get(0);
+                System.out.println("Account name.....: "+userAccount.getName());
+                System.out.println("Is LTM...........: "+userAccount.isLifeTime());
+                System.out.println("json string......: "+userAccount.toJsonString());
+                System.out.println("owner............: "+userAccount.getOwner().getKeyAuthList().get(0).getAddress());
+                System.out.println("active key.......: "+userAccount.getActive().getKeyAuthList().get(0).getAddress());
+                System.out.println("memo: "+userAccount.getOptions().getMemoKey().getAddress());
+                Assert.assertEquals("We expect this account to be LTM",true, userAccount.isLifeTime());
+                synchronized (GetObjectsTest.this){
+                    GetObjectsTest.this.notifyAll();
+                }
+            }
+
+            @Override
+            public void onError(BaseResponse.Error error) {
+                System.out.println("onError");
+                synchronized (GetObjectsTest.this){
+                    GetObjectsTest.this.notifyAll();
+                }
+            }
+        }));
+
+        try {
             mWebSocket.connect();
             synchronized (this){
                 wait();

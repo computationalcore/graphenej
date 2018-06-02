@@ -47,6 +47,7 @@ public class UserAccount extends GrapheneObject implements ByteSerializable, Jso
     public static final String KEY_OWNER_SPECIAL_AUTHORITY = "owner_special_authority";
     public static final String KEY_ACTIVE_SPECIAL_AUTHORITY = "active_special_authority";
     public static final String KEY_N_CONTROL_FLAGS = "top_n_control_flags";
+    public static final String LIFETIME_EXPIRATION_DATE = "1969-12-31T23:59:59";
 
     @Expose
     private String name;
@@ -84,6 +85,7 @@ public class UserAccount extends GrapheneObject implements ByteSerializable, Jso
     @Expose
     private long referrerRewardsPercentage;
 
+    private boolean isLifeTime;
 
 
     /**
@@ -248,6 +250,14 @@ public class UserAccount extends GrapheneObject implements ByteSerializable, Jso
         this.statistics = statistics;
     }
 
+    public boolean isLifeTime() {
+        return isLifeTime;
+    }
+
+    public void setLifeTime(boolean lifeTime) {
+        isLifeTime = lifeTime;
+    }
+
     /**
      * Deserializer used to build a UserAccount instance from the full JSON-formatted response obtained
      * by the 'get_objects' API call.
@@ -274,8 +284,10 @@ public class UserAccount extends GrapheneObject implements ByteSerializable, Jso
             // Handling the deserialization and assignation of the membership date, which internally
             // is stored as a long POSIX time value
             try{
-                Date date = dateFormat.parse(jsonAccount.get(KEY_MEMBERSHIP_EXPIRATION_DATE).getAsString());
+                String expirationDate = jsonAccount.get(KEY_MEMBERSHIP_EXPIRATION_DATE).getAsString();
+                Date date = dateFormat.parse(expirationDate);
                 userAccount.setMembershipExpirationDate(date.getTime());
+                userAccount.setLifeTime(expirationDate.equals(LIFETIME_EXPIRATION_DATE));
             } catch (ParseException e) {
                 System.out.println("ParseException. Msg: "+e.getMessage());
             }
