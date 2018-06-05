@@ -8,7 +8,7 @@ import cy.agorise.graphenej.api.ApiAccess;
 import cy.agorise.graphenej.models.ApiCall;
 
 /**
- * Wrapper aroung the "get_block" API call.
+ * Wrapper around the "get_block" API call.
  */
 
 public class GetBlock implements ApiCallable {
