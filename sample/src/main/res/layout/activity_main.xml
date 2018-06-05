@@ -5,15 +5,26 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.luminiasoft.labs.sample.MainActivity">
+
     <Button
-        android:id="@+id/send_message"
+        android:id="@+id/call_get_block"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Send message"
-        app:layout_constraintBottom_toTopOf="@+id/response"
+        android:text="Get block"
+        app:layout_constraintBottom_toTopOf="@+id/call_get_accounts"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/call_get_accounts"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Get accounts"
+        app:layout_constraintBottom_toTopOf="@+id/response"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/call_get_block" />
 
     <TextView
         android:id="@+id/response"
@@ -21,7 +32,7 @@
         android:layout_height="200dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/send_message"
+        app:layout_constraintTop_toBottomOf="@id/call_get_block"
         app:layout_constraintBottom_toTopOf="@+id/next_activity"/>
 
     <Button
