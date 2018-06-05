@@ -28,10 +28,12 @@ public class GetAccounts implements ApiCallable {
 
     @Override
     public ApiCall toApiCall(int apiId, long sequenceId) {
-        ArrayList<Serializable> params = new ArrayList();
+        ArrayList<Serializable> params = new ArrayList<>();
+        ArrayList<Serializable> accountIds = new ArrayList<>();
         for(UserAccount userAccount : mUserAccounts){
-            params.add(userAccount.getObjectId());
+            accountIds.add(userAccount.getObjectId());
         }
+        params.add(accountIds);
         return new ApiCall(apiId, RPC.CALL_GET_ACCOUNTS, params, RPC.VERSION, sequenceId);
     }
 }
