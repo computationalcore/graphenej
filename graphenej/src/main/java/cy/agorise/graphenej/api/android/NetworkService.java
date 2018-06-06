@@ -15,13 +15,17 @@ import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import cy.agorise.graphenej.RPC;
 import cy.agorise.graphenej.api.ApiAccess;
 import cy.agorise.graphenej.api.ConnectionStatusUpdate;
 import cy.agorise.graphenej.api.bitshares.Nodes;
 import cy.agorise.graphenej.api.calls.ApiCallable;
+import cy.agorise.graphenej.api.calls.GetAccounts;
+import cy.agorise.graphenej.models.AccountProperties;
 import cy.agorise.graphenej.models.ApiCall;
+import cy.agorise.graphenej.models.Block;
 import cy.agorise.graphenej.models.JsonRpcResponse;
 import io.reactivex.annotations.Nullable;
 import okhttp3.OkHttpClient;
@@ -68,7 +72,7 @@ public class NetworkService extends Service {
     private boolean isLoggedIn = false;
 
     private String mLastCall;
-    private int mCurrentId = 0;
+    private long mCurrentId = 0;
 
     // Requested APIs passed to this service
     private int mRequestedApis;
@@ -79,6 +83,16 @@ public class NetworkService extends Service {
     private ArrayList<String> mNodeUrls = new ArrayList<>();
 
     private Gson gson = new Gson();
+
+    // Map used to keep track of outgoing request ids and its request types. This is just
+    // one of two required mappings. The second one is implemented by the DeserializationMap
+    // class.
+    private HashMap<Long, Class> mRequestClassMap = new HashMap<>();
+
+    // This class is used to keep track of the mapping between request classes and response
+    // payload classes. It also provides a handy method that returns a Gson deserializer instance
+    // suited for every response type.
+    private DeserializationMap mDeserializationMap = new DeserializationMap();
 
     @Override
     public void onCreate() {
@@ -117,7 +131,7 @@ public class NetworkService extends Service {
         client.newWebSocket(request, mWebSocketListener);
     }
 
-    public int sendMessage(String message){
+    public long sendMessage(String message){
         if(mWebSocket != null){
             if(mWebSocket.send(message)){
                 Log.v(TAG,"-> " + message);
@@ -128,12 +142,13 @@ public class NetworkService extends Service {
         return mCurrentId;
     }
 
-    public int sendMessage(ApiCallable apiCallable, int requiredApi){
+    public long sendMessage(ApiCallable apiCallable, int requiredApi){
         int apiId = 0;
         if(requiredApi != -1 && mApiIds.containsKey(requiredApi)){
             apiId = mApiIds.get(requiredApi);
         }
         ApiCall call = apiCallable.toApiCall(apiId, ++mCurrentId);
+        mRequestClassMap.put(mCurrentId, apiCallable.getClass());
         if(mWebSocket.send(call.toJsonString())){
             Log.v(TAG,"-> "+call.toJsonString());
         }
@@ -156,14 +171,12 @@ public class NetworkService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG,"onStartCommand");
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        Log.d(TAG,"onBind");
         return mBinder;
     }
 
@@ -183,7 +196,6 @@ public class NetworkService extends Service {
         @Override
         public void onOpen(WebSocket webSocket, Response response) {
             super.onOpen(webSocket, response);
-            Log.d(TAG,"onOpen");
             mWebSocket = webSocket;
 
             // Notifying all listeners about the new connection status
@@ -247,7 +259,46 @@ public class NetworkService extends Service {
                 Log.w(TAG,"Error.Msg: "+response.error.message);
             }
 
-            RxBus.getBusInstance().send(response);
+            JsonRpcResponse parsedResponse = null;
+
+            Class requestClass = mRequestClassMap.get(response.id);
+            if(requestClass != null){
+                // Removing the class entry in the map
+                mRequestClassMap.remove(mCurrentId);
+
+                // Obtaining the response payload class
+                Class responsePayloadClass = mDeserializationMap.getReceivedClass(requestClass);
+                Gson gson = mDeserializationMap.getGson(requestClass);
+                if(responsePayloadClass == Block.class){
+                    // If the response payload is a simple Block instance, we proceed to de-serialize it
+                    Type GetBlockResponse = new TypeToken<JsonRpcResponse<Block>>() {}.getType();
+                    JsonRpcResponse<Block> blockResponse = (JsonRpcResponse) gson.fromJson(text, GetBlockResponse);
+                    parsedResponse = blockResponse;
+                }else if(responsePayloadClass == List.class){
+                    // If the response payload is a List, further inquiry is required in order to
+                    // determine a list of what is expected here
+                    if(requestClass == GetAccounts.class){
+                        // If the request call was the wrapper to the get_accounts API call, we know
+                        // the response should be in the form of a JsonRpcResponse<List<AccountProperties>>
+                        // so we proceed with that
+                        Type GetAccountsResponse = new TypeToken<JsonRpcResponse<List<AccountProperties>>>(){}.getType();
+                        JsonRpcResponse<List<AccountProperties>> accountResponse = (JsonRpcResponse) gson.fromJson(text, GetAccountsResponse);
+                        parsedResponse = accountResponse;
+                    }else{
+                        Log.w(TAG,"Unknown request class");
+                    }
+                }else{
+                    Log.w(TAG,"Unhandled situation");
+                }
+            }
+
+            // In case the parsedResponse instance is null, we fall back to the raw response
+            if(parsedResponse == null){
+                parsedResponse = response;
+            }
+
+            // Broadcasting the parsed response to all interested listeners
+            RxBus.getBusInstance().send(parsedResponse);
         }
 
         private void checkNextRequestedApiAccess(){

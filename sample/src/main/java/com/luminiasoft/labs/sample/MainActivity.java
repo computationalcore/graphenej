@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Disposable mDisposable;
 
-    private HashMap<Integer, Integer> responseMap = new HashMap<>();
+    private HashMap<Long, Integer> responseMap = new HashMap<>();
 
     private final int GET_BLOCK_RESPONSE = 0;
     private final int GET_ACCOUNTS_RESPONSE = 1;
@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
                 if(message instanceof String){
                     Log.d(TAG,"Got text message: "+(message));
                     mResponse.setText(mResponse.getText() + ((String) message) + "\n");
+                    handleTextMessage((String) message);
                 }else if(message instanceof ConnectionStatusUpdate){
                     Log.d(TAG,"Got connection update. Status: "+((ConnectionStatusUpdate)message).getConnectionStatus());
                     mConnectionStatus.setText(((ConnectionStatusUpdate) message).getConnectionStatus());
@@ -74,6 +75,10 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void handleTextMessage(String text){
+
     }
 
     /**
@@ -106,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
     @OnClick(R.id.call_get_block)
     public void onGetBlock(View v){
         GetBlock getBlock = new GetBlock(1000000);
-        int id = mService.sendMessage(getBlock, GetBlock.REQUIRED_API);
+        long id = mService.sendMessage(getBlock, GetBlock.REQUIRED_API);
         // Registering the used sequence id
         responseMap.put(id, GET_BLOCK_RESPONSE);
     }
@@ -114,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
     @OnClick(R.id.call_get_accounts)
     public void onGetAccounts(View v){
         GetAccounts getAccounts = new GetAccounts(new UserAccount("1.2.1000"));
-        int id = mService.sendMessage(getAccounts, GetBlock.REQUIRED_API);
+        long id = mService.sendMessage(getAccounts, GetBlock.REQUIRED_API);
         // Registering the used sequence id
         responseMap.put(id, GET_ACCOUNTS_RESPONSE);
     }
