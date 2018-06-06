@@ -1,12 +1,10 @@
 package cy.agorise.graphenej.api.android;
 
-import com.google.common.reflect.TypeToken;
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 
@@ -16,7 +14,7 @@ import cy.agorise.graphenej.Authority;
 import cy.agorise.graphenej.Transaction;
 import cy.agorise.graphenej.api.calls.GetAccounts;
 import cy.agorise.graphenej.api.calls.GetBlock;
-import cy.agorise.graphenej.models.AccountProperties;
+import cy.agorise.graphenej.api.calls.GetRequiredFees;
 import cy.agorise.graphenej.models.Block;
 import cy.agorise.graphenej.operations.CustomOperation;
 import cy.agorise.graphenej.operations.LimitOrderCreateOperation;
@@ -48,8 +46,6 @@ public class DeserializationMap {
         mGsonMap.put(GetBlock.class, getBlockGson);
 
         // GetAccounts
-        Type GetAccountResponse = new TypeToken<List<AccountProperties>>() {}.getType();
-        mClassMap.put(GetAccounts.class, GetAccountResponse.getClass());
         mClassMap.put(GetAccounts.class, List.class);
         Gson getAccountsGson = new GsonBuilder()
                 .setExclusionStrategies(new GetAccountsExclusionStrategy())
@@ -57,6 +53,13 @@ public class DeserializationMap {
                 .registerTypeAdapter(AccountOptions.class, new AccountOptions.AccountOptionsDeserializer())
                 .create();
         mGsonMap.put(GetAccounts.class, getAccountsGson);
+
+        // GetRequiredFees
+        mClassMap.put(GetRequiredFees.class, List.class);
+        Gson getRequiredFeesGson = new GsonBuilder()
+                .registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer())
+                .create();
+        mGsonMap.put(GetRequiredFees.class, getRequiredFeesGson);
     }
 
     public Class getReceivedClass(Class _class){
