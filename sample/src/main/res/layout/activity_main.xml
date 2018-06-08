@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.luminiasoft.labs.sample.MainActivity">
+    tools:context="cy.agorise.labs.sample.MainActivity">
 
     <Button
         android:id="@+id/call_get_block"

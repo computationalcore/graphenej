@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.luminiasoft.labs.sample.SecondActivity">
+    tools:context="cy.agorise.labs.sample.SecondActivity">
     <TextView
         android:id="@+id/text_field"
         android:layout_width="0dp"
