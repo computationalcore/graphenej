@@ -17,7 +17,7 @@ public class GetBlock implements ApiCallable {
 
     private long blockNumber;
 
-    public GetBlock(int blockNum){
+    public GetBlock(long blockNum){
         this.blockNumber = blockNum;
     }
 
