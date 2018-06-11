@@ -24,11 +24,13 @@ import cy.agorise.graphenej.api.ConnectionStatusUpdate;
 import cy.agorise.graphenej.api.bitshares.Nodes;
 import cy.agorise.graphenej.api.calls.ApiCallable;
 import cy.agorise.graphenej.api.calls.GetAccounts;
+import cy.agorise.graphenej.api.calls.GetRelativeAccountHistory;
 import cy.agorise.graphenej.api.calls.GetRequiredFees;
 import cy.agorise.graphenej.models.AccountProperties;
 import cy.agorise.graphenej.models.ApiCall;
 import cy.agorise.graphenej.models.Block;
 import cy.agorise.graphenej.models.JsonRpcResponse;
+import cy.agorise.graphenej.models.OperationHistory;
 import io.reactivex.annotations.Nullable;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -274,8 +276,7 @@ public class NetworkService extends Service {
                 if(responsePayloadClass == Block.class){
                     // If the response payload is a simple Block instance, we proceed to de-serialize it
                     Type GetBlockResponse = new TypeToken<JsonRpcResponse<Block>>() {}.getType();
-                    JsonRpcResponse<Block> blockResponse = (JsonRpcResponse) gson.fromJson(text, GetBlockResponse);
-                    parsedResponse = blockResponse;
+                    parsedResponse = gson.fromJson(text, GetBlockResponse);
                 }else if(responsePayloadClass == List.class){
                     // If the response payload is a List, further inquiry is required in order to
                     // determine a list of what is expected here
@@ -284,12 +285,13 @@ public class NetworkService extends Service {
                         // the response should be in the form of a JsonRpcResponse<List<AccountProperties>>
                         // so we proceed with that
                         Type GetAccountsResponse = new TypeToken<JsonRpcResponse<List<AccountProperties>>>(){}.getType();
-                        JsonRpcResponse<List<AccountProperties>> accountResponse = (JsonRpcResponse) gson.fromJson(text, GetAccountsResponse);
-                        parsedResponse = accountResponse;
+                        parsedResponse = gson.fromJson(text, GetAccountsResponse);
                     }else if(requestClass == GetRequiredFees.class){
                         Type GetRequiredFeesResponse = new TypeToken<JsonRpcResponse<List<AssetAmount>>>(){}.getType();
-                        JsonRpcResponse<List<AssetAmount>> assetAmountResponse = (JsonRpcResponse) gson.fromJson(text, GetRequiredFeesResponse);
-                        parsedResponse = assetAmountResponse;
+                        parsedResponse = gson.fromJson(text, GetRequiredFeesResponse);
+                    }else if(requestClass == GetRelativeAccountHistory.class){
+                        Type RelativeAccountHistoryResponse = new TypeToken<JsonRpcResponse<List<OperationHistory>>>(){}.getType();
+                        parsedResponse = gson.fromJson(text, RelativeAccountHistoryResponse);
                     }else{
                         Log.w(TAG,"Unknown request class");
                     }

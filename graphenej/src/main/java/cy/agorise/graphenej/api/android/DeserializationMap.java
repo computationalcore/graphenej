@@ -14,8 +14,11 @@ import cy.agorise.graphenej.Authority;
 import cy.agorise.graphenej.Transaction;
 import cy.agorise.graphenej.api.calls.GetAccounts;
 import cy.agorise.graphenej.api.calls.GetBlock;
+import cy.agorise.graphenej.api.calls.GetRelativeAccountHistory;
 import cy.agorise.graphenej.api.calls.GetRequiredFees;
 import cy.agorise.graphenej.models.Block;
+import cy.agorise.graphenej.models.OperationHistory;
+import cy.agorise.graphenej.objects.Memo;
 import cy.agorise.graphenej.operations.CustomOperation;
 import cy.agorise.graphenej.operations.LimitOrderCreateOperation;
 import cy.agorise.graphenej.operations.TransferOperation;
@@ -60,6 +63,17 @@ public class DeserializationMap {
                 .registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer())
                 .create();
         mGsonMap.put(GetRequiredFees.class, getRequiredFeesGson);
+
+        // GetRelativeAccounthistory
+        mClassMap.put(GetRelativeAccountHistory.class, List.class);
+        Gson getRelativeAcountHistoryGson = new GsonBuilder()
+            .registerTypeAdapter(OperationHistory.class, new OperationHistory.OperationHistoryDeserializer())
+            .registerTypeAdapter(TransferOperation.class, new TransferOperation.TransferDeserializer())
+            .registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer())
+            .registerTypeAdapter(Memo.class, new Memo.MemoDeserializer())
+            .create();
+        mGsonMap.put(GetRelativeAccountHistory.class, getRelativeAcountHistoryGson);
+
     }
 
     public Class getReceivedClass(Class _class){
