@@ -15,9 +15,11 @@ import cy.agorise.graphenej.Authority;
 import cy.agorise.graphenej.Transaction;
 import cy.agorise.graphenej.api.calls.GetAccounts;
 import cy.agorise.graphenej.api.calls.GetBlock;
+import cy.agorise.graphenej.api.calls.GetBlockHeader;
 import cy.agorise.graphenej.api.calls.GetRelativeAccountHistory;
 import cy.agorise.graphenej.api.calls.GetRequiredFees;
 import cy.agorise.graphenej.models.Block;
+import cy.agorise.graphenej.models.BlockHeader;
 import cy.agorise.graphenej.models.OperationHistory;
 import cy.agorise.graphenej.objects.Memo;
 import cy.agorise.graphenej.operations.CustomOperation;
@@ -38,6 +40,8 @@ public class DeserializationMap {
     private HashMap<Class, Gson> mGsonMap = new HashMap<>();
 
     public DeserializationMap(){
+        Gson genericGson = new Gson();
+
         // GetBlock
         mClassMap.put(GetBlock.class, Block.class);
         Gson getBlockGson = new GsonBuilder()
@@ -75,6 +79,10 @@ public class DeserializationMap {
             .registerTypeAdapter(Memo.class, new Memo.MemoDeserializer())
             .create();
         mGsonMap.put(GetRelativeAccountHistory.class, getRelativeAcountHistoryGson);
+
+        // GetBlockHeader
+        mClassMap.put(GetBlockHeader.class, BlockHeader.class);
+        mGsonMap.put(GetBlockHeader.class, genericGson);
 
     }
 

@@ -29,6 +29,7 @@ import cy.agorise.graphenej.api.calls.GetRequiredFees;
 import cy.agorise.graphenej.models.AccountProperties;
 import cy.agorise.graphenej.models.ApiCall;
 import cy.agorise.graphenej.models.Block;
+import cy.agorise.graphenej.models.BlockHeader;
 import cy.agorise.graphenej.models.JsonRpcResponse;
 import cy.agorise.graphenej.models.OperationHistory;
 import io.reactivex.annotations.Nullable;
@@ -274,10 +275,14 @@ public class NetworkService extends Service {
                 Class responsePayloadClass = mDeserializationMap.getReceivedClass(requestClass);
                 Gson gson = mDeserializationMap.getGson(requestClass);
                 if(responsePayloadClass == Block.class){
-                    // If the response payload is a simple Block instance, we proceed to de-serialize it
+                    // If the response payload is a Block instance, we proceed to de-serialize it
                     Type GetBlockResponse = new TypeToken<JsonRpcResponse<Block>>() {}.getType();
                     parsedResponse = gson.fromJson(text, GetBlockResponse);
-                }else if(responsePayloadClass == List.class){
+                }else if(responsePayloadClass == BlockHeader.class){
+                    // If the response payload is a BlockHeader instance, we proceed to de-serialize it
+                    Type GetBlockHeaderResponse = new TypeToken<JsonRpcResponse<BlockHeader>>(){}.getType();
+                    parsedResponse = gson.fromJson(text, GetBlockHeaderResponse);
+                } else if(responsePayloadClass == List.class){
                     // If the response payload is a List, further inquiry is required in order to
                     // determine a list of what is expected here
                     if(requestClass == GetAccounts.class){
