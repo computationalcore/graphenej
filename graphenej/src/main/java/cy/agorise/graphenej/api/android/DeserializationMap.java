@@ -10,6 +10,7 @@ import java.util.List;
 
 import cy.agorise.graphenej.AccountOptions;
 import cy.agorise.graphenej.AssetAmount;
+import cy.agorise.graphenej.AssetOptions;
 import cy.agorise.graphenej.Authority;
 import cy.agorise.graphenej.Transaction;
 import cy.agorise.graphenej.api.calls.GetAccounts;
@@ -51,7 +52,7 @@ public class DeserializationMap {
         // GetAccounts
         mClassMap.put(GetAccounts.class, List.class);
         Gson getAccountsGson = new GsonBuilder()
-                .setExclusionStrategies(new GetAccountsExclusionStrategy())
+                .setExclusionStrategies(new SkipAccountOptionsStrategy())
                 .registerTypeAdapter(Authority.class, new Authority.AuthorityDeserializer())
                 .registerTypeAdapter(AccountOptions.class, new AccountOptions.AccountOptionsDeserializer())
                 .create();
@@ -64,9 +65,10 @@ public class DeserializationMap {
                 .create();
         mGsonMap.put(GetRequiredFees.class, getRequiredFeesGson);
 
-        // GetRelativeAccounthistory
+        // GetRelativeAccountHistory
         mClassMap.put(GetRelativeAccountHistory.class, List.class);
         Gson getRelativeAcountHistoryGson = new GsonBuilder()
+            .setExclusionStrategies(new SkipAccountOptionsStrategy(), new SkipAssetOptionsStrategy())
             .registerTypeAdapter(OperationHistory.class, new OperationHistory.OperationHistoryDeserializer())
             .registerTypeAdapter(TransferOperation.class, new TransferOperation.TransferDeserializer())
             .registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer())
@@ -88,7 +90,7 @@ public class DeserializationMap {
      * This class is required in order to break a recursion loop when de-serializing the
      * AccountProperties class instance.
      */
-    private class GetAccountsExclusionStrategy implements ExclusionStrategy {
+    public static class SkipAccountOptionsStrategy implements ExclusionStrategy {
 
         @Override
         public boolean shouldSkipField(FieldAttributes f) {
@@ -98,6 +100,23 @@ public class DeserializationMap {
         @Override
         public boolean shouldSkipClass(Class<?> clazz) {
             return clazz == AccountOptions.class;
+        }
+    }
+
+    /**
+     * This class is required in order to break a recursion loop when de-serializing the
+     * AssetAmount instance.
+     */
+    public static class SkipAssetOptionsStrategy implements ExclusionStrategy {
+
+        @Override
+        public boolean shouldSkipField(FieldAttributes f) {
+            return false;
+        }
+
+        @Override
+        public boolean shouldSkipClass(Class<?> clazz) {
+            return clazz == AssetOptions.class;
         }
     }
 }

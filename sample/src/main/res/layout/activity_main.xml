@@ -9,7 +9,7 @@
         android:id="@+id/output_text_container"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/container_get_accounts_call"
+        app:layout_constraintBottom_toTopOf="@+id/container_controls"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -18,52 +18,68 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </ScrollView>
-    <LinearLayout
-        android:id="@+id/container_get_accounts_call"
+    <ScrollView
+        android:id="@+id/container_controls"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        app:layout_constraintBottom_toTopOf="@+id/container_get_block_call"
+        android:layout_height="0dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/output_text_container">
-        <Button
-            android:id="@+id/call_get_accounts"
-            android:layout_width="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/output_text_container"
+        app:layout_constraintBottom_toTopOf="@+id/next_activity">
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Get accounts"
-            app:layout_constraintBottom_toTopOf="@+id/next_activity"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/container_get_block_call" />
-        <EditText
-            android:id="@+id/argument_get_accounts"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="1.2.139205"/>
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/container_get_block_call"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        app:layout_constraintBottom_toTopOf="@+id/next_activity"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/container_get_accounts_call">
-        <Button
-            android:id="@+id/call_get_block"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Get block"/>
-        <EditText
-            android:id="@+id/argument_get_block"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="100000"/>
-    </LinearLayout>
+            android:orientation="vertical">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+                <Button
+                    android:id="@+id/call_get_accounts"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Get accounts" />
+                <EditText
+                    android:id="@+id/argument_get_accounts"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1.2.139205"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+                <Button
+                    android:id="@+id/call_get_block"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Get block"/>
+                <EditText
+                    android:id="@+id/argument_get_block"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="100000"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+                <Button
+                    android:id="@+id/call_get_relative_account_history"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Get relative account history"/>
+                <EditText
+                    android:id="@+id/argument_get_relative_account_history"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1.2.138632"/>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
     <Button
         android:id="@+id/next_activity"
         android:layout_width="wrap_content"
@@ -72,7 +88,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/container_get_block_call" />
+        app:layout_constraintTop_toBottomOf="@id/container_controls" />
     <TextView
         android:id="@+id/connection_status"
         android:layout_width="match_parent"
