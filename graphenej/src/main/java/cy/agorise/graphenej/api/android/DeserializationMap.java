@@ -16,10 +16,12 @@ import cy.agorise.graphenej.Transaction;
 import cy.agorise.graphenej.api.calls.GetAccounts;
 import cy.agorise.graphenej.api.calls.GetBlock;
 import cy.agorise.graphenej.api.calls.GetBlockHeader;
+import cy.agorise.graphenej.api.calls.GetMarketHistory;
 import cy.agorise.graphenej.api.calls.GetRelativeAccountHistory;
 import cy.agorise.graphenej.api.calls.GetRequiredFees;
 import cy.agorise.graphenej.models.Block;
 import cy.agorise.graphenej.models.BlockHeader;
+import cy.agorise.graphenej.models.BucketObject;
 import cy.agorise.graphenej.models.OperationHistory;
 import cy.agorise.graphenej.objects.Memo;
 import cy.agorise.graphenej.operations.CustomOperation;
@@ -84,6 +86,12 @@ public class DeserializationMap {
         mClassMap.put(GetBlockHeader.class, BlockHeader.class);
         mGsonMap.put(GetBlockHeader.class, genericGson);
 
+        // GetMarketHistory
+        mClassMap.put(GetMarketHistory.class, List.class);
+        Gson getMarketHistoryGson = new GsonBuilder()
+            .registerTypeAdapter(BucketObject.class, new BucketObject.BucketDeserializer())
+            .create();
+        mGsonMap.put(GetMarketHistory.class, getMarketHistoryGson);
     }
 
     public Class getReceivedClass(Class _class){
