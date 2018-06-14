@@ -151,15 +151,14 @@ public class NetworkService extends Service {
     }
 
     public long sendMessage(ApiCallable apiCallable, int requiredApi){
-        int apiId = 0;
         if(requiredApi != -1 && mApiIds.containsKey(requiredApi)){
-            apiId = mApiIds.get(requiredApi);
-        }
-        ApiCall call = apiCallable.toApiCall(apiId, ++mCurrentId);
-        mRequestClassMap.put(mCurrentId, apiCallable.getClass());
-        if(mWebSocket != null && mWebSocket.send(call.toJsonString())){
-            Log.v(TAG,"-> "+call.toJsonString());
-            return mCurrentId;
+            int apiId = mApiIds.get(requiredApi);
+            ApiCall call = apiCallable.toApiCall(apiId, ++mCurrentId);
+            mRequestClassMap.put(mCurrentId, apiCallable.getClass());
+            if(mWebSocket != null && mWebSocket.send(call.toJsonString())){
+                Log.v(TAG,"-> "+call.toJsonString());
+                return mCurrentId;
+            }
         }
         return -1;
     }
