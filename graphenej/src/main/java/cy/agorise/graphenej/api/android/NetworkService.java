@@ -142,11 +142,12 @@ public class NetworkService extends Service {
         if(mWebSocket != null){
             if(mWebSocket.send(message)){
                 Log.v(TAG,"-> " + message);
+                return mCurrentId;
             }
         }else{
             throw new RuntimeException("Websocket connection has not yet been established");
         }
-        return mCurrentId;
+        return -1;
     }
 
     public long sendMessage(ApiCallable apiCallable, int requiredApi){
@@ -158,10 +159,9 @@ public class NetworkService extends Service {
         mRequestClassMap.put(mCurrentId, apiCallable.getClass());
         if(mWebSocket != null && mWebSocket.send(call.toJsonString())){
             Log.v(TAG,"-> "+call.toJsonString());
-        }else{
-            return -1;
+            return mCurrentId;
         }
-        return mCurrentId;
+        return -1;
     }
 
     /**
