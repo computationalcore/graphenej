@@ -24,12 +24,14 @@ import cy.agorise.graphenej.api.ConnectionStatusUpdate;
 import cy.agorise.graphenej.api.bitshares.Nodes;
 import cy.agorise.graphenej.api.calls.ApiCallable;
 import cy.agorise.graphenej.api.calls.GetAccounts;
+import cy.agorise.graphenej.api.calls.GetMarketHistory;
 import cy.agorise.graphenej.api.calls.GetRelativeAccountHistory;
 import cy.agorise.graphenej.api.calls.GetRequiredFees;
 import cy.agorise.graphenej.models.AccountProperties;
 import cy.agorise.graphenej.models.ApiCall;
 import cy.agorise.graphenej.models.Block;
 import cy.agorise.graphenej.models.BlockHeader;
+import cy.agorise.graphenej.models.BucketObject;
 import cy.agorise.graphenej.models.JsonRpcResponse;
 import cy.agorise.graphenej.models.OperationHistory;
 import io.reactivex.annotations.Nullable;
@@ -154,8 +156,10 @@ public class NetworkService extends Service {
         }
         ApiCall call = apiCallable.toApiCall(apiId, ++mCurrentId);
         mRequestClassMap.put(mCurrentId, apiCallable.getClass());
-        if(mWebSocket.send(call.toJsonString())){
+        if(mWebSocket != null && mWebSocket.send(call.toJsonString())){
             Log.v(TAG,"-> "+call.toJsonString());
+        }else{
+            return -1;
         }
         return mCurrentId;
     }
@@ -297,6 +301,9 @@ public class NetworkService extends Service {
                     }else if(requestClass == GetRelativeAccountHistory.class){
                         Type RelativeAccountHistoryResponse = new TypeToken<JsonRpcResponse<List<OperationHistory>>>(){}.getType();
                         parsedResponse = gson.fromJson(text, RelativeAccountHistoryResponse);
+                    }else if(requestClass == GetMarketHistory.class){
+                        Type GetMarketHistoryResponse = new TypeToken<JsonRpcResponse<List<BucketObject>>>(){}.getType();
+                        parsedResponse = gson.fromJson(text, GetMarketHistoryResponse);
                     }else{
                         Log.w(TAG,"Unknown request class");
                     }
