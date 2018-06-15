@@ -272,7 +272,7 @@ public class NetworkService extends Service {
             Class requestClass = mRequestClassMap.get(response.id);
             if(requestClass != null){
                 // Removing the class entry in the map
-                mRequestClassMap.remove(mCurrentId);
+                mRequestClassMap.remove(response.id);
 
                 // Obtaining the response payload class
                 Class responsePayloadClass = mDeserializationMap.getReceivedClass(requestClass);
