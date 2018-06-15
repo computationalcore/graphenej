@@ -150,9 +150,20 @@ public class NetworkService extends Service {
         return -1;
     }
 
+    /**
+     * Method that will send a message to the full node, and takes as an argument one of the
+     * API call wrapper classes. This is the preferred method of sending blockchain API calls.
+     *
+     * @param apiCallable   The object that will get serialized into a request
+     * @param requiredApi   The required APIs for this specific request. Should be one of the
+     *                      constants specified in the ApiAccess class.
+     * @return              The id of the message that was just sent, or -1 if no message was sent.
+     */
     public long sendMessage(ApiCallable apiCallable, int requiredApi){
-        if(requiredApi != -1 && mApiIds.containsKey(requiredApi)){
-            int apiId = mApiIds.get(requiredApi);
+        if(requiredApi != -1 && mApiIds.containsKey(requiredApi) || requiredApi == ApiAccess.API_NONE){
+            int apiId = 0;
+            if(requiredApi != ApiAccess.API_NONE)
+                apiId = mApiIds.get(requiredApi);
             ApiCall call = apiCallable.toApiCall(apiId, ++mCurrentId);
             mRequestClassMap.put(mCurrentId, apiCallable.getClass());
             if(mWebSocket != null && mWebSocket.send(call.toJsonString())){
