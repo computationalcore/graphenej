@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import cy.agorise.graphenej.AccountOptions;
+import cy.agorise.graphenej.Asset;
 import cy.agorise.graphenej.AssetAmount;
 import cy.agorise.graphenej.AssetOptions;
 import cy.agorise.graphenej.Authority;
@@ -19,6 +20,7 @@ import cy.agorise.graphenej.api.calls.GetBlockHeader;
 import cy.agorise.graphenej.api.calls.GetMarketHistory;
 import cy.agorise.graphenej.api.calls.GetRelativeAccountHistory;
 import cy.agorise.graphenej.api.calls.GetRequiredFees;
+import cy.agorise.graphenej.api.calls.LookupAssetSymbols;
 import cy.agorise.graphenej.models.Block;
 import cy.agorise.graphenej.models.BlockHeader;
 import cy.agorise.graphenej.models.BucketObject;
@@ -92,6 +94,13 @@ public class DeserializationMap {
             .registerTypeAdapter(BucketObject.class, new BucketObject.BucketDeserializer())
             .create();
         mGsonMap.put(GetMarketHistory.class, getMarketHistoryGson);
+
+        // LookupAssetSymbols
+        mClassMap.put(LookupAssetSymbols.class, List.class);
+        Gson lookupAssetSymbolGson = new GsonBuilder()
+                .registerTypeAdapter(Asset.class, new Asset.AssetDeserializer())
+                .create();
+        mGsonMap.put(LookupAssetSymbols.class, lookupAssetSymbolGson);
     }
 
     public Class getReceivedClass(Class _class){

@@ -20,6 +20,7 @@ import java.util.HashMap;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import cy.agorise.graphenej.Asset;
 import cy.agorise.graphenej.UserAccount;
 import cy.agorise.graphenej.api.ConnectionStatusUpdate;
 import cy.agorise.graphenej.api.android.DeserializationMap;
@@ -29,6 +30,7 @@ import cy.agorise.graphenej.api.calls.GetAccounts;
 import cy.agorise.graphenej.api.calls.GetBlock;
 import cy.agorise.graphenej.api.calls.GetBlockHeader;
 import cy.agorise.graphenej.api.calls.GetRelativeAccountHistory;
+import cy.agorise.graphenej.api.calls.LookupAssetSymbols;
 import cy.agorise.graphenej.models.JsonRpcResponse;
 import cy.agorise.graphenej.objects.Memo;
 import cy.agorise.graphenej.operations.TransferOperation;
@@ -57,6 +59,9 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.argument_get_relative_account_history)
     EditText mArgumentGetRelativeAccountHistory;
 
+    @BindView(R.id.argument_lookup_asset_symbol)
+    EditText mLookupAssetSymbol;
+
     // In case we want to interact directly with the service
     private NetworkService mService;
 
@@ -74,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
     private final int GET_BLOCK_RESPONSE = 1;
     private final int GET_BLOCK_HEADER_RESPONSE = 2;
     private final int GET_RELATIVE_ACCOUNT_HISTORY_RESPONSE = 3;
+    private final int LOOKUP_ASSET_SYMBOL = 4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,6 +130,9 @@ public class MainActivity extends AppCompatActivity {
                     mResponse.setText(mResponse.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
                     break;
                 case GET_BLOCK_HEADER_RESPONSE:
+                    mResponse.setText(mResponse.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
+                    break;
+                case LOOKUP_ASSET_SYMBOL:
                     mResponse.setText(mResponse.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
                     break;
                 default:
@@ -182,6 +191,14 @@ public class MainActivity extends AppCompatActivity {
         GetRelativeAccountHistory getRelativeAccountHistory = new GetRelativeAccountHistory(userAccount, 0, 20, 0);
         long id = mService.sendMessage(getRelativeAccountHistory, GetRelativeAccountHistory.REQUIRED_API);
         responseMap.put(id, GET_RELATIVE_ACCOUNT_HISTORY_RESPONSE);
+    }
+
+    @OnClick(R.id.call_lookup_asset_symbol)
+    public void onLookupAssetSymbol(View v){
+        String assetId = mLookupAssetSymbol.getText().toString();
+        Asset asset = new Asset(assetId);
+        long id = mService.sendMessage(new LookupAssetSymbols(asset), LookupAssetSymbols.REQUIRED_API);
+        responseMap.put(id, LOOKUP_ASSET_SYMBOL);
     }
 
     @OnClick(R.id.next_activity)
