@@ -19,6 +19,7 @@ public class RPC {
     public static final String CALL_GET_REQUIRED_FEES = "get_required_fees";
     public static final String CALL_GET_KEY_REFERENCES = "get_key_references";
     public static final String CALL_GET_RELATIVE_ACCOUNT_HISTORY = "get_relative_account_history";
+    public static final String CALL_GET_ACCOUNT_HISTORY = "get_account_history";
     public static final String CALL_LOOKUP_ACCOUNTS = "lookup_accounts";
     public static final String CALL_LIST_ASSETS = "list_assets";
     public static final String GET_OBJECTS = "get_objects";
