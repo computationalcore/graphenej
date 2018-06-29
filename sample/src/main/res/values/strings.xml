@@ -1,3 +1,35 @@
 <resources>
     <string name="app_name">Sample</string>
+
+    <string name="error_input_id">The entered value doesn\'t seem to be an object id</string>
+
+    <!-- Actions, buttons, etc -->
+    <string name="action_send">Send</string>
+
+    <!-- GetObjects input field -->
+    <string name="get_objects_arg1">Object id</string>
+
+    <!-- GetAccounts input field -->
+    <string name="get_accounts_arg1">Account id</string>
+
+    <!-- GetBlock & GetBlockHeader input field -->
+    <string name="get_block_arg1">Block id</string>
+
+    <!-- GetMarketHistory input fields -->
+    <string name="get_market_history_arg1">Base asset</string>
+    <string name="get_market_history_arg2">Quote asset</string>
+    <string name="get_market_history_arg3">Start timestamp (Latest)</string>
+    <string name="get_market_history_arg4">End timestamp (Earliest)</string>
+
+    <!-- GetRelativeAccountHistory input fields -->
+    <string name="get_relative_account_history_arg1">User account</string>
+    <string name="get_relative_account_history_arg2">Stop timestamp (Latest)</string>
+    <string name="get_relative_account_history_arg3">Limit</string>
+    <string name="get_relative_account_history_arg4">Start timestamp (Earliest)</string>
+
+    <!-- LookupAssetSymbols input fields -->
+    <string name="lookup_asset_symbols_arg1">Asset 1 id</string>
+    <string name="lookup_asset_symbols_arg2">Asset 2 id</string>
+    <string name="lookup_asset_symbols_arg3">Asset 3 id</string>
+    <string name="lookup_asset_symbols_arg4">Asset 4 id</string>
 </resources>
