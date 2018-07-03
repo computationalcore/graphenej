@@ -188,7 +188,7 @@ public class SubscriptionMessagesHub extends BaseGrapheneHandler implements Subs
                 }
 
                 payload.add(objects);
-                ApiCall subscribe = new ApiCall(databaseApiId, RPC.GET_OBJECTS, payload, RPC.VERSION, MANUAL_SUBSCRIPTION_ID);
+                ApiCall subscribe = new ApiCall(databaseApiId, RPC.CALL_GET_OBJECTS, payload, RPC.VERSION, MANUAL_SUBSCRIPTION_ID);
                 websocket.sendText(subscribe.toJsonString());
                 subscriptionCounter++;
             }else{

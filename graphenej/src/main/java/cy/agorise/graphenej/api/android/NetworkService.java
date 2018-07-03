@@ -25,6 +25,7 @@ import cy.agorise.graphenej.api.bitshares.Nodes;
 import cy.agorise.graphenej.api.calls.ApiCallable;
 import cy.agorise.graphenej.api.calls.GetAccounts;
 import cy.agorise.graphenej.api.calls.GetMarketHistory;
+import cy.agorise.graphenej.api.calls.GetObjects;
 import cy.agorise.graphenej.api.calls.GetRelativeAccountHistory;
 import cy.agorise.graphenej.api.calls.GetRequiredFees;
 import cy.agorise.graphenej.models.AccountProperties;
@@ -314,6 +315,8 @@ public class NetworkService extends Service {
                     }else if(requestClass == GetMarketHistory.class){
                         Type GetMarketHistoryResponse = new TypeToken<JsonRpcResponse<List<BucketObject>>>(){}.getType();
                         parsedResponse = gson.fromJson(text, GetMarketHistoryResponse);
+                    }else if(requestClass == GetObjects.class){
+                        parsedResponse = handleGetObject(text);
                     }else{
                         Log.w(TAG,"Unknown request class");
                     }
@@ -331,6 +334,26 @@ public class NetworkService extends Service {
             RxBus.getBusInstance().send(parsedResponse);
         }
 
+        /**
+         * Method used to try to deserialize a 'get_objects' API call. Since this request can be used
+         * for several types of objects, the de-serialization procedure can be a bit more complex.
+         *
+         * @param response  Response to a 'get_objects' API call
+         */
+        private JsonRpcResponse handleGetObject(String response){
+            //TODO: Implement a proper de-serialization logic
+            return null;
+        }
+
+        /**
+         * Method used to check all possible API accesses.
+         *
+         * The service will try to obtain sequentially API access ids for the following APIs:
+         *
+         * - Database
+         * - History
+         * - Network broadcast
+         */
         private void checkNextRequestedApiAccess(){
             if( (mRequestedApis & ApiAccess.API_DATABASE) == ApiAccess.API_DATABASE &&
                     mApiIds.get(ApiAccess.API_DATABASE) == null){

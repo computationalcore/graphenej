@@ -75,11 +75,9 @@ public class GetObjects extends BaseGrapheneHandler {
     public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
         ArrayList<Serializable> params = new ArrayList<>();
         ArrayList<Serializable> subParams = new ArrayList<>();
-        for(String id : this.ids){
-            subParams.add(id);
-        }
+        subParams.addAll(this.ids);
         params.add(subParams);
-        ApiCall apiCall = new ApiCall(0, RPC.GET_OBJECTS, params, RPC.VERSION, 0);
+        ApiCall apiCall = new ApiCall(0, RPC.CALL_GET_OBJECTS, params, RPC.VERSION, 0);
         websocket.sendText(apiCall.toJsonString());
     }
 
