@@ -6,10 +6,12 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -28,6 +30,7 @@ import cy.agorise.graphenej.api.android.RxBus;
 import cy.agorise.graphenej.api.calls.GetAccounts;
 import cy.agorise.graphenej.api.calls.GetBlock;
 import cy.agorise.graphenej.api.calls.GetObjects;
+import cy.agorise.graphenej.api.calls.ListAssets;
 import cy.agorise.graphenej.models.JsonRpcResponse;
 import cy.agorise.graphenej.objects.Memo;
 import cy.agorise.graphenej.operations.TransferOperation;
@@ -114,6 +117,8 @@ public class PerformCallActivity extends ConnectedActivity {
             case RPC.CALL_LOOKUP_ASSET_SYMBOLS:
                 setupLookupAssetSymbols();
                 break;
+            case RPC.CALL_LIST_ASSETS:
+                setupListAssets();
             default:
                 Log.d(TAG,"Default called");
         }
@@ -182,6 +187,14 @@ public class PerformCallActivity extends ConnectedActivity {
         mParam4View.setHint(resources.getString(R.string.lookup_asset_symbols_arg4));
     }
 
+    private void setupListAssets(){
+        requiredInput(2);
+        Resources resources = getResources();
+        mParam1View.setHint(resources.getString(R.string.list_assets_arg1));
+        mParam2View.setHint(resources.getString(R.string.list_assets_arg2));
+        param2.setInputType(InputType.TYPE_CLASS_NUMBER);
+    }
+
     private void requiredInput(int inputCount){
         if(inputCount == 1){
             mParam1View.setVisibility(View.VISIBLE);
@@ -227,6 +240,8 @@ public class PerformCallActivity extends ConnectedActivity {
                 break;
             case RPC.CALL_LOOKUP_ASSET_SYMBOLS:
                 break;
+            case RPC.CALL_LIST_ASSETS:
+                sendListAssets();
             default:
                 Log.d(TAG,"Default called");
         }
@@ -253,6 +268,19 @@ public class PerformCallActivity extends ConnectedActivity {
             responseMap.put(id, mRPC);
         }else{
             param1.setError(getResources().getString(R.string.error_input_id));
+        }
+    }
+
+    private void sendListAssets(){
+        try{
+            String lowerBound = param1.getText().toString();
+            int limit = Integer.parseInt(param2.getText().toString());
+            ListAssets listAssets = new ListAssets(lowerBound, limit);
+            long id = mNetworkService.sendMessage(listAssets, ListAssets.REQUIRED_API);
+            responseMap.put(id, mRPC);
+        }catch(NumberFormatException e){
+            Toast.makeText(this, getString(R.string.error_number_format), Toast.LENGTH_SHORT).show();
+            Log.e(TAG,"NumberFormatException while reading limit value. Msg: "+e.getMessage());
         }
     }
 
@@ -288,6 +316,9 @@ public class PerformCallActivity extends ConnectedActivity {
                     mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
                     break;
                 case RPC.CALL_LOOKUP_ASSET_SYMBOLS:
+                    mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
+                    break;
+                case RPC.CALL_LIST_ASSETS:
                     mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
                     break;
                 default:

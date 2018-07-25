@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import cy.agorise.graphenej.Asset;
 import cy.agorise.graphenej.AssetAmount;
 import cy.agorise.graphenej.RPC;
 import cy.agorise.graphenej.api.ApiAccess;
@@ -28,6 +29,7 @@ import cy.agorise.graphenej.api.calls.GetMarketHistory;
 import cy.agorise.graphenej.api.calls.GetObjects;
 import cy.agorise.graphenej.api.calls.GetRelativeAccountHistory;
 import cy.agorise.graphenej.api.calls.GetRequiredFees;
+import cy.agorise.graphenej.api.calls.ListAssets;
 import cy.agorise.graphenej.models.AccountProperties;
 import cy.agorise.graphenej.models.ApiCall;
 import cy.agorise.graphenej.models.Block;
@@ -317,6 +319,9 @@ public class NetworkService extends Service {
                         parsedResponse = gson.fromJson(text, GetMarketHistoryResponse);
                     }else if(requestClass == GetObjects.class){
                         parsedResponse = handleGetObject(text);
+                    }else if(requestClass == ListAssets.class){
+                        Type LisAssetsResponse = new TypeToken<JsonRpcResponse<List<Asset>>>(){}.getType();
+                        parsedResponse = gson.fromJson(text, LisAssetsResponse);
                     }else{
                         Log.w(TAG,"Unknown request class");
                     }

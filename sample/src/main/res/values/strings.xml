@@ -2,6 +2,7 @@
     <string name="app_name">Sample</string>
 
     <string name="error_input_id">The entered value doesn\'t seem to be an object id</string>
+    <string name="error_number_format">Illegal number format</string>
 
     <!-- Actions, buttons, etc -->
     <string name="action_send">Send</string>
@@ -32,4 +33,8 @@
     <string name="lookup_asset_symbols_arg2">Asset 2 id</string>
     <string name="lookup_asset_symbols_arg3">Asset 3 id</string>
     <string name="lookup_asset_symbols_arg4">Asset 4 id</string>
+
+    <!-- List assets input fields -->
+    <string name="list_assets_arg1">Lower bound of symbol names to retrieve</string>
+    <string name="list_assets_arg2">Maximum number of assets to fetch (must not exceed 100)</string>
 </resources>
