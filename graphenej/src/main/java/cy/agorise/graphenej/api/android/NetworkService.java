@@ -14,6 +14,7 @@ import com.google.gson.reflect.TypeToken;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -118,16 +119,11 @@ public class NetworkService extends Service {
 
         // Deciding whether to use an externally provided list of node URLs, or use our internal one
         if(serializedNodeUrls.equals("")){
-            for(int i = 0; i < Nodes.NODE_URLS.length; i++){
-                mNodeUrls.add(Nodes.NODE_URLS[i]);
-            }
+            mNodeUrls.addAll(Arrays.asList(Nodes.NODE_URLS));
         }else{
             String[] urls = serializedNodeUrls.split(",");
-            for(String url : urls){
-                mNodeUrls.add(url);
-            }
+            mNodeUrls.addAll(Arrays.asList(urls));
         }
-
         connect();
     }
 
