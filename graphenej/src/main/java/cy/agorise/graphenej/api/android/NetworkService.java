@@ -89,7 +89,7 @@ public class NetworkService extends Service {
     private int mRequestedApis;
 
     // Variable used to keep track of the currently obtained API accesses
-    private HashMap<Integer, Integer> mApiIds = new HashMap();
+    private HashMap<Integer, Integer> mApiIds = new HashMap<Integer, Integer>();
 
     private ArrayList<String> mNodeUrls = new ArrayList<>();
 
@@ -217,7 +217,7 @@ public class NetworkService extends Service {
             mWebSocket = webSocket;
 
             // Notifying all listeners about the new connection status
-            RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.CONNECTED));
+            RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.CONNECTED, ApiAccess.API_NONE));
 
             // If we're not yet logged in, we should do it now
             if(!isLoggedIn){
@@ -251,11 +251,17 @@ public class NetworkService extends Service {
                         // Storing the "database" api id
                         mApiIds.put(ApiAccess.API_DATABASE, apiIdResponse.result);
 
+                        // Broadcasting result
+                        RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.API_UPDATE, ApiAccess.API_DATABASE));
+
                         checkNextRequestedApiAccess();
                     }else if(mLastCall.equals(RPC.CALL_HISTORY)){
                         // Deserializing integer response
                         Type IntegerJsonResponse = new TypeToken<JsonRpcResponse<Integer>>(){}.getType();
                         JsonRpcResponse<Integer> apiIdResponse = gson.fromJson(text, IntegerJsonResponse);
+
+                        // Broadcasting result
+                        RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.API_UPDATE, ApiAccess.API_HISTORY));
 
                         // Storing the "history" api id
                         mApiIds.put(ApiAccess.API_HISTORY, apiIdResponse.result);
@@ -265,6 +271,9 @@ public class NetworkService extends Service {
                         // Deserializing integer response
                         Type IntegerJsonResponse = new TypeToken<JsonRpcResponse<Integer>>(){}.getType();
                         JsonRpcResponse<Integer> apiIdResponse = gson.fromJson(text, IntegerJsonResponse);
+
+                        // Broadcasting result
+                        RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.API_UPDATE, ApiAccess.API_NETWORK_BROADCAST));
 
                         // Storing the "network_broadcast" api access
                         mApiIds.put(ApiAccess.API_NETWORK_BROADCAST, apiIdResponse.result);
@@ -383,7 +392,8 @@ public class NetworkService extends Service {
         @Override
         public void onClosed(WebSocket webSocket, int code, String reason) {
             super.onClosed(webSocket, code, reason);
-            RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.DISCONNECTED));
+            Log.d(TAG,"onClosed");
+            RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.DISCONNECTED, ApiAccess.API_NONE));
 
             isLoggedIn = false;
         }
@@ -406,7 +416,7 @@ public class NetworkService extends Service {
                 Log.e(TAG,"Response: "+response.message());
             }
 
-            RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.DISCONNECTED));
+            RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.DISCONNECTED, ApiAccess.API_NONE));
             mSocketIndex++;
 
             if(mSocketIndex > mNodeUrls.size() * 3){
@@ -417,4 +427,15 @@ public class NetworkService extends Service {
             }
         }
     };
+
+    /**
+     * Method used to check whether or not the network service is connected to a node that
+     * offers a specific API.
+     *
+     * @param whichApi  The API we want to use.
+     * @return          True if the node has got that API enabled, false otherwise
+     */
+    public boolean hasApiId(int whichApi){
+        return mApiIds.get(whichApi) != null;
+    }
 }

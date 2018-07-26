@@ -20,7 +20,7 @@ public class ListAssets implements ApiCallable {
     /**
      * Internal constant used to represent the maximum limit of assets retrieved in one call.
      */
-    private final int MAX_BATCH_SIZE = 100;
+    public static final int MAX_BATCH_SIZE = 100;
 
     private String lowerBound;
     private int limit;
