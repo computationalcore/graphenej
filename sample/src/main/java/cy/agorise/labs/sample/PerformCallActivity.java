@@ -27,6 +27,7 @@ import cy.agorise.graphenej.UserAccount;
 import cy.agorise.graphenej.api.ConnectionStatusUpdate;
 import cy.agorise.graphenej.api.android.DeserializationMap;
 import cy.agorise.graphenej.api.android.RxBus;
+import cy.agorise.graphenej.api.calls.GetAccountByName;
 import cy.agorise.graphenej.api.calls.GetAccounts;
 import cy.agorise.graphenej.api.calls.GetBlock;
 import cy.agorise.graphenej.api.calls.GetObjects;
@@ -119,6 +120,8 @@ public class PerformCallActivity extends ConnectedActivity {
                 break;
             case RPC.CALL_LIST_ASSETS:
                 setupListAssets();
+            case RPC.CALL_GET_ACCOUNT_BY_NAME:
+                setupAccountByName();
             default:
                 Log.d(TAG,"Default called");
         }
@@ -195,6 +198,13 @@ public class PerformCallActivity extends ConnectedActivity {
         param2.setInputType(InputType.TYPE_CLASS_NUMBER);
     }
 
+    private void setupAccountByName(){
+        requiredInput(1);
+        Resources resources = getResources();
+        mParam1View.setHint(resources.getString(R.string.get_accounts_by_name_arg1));
+        param1.setInputType(InputType.TYPE_CLASS_TEXT);
+    }
+
     private void requiredInput(int inputCount){
         if(inputCount == 1){
             mParam1View.setVisibility(View.VISIBLE);
@@ -242,6 +252,8 @@ public class PerformCallActivity extends ConnectedActivity {
                 break;
             case RPC.CALL_LIST_ASSETS:
                 sendListAssets();
+            case RPC.CALL_GET_ACCOUNT_BY_NAME:
+                getAccountByName();
             default:
                 Log.d(TAG,"Default called");
         }
@@ -284,6 +296,12 @@ public class PerformCallActivity extends ConnectedActivity {
         }
     }
 
+    private void getAccountByName(){
+        String accountName = param1.getText().toString();
+        long id = mNetworkService.sendMessage(new GetAccountByName(accountName), GetAccountByName.REQUIRED_API);
+        responseMap.put(id, mRPC);
+    }
+
     /**
      * Internal method that will decide what to do with each JSON-RPC response
      *
@@ -321,6 +339,8 @@ public class PerformCallActivity extends ConnectedActivity {
                 case RPC.CALL_LIST_ASSETS:
                     mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
                     break;
+                case RPC.CALL_GET_ACCOUNT_BY_NAME:
+                    mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
                 default:
                     Log.w(TAG,"Case not handled");
                     mResponseView.setText(mResponseView.getText() + response.result.toString());

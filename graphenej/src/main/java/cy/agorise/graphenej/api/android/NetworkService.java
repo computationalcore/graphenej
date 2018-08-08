@@ -304,6 +304,9 @@ public class NetworkService extends Service {
                     // If the response payload is a BlockHeader instance, we proceed to de-serialize it
                     Type GetBlockHeaderResponse = new TypeToken<JsonRpcResponse<BlockHeader>>(){}.getType();
                     parsedResponse = gson.fromJson(text, GetBlockHeaderResponse);
+                } else if(responsePayloadClass == AccountProperties.class){
+                    Type GetAccountByNameResponse = new TypeToken<JsonRpcResponse<AccountProperties>>(){}.getType();
+                    parsedResponse = gson.fromJson(text, GetAccountByNameResponse);
                 } else if(responsePayloadClass == List.class){
                     // If the response payload is a List, further inquiry is required in order to
                     // determine a list of what is expected here

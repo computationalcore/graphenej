@@ -37,4 +37,7 @@
     <!-- List assets input fields -->
     <string name="list_assets_arg1">Lower bound of symbol names to retrieve</string>
     <string name="list_assets_arg2">Maximum number of assets to fetch (must not exceed 100)</string>
+
+    <!-- Get account by name fields -->
+    <string name="get_accounts_by_name_arg1">Account name</string>
 </resources>

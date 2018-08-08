@@ -43,7 +43,8 @@ public class CallsActivity extends AppCompatActivity {
             RPC.CALL_GET_RELATIVE_ACCOUNT_HISTORY,
             RPC.CALL_GET_REQUIRED_FEES,
             RPC.CALL_LOOKUP_ASSET_SYMBOLS,
-            RPC.CALL_LIST_ASSETS
+            RPC.CALL_LIST_ASSETS,
+            RPC.CALL_GET_ACCOUNT_BY_NAME
         };
 
         @NonNull

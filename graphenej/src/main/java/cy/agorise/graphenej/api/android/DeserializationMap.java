@@ -14,6 +14,7 @@ import cy.agorise.graphenej.AssetAmount;
 import cy.agorise.graphenej.AssetOptions;
 import cy.agorise.graphenej.Authority;
 import cy.agorise.graphenej.Transaction;
+import cy.agorise.graphenej.api.calls.GetAccountByName;
 import cy.agorise.graphenej.api.calls.GetAccounts;
 import cy.agorise.graphenej.api.calls.GetBlock;
 import cy.agorise.graphenej.api.calls.GetBlockHeader;
@@ -23,6 +24,7 @@ import cy.agorise.graphenej.api.calls.GetRelativeAccountHistory;
 import cy.agorise.graphenej.api.calls.GetRequiredFees;
 import cy.agorise.graphenej.api.calls.ListAssets;
 import cy.agorise.graphenej.api.calls.LookupAssetSymbols;
+import cy.agorise.graphenej.models.AccountProperties;
 import cy.agorise.graphenej.models.Block;
 import cy.agorise.graphenej.models.BlockHeader;
 import cy.agorise.graphenej.models.BucketObject;
@@ -117,6 +119,14 @@ public class DeserializationMap {
             .registerTypeAdapter(Asset.class, new Asset.AssetDeserializer())
             .create();
         mGsonMap.put(ListAssets.class, listAssetsGson);
+
+        // GetAccountByName
+        mClassMap.put(GetAccountByName.class, AccountProperties.class);
+        Gson getAccountByNameGson = new GsonBuilder()
+            .registerTypeAdapter(Authority.class, new Authority.AuthorityDeserializer())
+            .registerTypeAdapter(AccountOptions.class, new AccountOptions.AccountOptionsDeserializer())
+            .create();
+        mGsonMap.put(GetAccountByName.class, getAccountByNameGson);
     }
 
     public Class getReceivedClass(Class _class){
