@@ -242,6 +242,9 @@ public class NetworkService extends Service {
                     if(mLastCall.equals(RPC.CALL_LOGIN)){
                         isLoggedIn = true;
 
+                        // Broadcasting result
+                        RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.AUTHENTICATED, ApiAccess.API_NONE));
+
                         checkNextRequestedApiAccess();
                     }else if(mLastCall.equals(RPC.CALL_DATABASE)){
                         // Deserializing integer response
