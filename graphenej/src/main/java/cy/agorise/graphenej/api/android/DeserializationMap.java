@@ -13,11 +13,14 @@ import cy.agorise.graphenej.Asset;
 import cy.agorise.graphenej.AssetAmount;
 import cy.agorise.graphenej.AssetOptions;
 import cy.agorise.graphenej.Authority;
+import cy.agorise.graphenej.LimitOrder;
 import cy.agorise.graphenej.Transaction;
+import cy.agorise.graphenej.UserAccount;
 import cy.agorise.graphenej.api.calls.GetAccountByName;
 import cy.agorise.graphenej.api.calls.GetAccounts;
 import cy.agorise.graphenej.api.calls.GetBlock;
 import cy.agorise.graphenej.api.calls.GetBlockHeader;
+import cy.agorise.graphenej.api.calls.GetLimitOrders;
 import cy.agorise.graphenej.api.calls.GetMarketHistory;
 import cy.agorise.graphenej.api.calls.GetObjects;
 import cy.agorise.graphenej.api.calls.GetRelativeAccountHistory;
@@ -127,6 +130,15 @@ public class DeserializationMap {
             .registerTypeAdapter(AccountOptions.class, new AccountOptions.AccountOptionsDeserializer())
             .create();
         mGsonMap.put(GetAccountByName.class, getAccountByNameGson);
+
+        // GetLimitOrders
+        mClassMap.put(GetLimitOrders.class, List.class);
+        Gson getLimitOrdersGson = new GsonBuilder()
+            .registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer())
+            .registerTypeAdapter(UserAccount.class, new UserAccount.UserAccountSimpleDeserializer())
+            .registerTypeAdapter(LimitOrder.class, new LimitOrder.LimitOrderDeserializer())
+            .create();
+        mGsonMap.put(GetLimitOrders.class, getLimitOrdersGson);
     }
 
     public Class getReceivedClass(Class _class){

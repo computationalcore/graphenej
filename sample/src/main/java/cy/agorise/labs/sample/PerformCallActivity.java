@@ -30,6 +30,7 @@ import cy.agorise.graphenej.api.android.RxBus;
 import cy.agorise.graphenej.api.calls.GetAccountByName;
 import cy.agorise.graphenej.api.calls.GetAccounts;
 import cy.agorise.graphenej.api.calls.GetBlock;
+import cy.agorise.graphenej.api.calls.GetLimitOrders;
 import cy.agorise.graphenej.api.calls.GetObjects;
 import cy.agorise.graphenej.api.calls.ListAssets;
 import cy.agorise.graphenej.models.JsonRpcResponse;
@@ -120,8 +121,12 @@ public class PerformCallActivity extends ConnectedActivity {
                 break;
             case RPC.CALL_LIST_ASSETS:
                 setupListAssets();
+                break;
             case RPC.CALL_GET_ACCOUNT_BY_NAME:
                 setupAccountByName();
+                break;
+            case RPC.CALL_GET_LIMIT_ORDERS:
+                setupGetLimitOrders();
             default:
                 Log.d(TAG,"Default called");
         }
@@ -205,6 +210,17 @@ public class PerformCallActivity extends ConnectedActivity {
         param1.setInputType(InputType.TYPE_CLASS_TEXT);
     }
 
+    private void setupGetLimitOrders(){
+        requiredInput(3);
+        Resources resources = getResources();
+        mParam1View.setHint(resources.getString(R.string.get_limit_orders_arg1));
+        mParam2View.setHint(resources.getString(R.string.get_limit_orders_arg2));
+        mParam3View.setHint(resources.getString(R.string.get_limit_orders_arg3));
+        param1.setInputType(InputType.TYPE_CLASS_TEXT);
+        param2.setInputType(InputType.TYPE_CLASS_TEXT);
+        param3.setInputType(InputType.TYPE_CLASS_NUMBER);
+    }
+
     private void requiredInput(int inputCount){
         if(inputCount == 1){
             mParam1View.setVisibility(View.VISIBLE);
@@ -252,8 +268,12 @@ public class PerformCallActivity extends ConnectedActivity {
                 break;
             case RPC.CALL_LIST_ASSETS:
                 sendListAssets();
+                break;
             case RPC.CALL_GET_ACCOUNT_BY_NAME:
                 getAccountByName();
+                break;
+            case RPC.CALL_GET_LIMIT_ORDERS:
+                getLimitOrders();
             default:
                 Log.d(TAG,"Default called");
         }
@@ -302,6 +322,18 @@ public class PerformCallActivity extends ConnectedActivity {
         responseMap.put(id, mRPC);
     }
 
+    private void getLimitOrders(){
+        String assetA = param1.getText().toString();
+        String assetB = param2.getText().toString();
+        try{
+            int limit = Integer.parseInt(param3.getText().toString());
+            long id = mNetworkService.sendMessage(new GetLimitOrders(assetA, assetB, limit), GetLimitOrders.REQUIRED_API);
+        }catch(NumberFormatException e){
+            Toast.makeText(this, getString(R.string.error_number_format), Toast.LENGTH_SHORT).show();
+            Log.e(TAG,"NumberFormatException while trying to read limit value. Msg: "+e.getMessage());
+        }
+    }
+
     /**
      * Internal method that will decide what to do with each JSON-RPC response
      *
@@ -341,6 +373,10 @@ public class PerformCallActivity extends ConnectedActivity {
                     break;
                 case RPC.CALL_GET_ACCOUNT_BY_NAME:
                     mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
+                    break;
+                case RPC.CALL_GET_LIMIT_ORDERS:
+                    mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
+                    break;
                 default:
                     Log.w(TAG,"Case not handled");
                     mResponseView.setText(mResponseView.getText() + response.result.toString());

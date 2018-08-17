@@ -20,12 +20,14 @@ import java.util.List;
 
 import cy.agorise.graphenej.Asset;
 import cy.agorise.graphenej.AssetAmount;
+import cy.agorise.graphenej.LimitOrder;
 import cy.agorise.graphenej.RPC;
 import cy.agorise.graphenej.api.ApiAccess;
 import cy.agorise.graphenej.api.ConnectionStatusUpdate;
 import cy.agorise.graphenej.api.bitshares.Nodes;
 import cy.agorise.graphenej.api.calls.ApiCallable;
 import cy.agorise.graphenej.api.calls.GetAccounts;
+import cy.agorise.graphenej.api.calls.GetLimitOrders;
 import cy.agorise.graphenej.api.calls.GetMarketHistory;
 import cy.agorise.graphenej.api.calls.GetObjects;
 import cy.agorise.graphenej.api.calls.GetRelativeAccountHistory;
@@ -333,6 +335,9 @@ public class NetworkService extends Service {
                     }else if(requestClass == ListAssets.class){
                         Type LisAssetsResponse = new TypeToken<JsonRpcResponse<List<Asset>>>(){}.getType();
                         parsedResponse = gson.fromJson(text, LisAssetsResponse);
+                    }else if(requestClass == GetLimitOrders.class){
+                        Type GetLimitOrdersResponse = new TypeToken<JsonRpcResponse<List<LimitOrder>>>() {}.getType();
+                        parsedResponse = gson.fromJson(text, GetLimitOrdersResponse);
                     }else{
                         Log.w(TAG,"Unknown request class");
                     }

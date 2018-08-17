@@ -40,4 +40,9 @@
 
     <!-- Get account by name fields -->
     <string name="get_accounts_by_name_arg1">Account name</string>
+
+    <!-- GetLimitOrders input fields -->
+    <string name="get_limit_orders_arg1">Asset A</string>
+    <string name="get_limit_orders_arg2">Asset B</string>
+    <string name="get_limit_orders_arg3">Number of orders</string>
 </resources>
