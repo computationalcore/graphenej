@@ -120,19 +120,27 @@ public class BrainKey {
     }
 
     /**
-     * Brain key words getter
-     * @return: The word sequence that comprises this brain key
+     * Brain key words getter.
+     * @return      The word sequence that comprises this brain key
      */
     public String getBrainKey(){
         return mBrainKey;
     }
 
     /**
-     * Sequence number getter
-     * @return: The sequence number used alongside with the brain key words in order
+     * Sequence number getter.
+     * @return      The sequence number used alongside with the brain key words in order
      * to derive the private key
      */
     public int getSequenceNumber(){
         return sequenceNumber;
+    }
+
+    /**
+     * Sequence number setter.
+     * @param sequenceNumber    The sequence number used to generate a specific key from this brainkey
+     */
+    public void setSequenceNumber(int sequenceNumber) {
+        this.sequenceNumber = sequenceNumber;
     }
 }
