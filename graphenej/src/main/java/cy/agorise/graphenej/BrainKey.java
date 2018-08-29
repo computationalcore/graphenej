@@ -1,5 +1,7 @@
 package cy.agorise.graphenej;
 
+import android.annotation.SuppressLint;
+
 import org.bitcoinj.core.DumpedPrivateKey;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.NetworkParameters;
@@ -69,7 +71,15 @@ public class BrainKey {
     public BrainKey(String words, int sequence) {
         this.mBrainKey = words;
         this.sequenceNumber = sequence;
-        String encoded = String.format("%s %d", words, sequence);
+        derivePrivateKey();
+    }
+
+    /**
+     * Generates the actual private key from the brainkey + sequence number
+     */
+    private void derivePrivateKey(){
+        @SuppressLint("DefaultLocale")
+        String encoded = String.format("%s %d", this.mBrainKey, this.sequenceNumber);
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-512");
             byte[] bytes = md.digest(encoded.getBytes("UTF-8"));
@@ -142,5 +152,6 @@ public class BrainKey {
      */
     public void setSequenceNumber(int sequenceNumber) {
         this.sequenceNumber = sequenceNumber;
+        derivePrivateKey();
     }
 }
