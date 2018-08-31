@@ -256,72 +256,77 @@ public class NetworkService extends Service {
         public void onMessage(WebSocket webSocket, String text) {
             super.onMessage(webSocket, text);
             Log.v(TAG,"<- "+text);
-            JsonRpcResponse<?> response = gson.fromJson(text, JsonRpcResponse.class);
+            JsonRpcNotification notification = gson.fromJson(text, JsonRpcNotification.class);
 
-            // We will only handle messages that relate to the login and API accesses here.
-            if(response.result != null){
-                if(response.result instanceof Double || response.result instanceof Boolean){
-                    if(mLastCall.equals(RPC.CALL_LOGIN)){
-                        isLoggedIn = true;
+            if(notification.method != null){
+                // If we are dealing with a notification
+                handleJsonRpcNotification(notification);
+            }else{
+                // If we are dealing with a response
+                JsonRpcResponse<?> response = gson.fromJson(text, JsonRpcResponse.class);
+                if(response.result != null){
+                    // Handling initial handshake with the full node (authentication and API access checks)
+                    if(response.result instanceof Double || response.result instanceof Boolean){
+                        switch (mLastCall) {
+                            case RPC.CALL_LOGIN:
+                                isLoggedIn = true;
 
-                        // Broadcasting result
-                        RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.AUTHENTICATED, ApiAccess.API_NONE));
+                                // Broadcasting result
+                                RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.AUTHENTICATED, ApiAccess.API_NONE));
 
-                        checkNextRequestedApiAccess();
-                    }else if(mLastCall.equals(RPC.CALL_DATABASE)){
-                        // Deserializing integer response
-                        Type IntegerJsonResponse = new TypeToken<JsonRpcResponse<Integer>>(){}.getType();
-                        JsonRpcResponse<Integer> apiIdResponse = gson.fromJson(text, IntegerJsonResponse);
+                                checkNextRequestedApiAccess();
+                                break;
+                            case RPC.CALL_DATABASE: {
+                                // Deserializing integer response
+                                Type IntegerJsonResponse = new TypeToken<JsonRpcResponse<Integer>>() {}.getType();
+                                JsonRpcResponse<Integer> apiIdResponse = gson.fromJson(text, IntegerJsonResponse);
 
-                        // Storing the "database" api id
-                        mApiIds.put(ApiAccess.API_DATABASE, apiIdResponse.result);
+                                // Storing the "database" api id
+                                mApiIds.put(ApiAccess.API_DATABASE, apiIdResponse.result);
 
-                        // Broadcasting result
-                        RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.API_UPDATE, ApiAccess.API_DATABASE));
+                                // Broadcasting result
+                                RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.API_UPDATE, ApiAccess.API_DATABASE));
 
-                        checkNextRequestedApiAccess();
-                    }else if(mLastCall.equals(RPC.CALL_HISTORY)){
-                        // Deserializing integer response
-                        Type IntegerJsonResponse = new TypeToken<JsonRpcResponse<Integer>>(){}.getType();
-                        JsonRpcResponse<Integer> apiIdResponse = gson.fromJson(text, IntegerJsonResponse);
+                                checkNextRequestedApiAccess();
+                                break;
+                            }
+                            case RPC.CALL_HISTORY: {
+                                // Deserializing integer response
+                                Type IntegerJsonResponse = new TypeToken<JsonRpcResponse<Integer>>() {}.getType();
+                                JsonRpcResponse<Integer> apiIdResponse = gson.fromJson(text, IntegerJsonResponse);
 
-                        // Broadcasting result
-                        RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.API_UPDATE, ApiAccess.API_HISTORY));
+                                // Broadcasting result
+                                RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.API_UPDATE, ApiAccess.API_HISTORY));
 
-                        // Storing the "history" api id
-                        mApiIds.put(ApiAccess.API_HISTORY, apiIdResponse.result);
+                                // Storing the "history" api id
+                                mApiIds.put(ApiAccess.API_HISTORY, apiIdResponse.result);
 
-                        checkNextRequestedApiAccess();
-                    }else if(mLastCall.equals(RPC.CALL_NETWORK_BROADCAST)){
-                        // Deserializing integer response
-                        Type IntegerJsonResponse = new TypeToken<JsonRpcResponse<Integer>>(){}.getType();
-                        JsonRpcResponse<Integer> apiIdResponse = gson.fromJson(text, IntegerJsonResponse);
+                                checkNextRequestedApiAccess();
+                                break;
+                            }
+                            case RPC.CALL_NETWORK_BROADCAST:
+                                // Deserializing integer response
+                                Type IntegerJsonResponse = new TypeToken<JsonRpcResponse<Integer>>() {}.getType();
+                                JsonRpcResponse<Integer> apiIdResponse = gson.fromJson(text, IntegerJsonResponse);
 
-                        // Broadcasting result
-                        RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.API_UPDATE, ApiAccess.API_NETWORK_BROADCAST));
+                                // Broadcasting result
+                                RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.API_UPDATE, ApiAccess.API_NETWORK_BROADCAST));
 
-                        // Storing the "network_broadcast" api access
-                        mApiIds.put(ApiAccess.API_NETWORK_BROADCAST, apiIdResponse.result);
+                                // Storing the "network_broadcast" api access
+                                mApiIds.put(ApiAccess.API_NETWORK_BROADCAST, apiIdResponse.result);
 
-                        // All calls have been handled at this point
-                        mLastCall = "";
+                                // All calls have been handled at this point
+                                mLastCall = "";
+                                break;
+                        }
                     }
+                }
+                if(response.error != null && response.error.message != null){
+                    // We could not make sense of this incoming message, just log a warning
+                    Log.w(TAG,"Error.Msg: "+response.error.message);
                 }
                 // Properly de-serialize all other fields and broadcasts to the event bus
                 handleJsonRpcResponse(response, text);
-            }else{
-                // If no 'result' field was found, this incoming message probably corresponds to a
-                // JSON-RPC notification message, which should have a 'method' field with the string
-                // 'notice' as its value
-                JsonRpcNotification notification = gson.fromJson(text, JsonRpcNotification.class);
-                if(notification.method != null && notification.method.equals("notice")){
-                    handleJsonRpcNotification(notification);
-                }else{
-                    if(response.error != null && response.error.message != null){
-                        // We could not make sense of this incoming message, just log a warning
-                        Log.w(TAG,"Error.Msg: "+response.error.message);
-                    }
-                }
             }
         }
 
@@ -392,7 +397,6 @@ public class NetworkService extends Service {
             if(parsedResponse == null){
                 parsedResponse = response;
             }
-
             // Broadcasting the parsed response to all interested listeners
             RxBus.getBusInstance().send(parsedResponse);
         }
