@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="cy.agorise.labs.sample.SecondActivity">
+    tools:context="cy.agorise.labs.sample.SubscriptionActivity">
     <TextView
         android:id="@+id/text_field"
         android:layout_width="0dp"
@@ -18,35 +18,21 @@
         android:id="@+id/buttons_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:weightSum="4"
+        android:weightSum="2"
         app:layout_constraintBottom_toBottomOf="parent">
         <Button
-            android:id="@+id/transfer_fee_usd"
+            android:id="@+id/subscribe"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textSize="11sp"
-            android:text="Transfer (USD)"/>
+            android:text="Subscribe"/>
         <Button
-            android:id="@+id/transfer_fee_bts"
+            android:id="@+id/unsubscribe"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textSize="11sp"
-            android:text="Transfer (BTS)"/>
-        <Button
-            android:id="@+id/exchange_fee_usd"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textSize="11sp"
-            android:text="Exchange (USD)"/>
-        <Button
-            android:id="@+id/exchange_fee_bts"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textSize="11sp"
-            android:text="Exchange (BTS)"/>
+            android:text="Unsubscribe"/>
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

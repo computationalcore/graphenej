@@ -9,6 +9,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.Serializable;
@@ -22,6 +23,8 @@ import cy.agorise.graphenej.Asset;
 import cy.agorise.graphenej.AssetAmount;
 import cy.agorise.graphenej.LimitOrder;
 import cy.agorise.graphenej.RPC;
+import cy.agorise.graphenej.Transaction;
+import cy.agorise.graphenej.UserAccount;
 import cy.agorise.graphenej.api.ApiAccess;
 import cy.agorise.graphenej.api.ConnectionStatusUpdate;
 import cy.agorise.graphenej.api.bitshares.Nodes;
@@ -38,8 +41,14 @@ import cy.agorise.graphenej.models.ApiCall;
 import cy.agorise.graphenej.models.Block;
 import cy.agorise.graphenej.models.BlockHeader;
 import cy.agorise.graphenej.models.BucketObject;
+import cy.agorise.graphenej.models.DynamicGlobalProperties;
+import cy.agorise.graphenej.models.JsonRpcNotification;
 import cy.agorise.graphenej.models.JsonRpcResponse;
 import cy.agorise.graphenej.models.OperationHistory;
+import cy.agorise.graphenej.objects.Memo;
+import cy.agorise.graphenej.operations.CustomOperation;
+import cy.agorise.graphenej.operations.LimitOrderCreateOperation;
+import cy.agorise.graphenej.operations.TransferOperation;
 import io.reactivex.annotations.Nullable;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -95,7 +104,18 @@ public class NetworkService extends Service {
 
     private ArrayList<String> mNodeUrls = new ArrayList<>();
 
-    private Gson gson = new Gson();
+    private Gson gson = new GsonBuilder()
+            .registerTypeAdapter(Transaction.class, new Transaction.TransactionDeserializer())
+            .registerTypeAdapter(TransferOperation.class, new TransferOperation.TransferDeserializer())
+            .registerTypeAdapter(LimitOrderCreateOperation.class, new LimitOrderCreateOperation.LimitOrderCreateDeserializer())
+            .registerTypeAdapter(CustomOperation.class, new CustomOperation.CustomOperationDeserializer())
+            .registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer())
+            .registerTypeAdapter(UserAccount.class, new UserAccount.UserAccountSimpleDeserializer())
+            .registerTypeAdapter(DynamicGlobalProperties.class, new DynamicGlobalProperties.DynamicGlobalPropertiesDeserializer())
+            .registerTypeAdapter(Memo.class, new Memo.MemoDeserializer())
+            .registerTypeAdapter(OperationHistory.class, new OperationHistory.OperationHistoryDeserializer())
+            .registerTypeAdapter(JsonRpcNotification.class, new JsonRpcNotification.JsonRpcNotificationDeserializer())
+            .create();
 
     // Map used to keep track of outgoing request ids and its request types. This is just
     // one of two required mappings. The second one is implemented by the DeserializationMap
@@ -287,10 +307,32 @@ public class NetworkService extends Service {
                         mLastCall = "";
                     }
                 }
+                // Properly de-serialize all other fields and broadcasts to the event bus
+                handleJsonRpcResponse(response, text);
             }else{
-                Log.w(TAG,"Error.Msg: "+response.error.message);
+                // If no 'result' field was found, this incoming message probably corresponds to a
+                // JSON-RPC notification message, which should have a 'method' field with the string
+                // 'notice' as its value
+                JsonRpcNotification notification = gson.fromJson(text, JsonRpcNotification.class);
+                if(notification.method != null && notification.method.equals("notice")){
+                    handleJsonRpcNotification(notification);
+                }else{
+                    if(response.error != null && response.error.message != null){
+                        // We could not make sense of this incoming message, just log a warning
+                        Log.w(TAG,"Error.Msg: "+response.error.message);
+                    }
+                }
             }
+        }
 
+        /**
+         * Private method that will de-serialize all fields of every kind of JSON-RPC response
+         * and broadcast it to the event bus.
+         *
+         * @param response  De-serialized response
+         * @param text      Raw text, as received
+         */
+        private void handleJsonRpcResponse(JsonRpcResponse response, String text){
             JsonRpcResponse parsedResponse = null;
 
             Class requestClass = mRequestClassMap.get(response.id);
@@ -353,6 +395,15 @@ public class NetworkService extends Service {
 
             // Broadcasting the parsed response to all interested listeners
             RxBus.getBusInstance().send(parsedResponse);
+        }
+
+        /**
+         * Private method that will just broadcast a de-serialized notification to all interested parties
+         * @param notification  De-serialized notification
+         */
+        private void handleJsonRpcNotification(JsonRpcNotification notification){
+            // Broadcasting the parsed notification to all interested listeners
+            RxBus.getBusInstance().send(notification);
         }
 
         /**

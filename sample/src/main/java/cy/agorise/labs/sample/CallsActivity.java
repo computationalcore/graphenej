@@ -16,6 +16,7 @@ import butterknife.ButterKnife;
 import cy.agorise.graphenej.RPC;
 
 public class CallsActivity extends AppCompatActivity {
+    private final String TAG = this.getClass().getName();
 
     @BindView(R.id.call_list)
     RecyclerView mRecyclerView;
@@ -45,7 +46,8 @@ public class CallsActivity extends AppCompatActivity {
             RPC.CALL_LOOKUP_ASSET_SYMBOLS,
             RPC.CALL_LIST_ASSETS,
             RPC.CALL_GET_ACCOUNT_BY_NAME,
-            RPC.CALL_GET_LIMIT_ORDERS
+            RPC.CALL_GET_LIMIT_ORDERS,
+            RPC.CALL_SET_SUBSCRIBE_CALLBACK
         };
 
         @NonNull
@@ -62,9 +64,14 @@ public class CallsActivity extends AppCompatActivity {
             String formattedName = name.replace("_", " ").toUpperCase();
             holder.mCallNameView.setText(formattedName);
             holder.mCallNameView.setOnClickListener((view) -> {
-                Intent intent = new Intent(CallsActivity.this, PerformCallActivity.class);
-                String selectedCall = ((TextView)view).getText().toString().replace(" ", "_").toLowerCase();
-                intent.putExtra(Constants.KEY_SELECTED_CALL, selectedCall);
+                String selectedCall = supportedCalls[position];
+                Intent intent;
+                if(selectedCall.equals(RPC.CALL_SET_SUBSCRIBE_CALLBACK)){
+                    intent = new Intent(CallsActivity.this, SubscriptionActivity.class);
+                }else{
+                    intent = new Intent(CallsActivity.this, PerformCallActivity.class);
+                    intent.putExtra(Constants.KEY_SELECTED_CALL, selectedCall);
+                }
                 startActivity(intent);
             });
         }

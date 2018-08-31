@@ -18,6 +18,9 @@ public class SampleApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
+        // This variable would hold a list of custom nodes
+        String customNodes = "wss://mydomain.net/ws,wss://myotherdomain.com/ws";
+
         // Specifying some important information regarding the connection, such as the
         // credentials and the requested API accesses
         int requestedApis = ApiAccess.API_DATABASE | ApiAccess.API_HISTORY | ApiAccess.API_NETWORK_BROADCAST;
@@ -26,6 +29,7 @@ public class SampleApplication extends Application {
                 .putString(NetworkService.KEY_USERNAME, "nelson")
                 .putString(NetworkService.KEY_PASSWORD, "secret")
                 .putInt(NetworkService.KEY_REQUESTED_APIS, requestedApis)
+//                .putString(NetworkService.KEY_CUSTOM_NODE_URLS, customNodes)
                 .apply();
 
         /*

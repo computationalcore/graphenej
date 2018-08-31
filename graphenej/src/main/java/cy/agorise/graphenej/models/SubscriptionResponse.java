@@ -44,15 +44,12 @@ import cy.agorise.graphenej.interfaces.SubscriptionListener;
  * To minimize CPU usage, we introduce a scheme of selective parsing, implemented by the static inner class
  * SubscriptionResponseDeserializer.
  *
- * Created by nelson on 1/12/17.
  */
 public class SubscriptionResponse {
-    private static final String TAG = "SubscriptionResponse";
     public static final String KEY_ID = "id";
     public static final String KEY_METHOD = "method";
     public static final String KEY_PARAMS = "params";
 
-    public int id;
     public String method;
     public List<Serializable> params;
 
