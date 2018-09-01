@@ -19,7 +19,7 @@ public class SetSubscribeCallback implements ApiCallable {
     @Override
     public ApiCall toApiCall(int apiId, long sequenceId) {
         ArrayList<Serializable> subscriptionParams = new ArrayList<>();
-        subscriptionParams.add(String.format("%d", sequenceId));
+        subscriptionParams.add(new Long(sequenceId));
         subscriptionParams.add(clearFilter);
         return new ApiCall(apiId, RPC.CALL_SET_SUBSCRIBE_CALLBACK, subscriptionParams, RPC.VERSION, sequenceId);
     }
