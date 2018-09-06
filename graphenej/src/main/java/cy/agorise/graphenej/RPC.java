@@ -14,6 +14,7 @@ public class RPC {
     public static final String CALL_CANCEL_ALL_SUBSCRIPTIONS = "cancel_all_subscriptions";
     public static final String CALL_GET_ACCOUNT_BY_NAME = "get_account_by_name";
     public static final String CALL_GET_ACCOUNTS = "get_accounts";
+    public static final String CALL_GET_FULL_ACCOUNTS = "get_full_accounts";
     public static final String CALL_GET_DYNAMIC_GLOBAL_PROPERTIES = "get_dynamic_global_properties";
     public static final String CALL_BROADCAST_TRANSACTION = "broadcast_transaction";
     public static final String CALL_GET_REQUIRED_FEES = "get_required_fees";

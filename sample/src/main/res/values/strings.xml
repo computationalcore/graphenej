@@ -51,4 +51,7 @@
     <string name="get_limit_orders_arg1">Asset A</string>
     <string name="get_limit_orders_arg2">Asset B</string>
     <string name="get_limit_orders_arg3">Number of orders</string>
+
+    <!-- GetFullAccounts input fields -->
+    <string name="get_full_accounts_arg1">Account names or ids, separated by commas</string>
 </resources>

@@ -30,6 +30,7 @@ import cy.agorise.graphenej.api.ConnectionStatusUpdate;
 import cy.agorise.graphenej.api.bitshares.Nodes;
 import cy.agorise.graphenej.api.calls.ApiCallable;
 import cy.agorise.graphenej.api.calls.GetAccounts;
+import cy.agorise.graphenej.api.calls.GetFullAccounts;
 import cy.agorise.graphenej.api.calls.GetLimitOrders;
 import cy.agorise.graphenej.api.calls.GetMarketHistory;
 import cy.agorise.graphenej.api.calls.GetObjects;
@@ -42,6 +43,7 @@ import cy.agorise.graphenej.models.Block;
 import cy.agorise.graphenej.models.BlockHeader;
 import cy.agorise.graphenej.models.BucketObject;
 import cy.agorise.graphenej.models.DynamicGlobalProperties;
+import cy.agorise.graphenej.models.FullAccountDetails;
 import cy.agorise.graphenej.models.HistoryOperationDetail;
 import cy.agorise.graphenej.models.JsonRpcNotification;
 import cy.agorise.graphenej.models.JsonRpcResponse;
@@ -390,7 +392,10 @@ public class NetworkService extends Service {
                     }else if(requestClass == GetLimitOrders.class){
                         Type GetLimitOrdersResponse = new TypeToken<JsonRpcResponse<List<LimitOrder>>>() {}.getType();
                         parsedResponse = gson.fromJson(text, GetLimitOrdersResponse);
-                    }else{
+                    } else if (requestClass == GetFullAccounts.class) {
+                        Type GetFullAccountsResponse = new TypeToken<JsonRpcResponse<List<FullAccountDetails>>>(){}.getType();
+                        parsedResponse = gson.fromJson(text, GetFullAccountsResponse);
+                    } else {
                         Log.w(TAG,"Unknown request class");
                     }
                 }else{

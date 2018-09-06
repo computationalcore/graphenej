@@ -23,6 +23,7 @@ import cy.agorise.graphenej.api.calls.GetAccountHistoryByOperations;
 import cy.agorise.graphenej.api.calls.GetAccounts;
 import cy.agorise.graphenej.api.calls.GetBlock;
 import cy.agorise.graphenej.api.calls.GetBlockHeader;
+import cy.agorise.graphenej.api.calls.GetFullAccounts;
 import cy.agorise.graphenej.api.calls.GetLimitOrders;
 import cy.agorise.graphenej.api.calls.GetMarketHistory;
 import cy.agorise.graphenej.api.calls.GetObjects;
@@ -34,6 +35,7 @@ import cy.agorise.graphenej.models.AccountProperties;
 import cy.agorise.graphenej.models.Block;
 import cy.agorise.graphenej.models.BlockHeader;
 import cy.agorise.graphenej.models.BucketObject;
+import cy.agorise.graphenej.models.FullAccountDetails;
 import cy.agorise.graphenej.models.HistoryOperationDetail;
 import cy.agorise.graphenej.models.OperationHistory;
 import cy.agorise.graphenej.objects.Memo;
@@ -156,6 +158,16 @@ public class DeserializationMap {
                 .registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer())
                 .create();
         mGsonMap.put(GetAccountHistoryByOperations.class, getAccountHistoryByOperationsGson);
+
+        // GetFullAccounts
+        mClassMap.put(GetFullAccounts.class, FullAccountDetails.class);
+        Gson getFullAccountsGson = new GsonBuilder()
+                .registerTypeAdapter(FullAccountDetails.class, new FullAccountDetails.FullAccountDeserializer())
+                .registerTypeAdapter(Authority.class, new Authority.AuthorityDeserializer())
+                .registerTypeAdapter(Memo.class, new Memo.MemoDeserializer())
+                .registerTypeAdapter(AccountOptions.class, new AccountOptions.AccountOptionsDeserializer())
+                .create();
+        mGsonMap.put(GetFullAccounts.class, getFullAccountsGson);
     }
 
     public Class getReceivedClass(Class _class){

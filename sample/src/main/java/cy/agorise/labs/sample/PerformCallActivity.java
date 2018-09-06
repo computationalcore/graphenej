@@ -17,6 +17,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import butterknife.BindView;
@@ -32,6 +33,7 @@ import cy.agorise.graphenej.api.calls.GetAccountByName;
 import cy.agorise.graphenej.api.calls.GetAccountHistoryByOperations;
 import cy.agorise.graphenej.api.calls.GetAccounts;
 import cy.agorise.graphenej.api.calls.GetBlock;
+import cy.agorise.graphenej.api.calls.GetFullAccounts;
 import cy.agorise.graphenej.api.calls.GetLimitOrders;
 import cy.agorise.graphenej.api.calls.GetObjects;
 import cy.agorise.graphenej.api.calls.ListAssets;
@@ -130,6 +132,9 @@ public class PerformCallActivity extends ConnectedActivity {
                 break;
             case RPC.CALL_GET_LIMIT_ORDERS:
                 setupGetLimitOrders();
+            case RPC.CALL_GET_FULL_ACCOUNTS:
+                setupGetFullAccounts();
+                break;
             default:
                 Log.d(TAG,"Default called");
         }
@@ -239,6 +244,12 @@ public class PerformCallActivity extends ConnectedActivity {
         param3.setInputType(InputType.TYPE_CLASS_NUMBER);
     }
 
+    private void setupGetFullAccounts(){
+        requiredInput(1);
+        mParam1View.setHint(getString(R.string.get_full_accounts_arg1));
+        param1.setInputType(InputType.TYPE_CLASS_TEXT);
+    }
+
     private void requiredInput(int inputCount){
         if(inputCount == 1){
             mParam1View.setVisibility(View.VISIBLE);
@@ -296,6 +307,8 @@ public class PerformCallActivity extends ConnectedActivity {
             case RPC.CALL_GET_ACCOUNT_HISTORY_BY_OPERATIONS:
                 getAccountHistoryByOperations();
                 break;
+            case RPC.CALL_GET_FULL_ACCOUNTS:
+                getFullAccounts();
             default:
                 Log.d(TAG,"Default called");
         }
@@ -368,6 +381,12 @@ public class PerformCallActivity extends ConnectedActivity {
             Toast.makeText(this, getString(R.string.error_number_format), Toast.LENGTH_SHORT).show();
             Log.e(TAG,"NumberFormatException while trying to read arguments for 'get_account_history_by_operations'. Msg: "+e.getMessage());
         }
+    }
+
+    private void getFullAccounts(){
+        ArrayList<String> accounts = new ArrayList<>();
+        accounts.addAll(Arrays.asList(param1.getText().toString().split(",")));
+        long id = mNetworkService.sendMessage(new GetFullAccounts(accounts, false), GetFullAccounts.REQUIRED_API);
     }
 
     /**
