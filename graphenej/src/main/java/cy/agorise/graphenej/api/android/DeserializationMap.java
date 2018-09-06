@@ -13,10 +13,13 @@ import cy.agorise.graphenej.Asset;
 import cy.agorise.graphenej.AssetAmount;
 import cy.agorise.graphenej.AssetOptions;
 import cy.agorise.graphenej.Authority;
+import cy.agorise.graphenej.BaseOperation;
+import cy.agorise.graphenej.Extensions;
 import cy.agorise.graphenej.LimitOrder;
 import cy.agorise.graphenej.Transaction;
 import cy.agorise.graphenej.UserAccount;
 import cy.agorise.graphenej.api.calls.GetAccountByName;
+import cy.agorise.graphenej.api.calls.GetAccountHistoryByOperations;
 import cy.agorise.graphenej.api.calls.GetAccounts;
 import cy.agorise.graphenej.api.calls.GetBlock;
 import cy.agorise.graphenej.api.calls.GetBlockHeader;
@@ -31,6 +34,7 @@ import cy.agorise.graphenej.models.AccountProperties;
 import cy.agorise.graphenej.models.Block;
 import cy.agorise.graphenej.models.BlockHeader;
 import cy.agorise.graphenej.models.BucketObject;
+import cy.agorise.graphenej.models.HistoryOperationDetail;
 import cy.agorise.graphenej.models.OperationHistory;
 import cy.agorise.graphenej.objects.Memo;
 import cy.agorise.graphenej.operations.CustomOperation;
@@ -139,6 +143,19 @@ public class DeserializationMap {
             .registerTypeAdapter(LimitOrder.class, new LimitOrder.LimitOrderDeserializer())
             .create();
         mGsonMap.put(GetLimitOrders.class, getLimitOrdersGson);
+
+        // GetAccountHistoryByOperations
+        mClassMap.put(GetAccountHistoryByOperations.class, HistoryOperationDetail.class);
+        Gson getAccountHistoryByOperationsGson = new GsonBuilder()
+                .setExclusionStrategies(new DeserializationMap.SkipAccountOptionsStrategy(), new DeserializationMap.SkipAssetOptionsStrategy())
+                .registerTypeAdapter(BaseOperation.class, new BaseOperation.OperationDeserializer())
+                .registerTypeAdapter(OperationHistory.class, new OperationHistory.OperationHistoryDeserializer())
+                .registerTypeAdapter(Extensions.class, new Extensions.ExtensionsDeserializer())
+                .registerTypeAdapter(Memo.class, new Memo.MemoDeserializer())
+                .registerTypeAdapter(UserAccount.class, new UserAccount.UserAccountSimpleDeserializer())
+                .registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer())
+                .create();
+        mGsonMap.put(GetAccountHistoryByOperations.class, getAccountHistoryByOperationsGson);
     }
 
     public Class getReceivedClass(Class _class){

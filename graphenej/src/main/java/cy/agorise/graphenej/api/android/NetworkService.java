@@ -42,6 +42,7 @@ import cy.agorise.graphenej.models.Block;
 import cy.agorise.graphenej.models.BlockHeader;
 import cy.agorise.graphenej.models.BucketObject;
 import cy.agorise.graphenej.models.DynamicGlobalProperties;
+import cy.agorise.graphenej.models.HistoryOperationDetail;
 import cy.agorise.graphenej.models.JsonRpcNotification;
 import cy.agorise.graphenej.models.JsonRpcResponse;
 import cy.agorise.graphenej.models.OperationHistory;
@@ -359,7 +360,11 @@ public class NetworkService extends Service {
                 } else if(responsePayloadClass == AccountProperties.class){
                     Type GetAccountByNameResponse = new TypeToken<JsonRpcResponse<AccountProperties>>(){}.getType();
                     parsedResponse = gson.fromJson(text, GetAccountByNameResponse);
-                } else if(responsePayloadClass == List.class){
+                } else if(responsePayloadClass == HistoryOperationDetail.class){
+                    Type GetAccountHistoryByOperationsResponse = new TypeToken<JsonRpcResponse<HistoryOperationDetail>>(){}.getType();
+                    Log.d(TAG,"*> "+text);
+                    parsedResponse = gson.fromJson(text, GetAccountHistoryByOperationsResponse);
+                }else if(responsePayloadClass == List.class){
                     // If the response payload is a List, further inquiry is required in order to
                     // determine a list of what is expected here
                     if(requestClass == GetAccounts.class){

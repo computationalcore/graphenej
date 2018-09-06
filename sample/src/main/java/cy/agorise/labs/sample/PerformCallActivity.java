@@ -22,12 +22,14 @@ import java.util.HashMap;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import cy.agorise.graphenej.OperationType;
 import cy.agorise.graphenej.RPC;
 import cy.agorise.graphenej.UserAccount;
 import cy.agorise.graphenej.api.ConnectionStatusUpdate;
 import cy.agorise.graphenej.api.android.DeserializationMap;
 import cy.agorise.graphenej.api.android.RxBus;
 import cy.agorise.graphenej.api.calls.GetAccountByName;
+import cy.agorise.graphenej.api.calls.GetAccountHistoryByOperations;
 import cy.agorise.graphenej.api.calls.GetAccounts;
 import cy.agorise.graphenej.api.calls.GetBlock;
 import cy.agorise.graphenej.api.calls.GetLimitOrders;
@@ -35,7 +37,6 @@ import cy.agorise.graphenej.api.calls.GetObjects;
 import cy.agorise.graphenej.api.calls.ListAssets;
 import cy.agorise.graphenej.models.JsonRpcResponse;
 import cy.agorise.graphenej.objects.Memo;
-import cy.agorise.graphenej.operations.TransferOperation;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
@@ -83,7 +84,6 @@ public class PerformCallActivity extends ConnectedActivity {
 
     private Gson gson = new GsonBuilder()
             .setExclusionStrategies(new DeserializationMap.SkipAccountOptionsStrategy(), new DeserializationMap.SkipAssetOptionsStrategy())
-            .registerTypeAdapter(TransferOperation.class, new TransferOperation.TransferDeserializer())
             .registerTypeAdapter(Memo.class, new Memo.MemoSerializer())
             .create();
 
@@ -124,6 +124,9 @@ public class PerformCallActivity extends ConnectedActivity {
                 break;
             case RPC.CALL_GET_ACCOUNT_BY_NAME:
                 setupAccountByName();
+                break;
+            case RPC.CALL_GET_ACCOUNT_HISTORY_BY_OPERATIONS:
+                setupGetAccountHistoryByOperations();
                 break;
             case RPC.CALL_GET_LIMIT_ORDERS:
                 setupGetLimitOrders();
@@ -210,6 +213,21 @@ public class PerformCallActivity extends ConnectedActivity {
         param1.setInputType(InputType.TYPE_CLASS_TEXT);
     }
 
+    private void setupGetAccountHistoryByOperations(){
+        requiredInput(4);
+        Resources resources = getResources();
+        mParam1View.setHint(resources.getString(R.string.get_account_history_by_operations_arg1));
+        mParam2View.setHint(resources.getString(R.string.get_account_history_by_operations_arg2));
+        mParam3View.setHint(resources.getString(R.string.get_account_history_by_operations_arg3));
+        mParam4View.setHint(resources.getString(R.string.get_account_history_by_operations_arg4));
+
+        param2.setText("0");    // Only transfer de-serialization is currently supported by the library!
+        param2.setEnabled(false);
+        param2.setInputType(InputType.TYPE_CLASS_NUMBER);
+        param3.setInputType(InputType.TYPE_CLASS_NUMBER);
+        param4.setInputType(InputType.TYPE_CLASS_NUMBER);
+    }
+
     private void setupGetLimitOrders(){
         requiredInput(3);
         Resources resources = getResources();
@@ -274,6 +292,10 @@ public class PerformCallActivity extends ConnectedActivity {
                 break;
             case RPC.CALL_GET_LIMIT_ORDERS:
                 getLimitOrders();
+                break;
+            case RPC.CALL_GET_ACCOUNT_HISTORY_BY_OPERATIONS:
+                getAccountHistoryByOperations();
+                break;
             default:
                 Log.d(TAG,"Default called");
         }
@@ -334,6 +356,20 @@ public class PerformCallActivity extends ConnectedActivity {
         }
     }
 
+    private void getAccountHistoryByOperations(){
+        try{
+            String account = param1.getText().toString();
+            ArrayList<OperationType> operationTypes = new ArrayList<>();
+            operationTypes.add(OperationType.TRANSFER_OPERATION); // Currently restricted to transfer operations
+            long start = Long.parseLong(param3.getText().toString());
+            long limit = Long.parseLong(param4.getText().toString());
+            long id = mNetworkService.sendMessage(new GetAccountHistoryByOperations(account, operationTypes, start, limit), GetAccountHistoryByOperations.REQUIRED_API);
+        }catch(NumberFormatException e){
+            Toast.makeText(this, getString(R.string.error_number_format), Toast.LENGTH_SHORT).show();
+            Log.e(TAG,"NumberFormatException while trying to read arguments for 'get_account_history_by_operations'. Msg: "+e.getMessage());
+        }
+    }
+
     /**
      * Internal method that will decide what to do with each JSON-RPC response
      *
@@ -345,36 +381,17 @@ public class PerformCallActivity extends ConnectedActivity {
             String request = responseMap.get(id);
             switch(request){
                 case RPC.CALL_GET_ACCOUNTS:
-                    mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
-                    break;
                 case RPC.CALL_GET_BLOCK:
-                    mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
-                    break;
                 case RPC.CALL_GET_BLOCK_HEADER:
-                    mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
-                    break;
                 case RPC.CALL_GET_MARKET_HISTORY:
-                    mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
-                    break;
                 case RPC.CALL_GET_ACCOUNT_HISTORY:
-                    mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
-                    break;
                 case RPC.CALL_GET_RELATIVE_ACCOUNT_HISTORY:
-                    mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
-                    break;
                 case RPC.CALL_GET_REQUIRED_FEES:
-                    mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
-                    break;
                 case RPC.CALL_LOOKUP_ASSET_SYMBOLS:
-                    mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
-                    break;
                 case RPC.CALL_LIST_ASSETS:
-                    mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
-                    break;
                 case RPC.CALL_GET_ACCOUNT_BY_NAME:
-                    mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
-                    break;
                 case RPC.CALL_GET_LIMIT_ORDERS:
+                case RPC.CALL_GET_ACCOUNT_HISTORY_BY_OPERATIONS:
                     mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
                     break;
                 default:

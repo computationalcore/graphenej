@@ -9,8 +9,8 @@ import com.google.gson.JsonParseException;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 
+import cy.agorise.graphenej.BaseOperation;
 import cy.agorise.graphenej.GrapheneObject;
-import cy.agorise.graphenej.operations.TransferOperation;
 
 
 /**
@@ -27,7 +27,7 @@ public class OperationHistory extends GrapheneObject implements Serializable {
     public static final String KEY_OP_IN_TRX = "op_in_trx";
     public static final String KEY_VIRTUAL_OP = "virtual_op";
 
-    private TransferOperation op;
+    private BaseOperation op;
     public Object[] result;
     private long block_num;
     private long trx_in_block;
@@ -38,11 +38,11 @@ public class OperationHistory extends GrapheneObject implements Serializable {
         super(id);
     }
 
-    public TransferOperation getOperation() {
+    public BaseOperation getOperation() {
         return op;
     }
 
-    public void setOperation(TransferOperation op) {
+    public void setOperation(BaseOperation op) {
         this.op = op;
     }
 
@@ -122,14 +122,13 @@ public class OperationHistory extends GrapheneObject implements Serializable {
             long blockNum = jsonObject.get(KEY_BLOCK_NUM).getAsLong();
             long trxInBlock = jsonObject.get(KEY_TRX_IN_BLOCK).getAsLong();
             long opInTrx = jsonObject.get(KEY_OP_IN_TRX).getAsLong();
-            TransferOperation transferOperation = context.deserialize(jsonObject.get(KEY_OP), TransferOperation.class);
+            BaseOperation operation = context.deserialize(jsonObject.get(KEY_OP), BaseOperation.class);
             long virtualOp = jsonObject.get(KEY_VIRTUAL_OP).getAsLong();
-
             OperationHistory operationHistory = new OperationHistory(id);
             operationHistory.setBlockNum(blockNum);
             operationHistory.setTransactionsInBlock(trxInBlock);
             operationHistory.setOperationsInTrx(opInTrx);
-            operationHistory.setOperation(transferOperation);
+            operationHistory.setOperation(operation);
             operationHistory.setVirtualOp(virtualOp);
             return operationHistory;
         }

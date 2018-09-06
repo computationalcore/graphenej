@@ -41,6 +41,12 @@
     <!-- Get account by name fields -->
     <string name="get_accounts_by_name_arg1">Account name</string>
 
+    <!-- GetAccountHistoryByOperations input fields -->
+    <string name="get_account_history_by_operations_arg1">Account id or name</string>
+    <string name="get_account_history_by_operations_arg2">Operaton type (only transfer type is supported)</string>
+    <string name="get_account_history_by_operations_arg3">Start sequence number</string>
+    <string name="get_account_history_by_operations_arg4">Limit</string>
+
     <!-- GetLimitOrders input fields -->
     <string name="get_limit_orders_arg1">Asset A</string>
     <string name="get_limit_orders_arg2">Asset B</string>

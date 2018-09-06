@@ -55,7 +55,7 @@ public class GetRelativeAccountHistoryTest extends BaseApiTest {
             for(OperationHistory historicalTransfer : resp.result){
                 if(historicalTransfer.getOperation() != null){
                     System.out.println("Got transfer operation!");
-                    TransferOperation transferOperation = historicalTransfer.getOperation();
+                    TransferOperation transferOperation = (TransferOperation) historicalTransfer.getOperation();
                     System.out.println(String.format("%s - > %s, memo: %s",
                             transferOperation.getFrom().getObjectId(),
                             transferOperation.getTo().getObjectId(),
