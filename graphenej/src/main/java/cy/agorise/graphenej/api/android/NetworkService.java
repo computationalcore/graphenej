@@ -21,6 +21,7 @@ import java.util.List;
 
 import cy.agorise.graphenej.Asset;
 import cy.agorise.graphenej.AssetAmount;
+import cy.agorise.graphenej.BaseOperation;
 import cy.agorise.graphenej.LimitOrder;
 import cy.agorise.graphenej.RPC;
 import cy.agorise.graphenej.Transaction;
@@ -116,6 +117,7 @@ public class NetworkService extends Service {
             .registerTypeAdapter(UserAccount.class, new UserAccount.UserAccountSimpleDeserializer())
             .registerTypeAdapter(DynamicGlobalProperties.class, new DynamicGlobalProperties.DynamicGlobalPropertiesDeserializer())
             .registerTypeAdapter(Memo.class, new Memo.MemoDeserializer())
+            .registerTypeAdapter(BaseOperation.class, new BaseOperation.OperationDeserializer())
             .registerTypeAdapter(OperationHistory.class, new OperationHistory.OperationHistoryDeserializer())
             .registerTypeAdapter(JsonRpcNotification.class, new JsonRpcNotification.JsonRpcNotificationDeserializer())
             .create();
