@@ -377,6 +377,7 @@ public class PerformCallActivity extends ConnectedActivity {
             long start = Long.parseLong(param3.getText().toString());
             long limit = Long.parseLong(param4.getText().toString());
             long id = mNetworkService.sendMessage(new GetAccountHistoryByOperations(account, operationTypes, start, limit), GetAccountHistoryByOperations.REQUIRED_API);
+            responseMap.put(id, mRPC);
         }catch(NumberFormatException e){
             Toast.makeText(this, getString(R.string.error_number_format), Toast.LENGTH_SHORT).show();
             Log.e(TAG,"NumberFormatException while trying to read arguments for 'get_account_history_by_operations'. Msg: "+e.getMessage());
@@ -387,6 +388,7 @@ public class PerformCallActivity extends ConnectedActivity {
         ArrayList<String> accounts = new ArrayList<>();
         accounts.addAll(Arrays.asList(param1.getText().toString().split(",")));
         long id = mNetworkService.sendMessage(new GetFullAccounts(accounts, false), GetFullAccounts.REQUIRED_API);
+        responseMap.put(id, mRPC);
     }
 
     /**
@@ -411,6 +413,7 @@ public class PerformCallActivity extends ConnectedActivity {
                 case RPC.CALL_GET_ACCOUNT_BY_NAME:
                 case RPC.CALL_GET_LIMIT_ORDERS:
                 case RPC.CALL_GET_ACCOUNT_HISTORY_BY_OPERATIONS:
+                case RPC.CALL_GET_FULL_ACCOUNTS:
                     mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
                     break;
                 default:

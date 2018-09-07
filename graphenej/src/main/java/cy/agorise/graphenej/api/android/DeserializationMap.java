@@ -160,7 +160,7 @@ public class DeserializationMap {
         mGsonMap.put(GetAccountHistoryByOperations.class, getAccountHistoryByOperationsGson);
 
         // GetFullAccounts
-        mClassMap.put(GetFullAccounts.class, FullAccountDetails.class);
+        mClassMap.put(GetFullAccounts.class, List.class);
         Gson getFullAccountsGson = new GsonBuilder()
                 .registerTypeAdapter(FullAccountDetails.class, new FullAccountDetails.FullAccountDeserializer())
                 .registerTypeAdapter(Authority.class, new Authority.AuthorityDeserializer())
