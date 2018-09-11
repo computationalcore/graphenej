@@ -90,6 +90,7 @@ public class DeserializationMap {
         mClassMap.put(GetRelativeAccountHistory.class, List.class);
         Gson getRelativeAcountHistoryGson = new GsonBuilder()
             .setExclusionStrategies(new SkipAccountOptionsStrategy(), new SkipAssetOptionsStrategy())
+                .registerTypeAdapter(BaseOperation.class, new BaseOperation.OperationDeserializer())
             .registerTypeAdapter(OperationHistory.class, new OperationHistory.OperationHistoryDeserializer())
             .registerTypeAdapter(TransferOperation.class, new TransferOperation.TransferDeserializer())
             .registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer())
