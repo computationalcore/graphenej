@@ -87,6 +87,10 @@ public class ApiCall implements JsonSerializable {
                             array.add(((JsonSerializable) element).toJsonObject());
                         else if (element instanceof String) {
                             array.add((String) element);
+                        }else if (element instanceof Long){
+                            array.add((Long) element);
+                        }else if(element instanceof Integer){
+                            array.add((Integer) element);
                         }
                     }
                     methodParams.add(array);
