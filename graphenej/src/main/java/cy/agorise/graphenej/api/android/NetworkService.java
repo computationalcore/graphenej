@@ -366,7 +366,6 @@ public class NetworkService extends Service {
                     parsedResponse = gson.fromJson(text, GetAccountByNameResponse);
                 } else if(responsePayloadClass == HistoryOperationDetail.class){
                     Type GetAccountHistoryByOperationsResponse = new TypeToken<JsonRpcResponse<HistoryOperationDetail>>(){}.getType();
-                    Log.d(TAG,"*> "+text);
                     parsedResponse = gson.fromJson(text, GetAccountHistoryByOperationsResponse);
                 }else if(responsePayloadClass == List.class){
                     // If the response payload is a List, further inquiry is required in order to
