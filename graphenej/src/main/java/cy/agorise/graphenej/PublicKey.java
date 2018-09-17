@@ -53,4 +53,9 @@ public class PublicKey implements ByteSerializable, Serializable {
         PublicKey other = (PublicKey) obj;
         return this.publicKey.equals(other.getKey());
     }
+
+    @Override
+    public String toString() {
+        return getAddress();
+    }
 }

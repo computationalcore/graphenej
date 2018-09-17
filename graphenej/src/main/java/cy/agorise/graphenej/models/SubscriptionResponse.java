@@ -16,6 +16,7 @@ import java.util.List;
 
 import cy.agorise.graphenej.GrapheneObject;
 import cy.agorise.graphenej.ObjectType;
+import cy.agorise.graphenej.OperationType;
 import cy.agorise.graphenej.Transaction;
 import cy.agorise.graphenej.interfaces.SubscriptionListener;
 
@@ -43,15 +44,12 @@ import cy.agorise.graphenej.interfaces.SubscriptionListener;
  * To minimize CPU usage, we introduce a scheme of selective parsing, implemented by the static inner class
  * SubscriptionResponseDeserializer.
  *
- * Created by nelson on 1/12/17.
  */
 public class SubscriptionResponse {
-    private static final String TAG = "SubscriptionResponse";
     public static final String KEY_ID = "id";
     public static final String KEY_METHOD = "method";
     public static final String KEY_PARAMS = "params";
 
-    public int id;
     public String method;
     public List<Serializable> params;
 
@@ -182,6 +180,14 @@ public class SubscriptionResponse {
                             broadcastedTransaction.setTransactionId(jsonObject.get(BroadcastedTransaction.KEY_TRX_ID).getAsString());
                             objectMap.put(ObjectType.TRANSACTION_OBJECT, true);
                             secondArgument.add(broadcastedTransaction);
+                        }else if(grapheneObject.getObjectType() == ObjectType.OPERATION_HISTORY_OBJECT){
+                            if(jsonObject.get(OperationHistory.KEY_OP).getAsJsonArray().get(0).getAsLong() == OperationType.TRANSFER_OPERATION.ordinal()){
+                                OperationHistory operationHistory = context.deserialize(jsonObject, OperationHistory.class);
+                                objectMap.put(ObjectType.OPERATION_HISTORY_OBJECT, true);
+                                secondArgument.add(operationHistory);
+                            }else{
+                                //TODO: Add support for other operations
+                            }
                         }else{
                             //TODO: Add support for other types of objects
                         }

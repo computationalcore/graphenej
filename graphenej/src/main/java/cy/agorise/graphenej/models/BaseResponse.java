@@ -1,7 +1,8 @@
 package cy.agorise.graphenej.models;
 
 /**
- * Created by nelson on 11/12/16.
+ * Base response class
+ * @deprecated Use {@link JsonRpcResponse} instead
  */
 public class BaseResponse {
     public long id;

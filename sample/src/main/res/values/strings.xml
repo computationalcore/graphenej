@@ -1,0 +1,57 @@
+<resources>
+    <string name="app_name">Sample</string>
+
+    <string name="error_input_id">The entered value doesn\'t seem to be an object id</string>
+    <string name="error_number_format">Illegal number format</string>
+
+    <!-- Actions, buttons, etc -->
+    <string name="action_send">Send</string>
+
+    <!-- GetObjects input field -->
+    <string name="get_objects_arg1">Object id</string>
+
+    <!-- GetAccounts input field -->
+    <string name="get_accounts_arg1">Account id</string>
+
+    <!-- GetBlock & GetBlockHeader input field -->
+    <string name="get_block_arg1">Block id</string>
+
+    <!-- GetMarketHistory input fields -->
+    <string name="get_market_history_arg1">Base asset</string>
+    <string name="get_market_history_arg2">Quote asset</string>
+    <string name="get_market_history_arg3">Start timestamp (Latest)</string>
+    <string name="get_market_history_arg4">End timestamp (Earliest)</string>
+
+    <!-- GetRelativeAccountHistory input fields -->
+    <string name="get_relative_account_history_arg1">User account</string>
+    <string name="get_relative_account_history_arg2">Stop timestamp (Latest)</string>
+    <string name="get_relative_account_history_arg3">Limit</string>
+    <string name="get_relative_account_history_arg4">Start timestamp (Earliest)</string>
+
+    <!-- LookupAssetSymbols input fields -->
+    <string name="lookup_asset_symbols_arg1">Asset 1 id</string>
+    <string name="lookup_asset_symbols_arg2">Asset 2 id</string>
+    <string name="lookup_asset_symbols_arg3">Asset 3 id</string>
+    <string name="lookup_asset_symbols_arg4">Asset 4 id</string>
+
+    <!-- List assets input fields -->
+    <string name="list_assets_arg1">Lower bound of symbol names to retrieve</string>
+    <string name="list_assets_arg2">Maximum number of assets to fetch (must not exceed 100)</string>
+
+    <!-- Get account by name fields -->
+    <string name="get_accounts_by_name_arg1">Account name</string>
+
+    <!-- GetAccountHistoryByOperations input fields -->
+    <string name="get_account_history_by_operations_arg1">Account id or name</string>
+    <string name="get_account_history_by_operations_arg2">Operaton type (only transfer type is supported)</string>
+    <string name="get_account_history_by_operations_arg3">Start sequence number</string>
+    <string name="get_account_history_by_operations_arg4">Limit</string>
+
+    <!-- GetLimitOrders input fields -->
+    <string name="get_limit_orders_arg1">Asset A</string>
+    <string name="get_limit_orders_arg2">Asset B</string>
+    <string name="get_limit_orders_arg3">Number of orders</string>
+
+    <!-- GetFullAccounts input fields -->
+    <string name="get_full_accounts_arg1">Account names or ids, separated by commas</string>
+</resources>

@@ -9,5 +9,10 @@ package cy.agorise.graphenej;
 public enum AuthorityType {
     OWNER,
     ACTIVE,
-    MEMO
+    MEMO;
+
+    @Override
+    public String toString() {
+        return String.format("%d", this.ordinal());
+    }
 }
