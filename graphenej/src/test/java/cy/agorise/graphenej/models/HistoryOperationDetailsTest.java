@@ -15,7 +15,7 @@ import cy.agorise.graphenej.BaseOperation;
 import cy.agorise.graphenej.Extensions;
 import cy.agorise.graphenej.UserAccount;
 import cy.agorise.graphenej.api.android.DeserializationMap;
-import cy.agorise.graphenej.objects.Memo;
+import cy.agorise.graphenej.Memo;
 
 public class HistoryOperationDetailsTest {
 

@@ -20,7 +20,7 @@ import cy.agorise.graphenej.models.ApiCall;
 import cy.agorise.graphenej.models.BaseResponse;
 import cy.agorise.graphenej.models.OperationHistory;
 import cy.agorise.graphenej.models.WitnessResponse;
-import cy.agorise.graphenej.objects.Memo;
+import cy.agorise.graphenej.Memo;
 import cy.agorise.graphenej.operations.TransferOperation;
 
 /**

@@ -38,7 +38,7 @@ import cy.agorise.graphenej.api.calls.GetLimitOrders;
 import cy.agorise.graphenej.api.calls.GetObjects;
 import cy.agorise.graphenej.api.calls.ListAssets;
 import cy.agorise.graphenej.models.JsonRpcResponse;
-import cy.agorise.graphenej.objects.Memo;
+import cy.agorise.graphenej.Memo;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;

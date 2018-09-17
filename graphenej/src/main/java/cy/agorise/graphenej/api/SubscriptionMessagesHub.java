@@ -26,7 +26,7 @@ import cy.agorise.graphenej.models.DynamicGlobalProperties;
 import cy.agorise.graphenej.models.OperationHistory;
 import cy.agorise.graphenej.models.SubscriptionResponse;
 import cy.agorise.graphenej.models.WitnessResponse;
-import cy.agorise.graphenej.objects.Memo;
+import cy.agorise.graphenej.Memo;
 import cy.agorise.graphenej.operations.CustomOperation;
 import cy.agorise.graphenej.operations.LimitOrderCreateOperation;
 import cy.agorise.graphenej.operations.TransferOperation;

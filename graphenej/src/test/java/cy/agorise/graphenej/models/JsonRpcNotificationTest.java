@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import cy.agorise.graphenej.AssetAmount;
 import cy.agorise.graphenej.Transaction;
 import cy.agorise.graphenej.UserAccount;
-import cy.agorise.graphenej.objects.Memo;
+import cy.agorise.graphenej.Memo;
 import cy.agorise.graphenej.operations.CustomOperation;
 import cy.agorise.graphenej.operations.LimitOrderCreateOperation;
 import cy.agorise.graphenej.operations.TransferOperation;

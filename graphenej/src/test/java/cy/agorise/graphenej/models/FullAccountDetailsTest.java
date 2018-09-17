@@ -13,7 +13,7 @@ import java.util.List;
 
 import cy.agorise.graphenej.AccountOptions;
 import cy.agorise.graphenej.Authority;
-import cy.agorise.graphenej.objects.Memo;
+import cy.agorise.graphenej.Memo;
 
 public class FullAccountDetailsTest {
 

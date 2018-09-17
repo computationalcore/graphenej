@@ -3,7 +3,7 @@ package cy.agorise.graphenej.operations;
 import cy.agorise.graphenej.AssetAmount;
 import cy.agorise.graphenej.UserAccount;
 import cy.agorise.graphenej.errors.MalformedOperationException;
-import cy.agorise.graphenej.objects.Memo;
+import cy.agorise.graphenej.Memo;
 
 /**
  * Factory class used to build a transfer operation

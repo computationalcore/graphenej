@@ -1,4 +1,4 @@
-package cy.agorise.graphenej.objects;
+package cy.agorise.graphenej;
 
 import com.google.common.primitives.Bytes;
 import com.google.gson.Gson;
@@ -19,9 +19,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-import cy.agorise.graphenej.Address;
-import cy.agorise.graphenej.PublicKey;
-import cy.agorise.graphenej.Util;
 import cy.agorise.graphenej.errors.ChecksumException;
 import cy.agorise.graphenej.errors.MalformedAddressException;
 import cy.agorise.graphenej.interfaces.ByteSerializable;
