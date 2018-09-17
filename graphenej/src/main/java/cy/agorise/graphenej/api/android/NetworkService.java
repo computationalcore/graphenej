@@ -515,4 +515,12 @@ public class NetworkService extends Service {
     public boolean hasApiId(int whichApi){
         return mApiIds.get(whichApi) != null;
     }
+
+    public ArrayList<String> getNodeUrls() {
+        return mNodeUrls;
+    }
+
+    public void setNodeUrls(ArrayList<String> mNodeUrls) {
+        this.mNodeUrls = mNodeUrls;
+    }
 }
