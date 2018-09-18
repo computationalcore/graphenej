@@ -9,5 +9,7 @@ public class Nodes {
                 "wss://dexnode.net/ws",                    // Dallas, USA
                 "wss://bitshares.crypto.fans/ws",          // Munich, Germany
                 "wss://bitshares.openledger.info/ws",      // Openledger node
+                "wss://us.nodes.bitshares.ws",
+                "wss://eu.nodes.bitshares.ws"
     };
 }
