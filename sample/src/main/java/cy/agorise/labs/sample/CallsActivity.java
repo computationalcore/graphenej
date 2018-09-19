@@ -16,7 +16,6 @@ import butterknife.ButterKnife;
 import cy.agorise.graphenej.RPC;
 
 public class CallsActivity extends AppCompatActivity {
-    private final String TAG = this.getClass().getName();
 
     @BindView(R.id.call_list)
     RecyclerView mRecyclerView;
@@ -26,10 +25,9 @@ public class CallsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calls);
         ButterKnife.bind(this);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(linearLayoutManager);
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, linearLayoutManager.getOrientation()));
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
         mRecyclerView.setAdapter(new CallAdapter());
     }
 

@@ -13,7 +13,7 @@ import java.util.List;
 public interface NodeProvider {
 
     /**
-     * Returns the node with the best characteristics.
+     * Returns the node with the best characteristics. Returns null if there is no {@link FullNode}
      * @return          A FullNode instance
      */
     FullNode getBestNode();

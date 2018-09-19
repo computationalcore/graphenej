@@ -11,6 +11,9 @@ import android.os.Handler;
 import android.os.IBinder;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * This class should be instantiated at the application level of the android app.
@@ -20,8 +23,7 @@ import java.lang.ref.WeakReference;
  */
 
 public class NetworkServiceManager implements Application.ActivityLifecycleCallbacks  {
-    private final String TAG = this.getClass().getName();
-
+    private final static String TAG = "NetworkServiceManager";
     /**
      * Constant used to specify how long will the app wait for another activity to go through its starting life
      * cycle events before running the teardownConnectionTask task.
@@ -42,6 +44,13 @@ public class NetworkServiceManager implements Application.ActivityLifecycleCallb
 
     // In case we want to interact directly with the service
     private NetworkService mService;
+
+    // Attributes that might need to be passed to the NetworkService
+    private String mUserName = "";
+    private String mPassword = "";
+    private int mRequestedApis;
+    private List<String> mCustomNodeUrls = new ArrayList<>();
+    private boolean mAutoConnect;
 
     /**
      * Runnable used to schedule a service disconnection once the app is not visible to the user for
@@ -77,8 +86,26 @@ public class NetworkServiceManager implements Application.ActivityLifecycleCallb
     public void onActivityStarted(Activity activity) {
         mHandler.removeCallbacks(mDisconnectRunnable);
         if(mService == null){
+            // Creating a new Intent that will be used to start the NetworkService
             Context context = mContextReference.get();
             Intent intent = new Intent(context, NetworkService.class);
+
+            // Adding user-provided node URLs
+            StringBuilder stringBuilder = new StringBuilder();
+            Iterator<String> it = mCustomNodeUrls.iterator();
+            while(it.hasNext()){
+                stringBuilder.append(it.next());
+                if(it.hasNext()) stringBuilder.append(",");
+            }
+            String customNodes = stringBuilder.toString();
+
+            // Adding all
+            intent.putExtra(NetworkService.KEY_USERNAME, mUserName)
+                    .putExtra(NetworkService.KEY_PASSWORD, mPassword)
+                    .putExtra(NetworkService.KEY_REQUESTED_APIS, mRequestedApis)
+                    .putExtra(NetworkService.KEY_CUSTOM_NODE_URLS, customNodes)
+                    .putExtra(NetworkService.KEY_AUTO_CONNECT, mAutoConnect);
+
             context.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
         }
     }
@@ -114,4 +141,99 @@ public class NetworkServiceManager implements Application.ActivityLifecycleCallb
         @Override
         public void onServiceDisconnected(ComponentName componentName) {}
     };
+
+    public String getUserName() {
+        return mUserName;
+    }
+
+    public void setUserName(String mUserName) {
+        this.mUserName = mUserName;
+    }
+
+    public String getPassword() {
+        return mPassword;
+    }
+
+    public void setPassword(String mPassword) {
+        this.mPassword = mPassword;
+    }
+
+    public int getRequestedApis() {
+        return mRequestedApis;
+    }
+
+    public void setRequestedApis(int mRequestedApis) {
+        this.mRequestedApis = mRequestedApis;
+    }
+
+    public List<String> getCustomNodeUrls() {
+        return mCustomNodeUrls;
+    }
+
+    public void setCustomNodeUrls(List<String> mCustomNodeUrls) {
+        this.mCustomNodeUrls = mCustomNodeUrls;
+    }
+
+    public boolean isAutoConnect() {
+        return mAutoConnect;
+    }
+
+    public void setAutoConnect(boolean mAutoConnect) {
+        this.mAutoConnect = mAutoConnect;
+    }
+
+    /**
+     * Class used to create a {@link NetworkServiceManager} with specific attributes.
+     */
+    public static class Builder {
+        private String username;
+        private String password;
+        private int requestedApis;
+        private List<String> customNodeUrls;
+        private boolean autoconnect = true;
+
+        public Builder setUserName(String name){
+            this.username = name;
+            return this;
+        }
+
+        public Builder setPassword(String password){
+            this.password = password;
+            return this;
+        }
+
+        public Builder setRequestedApis(int apis){
+            this.requestedApis = apis;
+            return this;
+        }
+
+        public Builder setCustomNodeUrls(List<String> nodeUrls){
+            this.customNodeUrls = nodeUrls;
+            return this;
+        }
+
+        public Builder setCustomNodeUrls(String nodeUrls){
+            String[] urls = nodeUrls.split(",");
+            for(String url : urls){
+                if(customNodeUrls == null) customNodeUrls = new ArrayList<>();
+                customNodeUrls.add(url);
+            }
+            return this;
+        }
+
+        public Builder setAutoConnect(boolean autoConnect){
+            this.autoconnect = autoConnect;
+            return this;
+        }
+
+        public NetworkServiceManager build(Context context){
+            NetworkServiceManager manager = new NetworkServiceManager(context);
+            if(username != null) manager.setUserName(username);
+            if(password != null) manager.setPassword(password);
+            if(customNodeUrls != null) manager.setCustomNodeUrls(customNodeUrls);
+            manager.setRequestedApis(requestedApis);
+            manager.setAutoConnect(autoconnect);
+            return manager;
+        }
+    }
 }

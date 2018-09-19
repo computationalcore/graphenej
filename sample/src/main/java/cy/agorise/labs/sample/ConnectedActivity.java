@@ -28,7 +28,6 @@ public abstract class ConnectedActivity extends AppCompatActivity implements Ser
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             NetworkService.LocalBinder binder = (NetworkService.LocalBinder) service;
             mNetworkService = binder.getService();
-
             ConnectedActivity.this.onServiceConnected(className, service);
         }
 
@@ -41,8 +40,8 @@ public abstract class ConnectedActivity extends AppCompatActivity implements Ser
     @Override
     protected void onStart() {
         super.onStart();
-        // Binding to NetworkService
         Intent intent = new Intent(this, NetworkService.class);
+        // Binding to NetworkService
         if(bindService(intent, mNetworkServiceConnection, Context.BIND_AUTO_CREATE)){
             mShouldUnbindNetwork = true;
         }else{

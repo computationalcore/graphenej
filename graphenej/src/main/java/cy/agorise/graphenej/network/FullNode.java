@@ -60,4 +60,17 @@ public class FullNode implements Comparable {
         FullNode node = (FullNode) o;
         return (int) Math.ceil(latency.getAverage() - node.getLatencyValue());
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FullNode fullNode = (FullNode) o;
+        return mUrl.equals(fullNode.getUrl());
+    }
+
+    @Override
+    public int hashCode() {
+        return mUrl.hashCode();
+    }
 }

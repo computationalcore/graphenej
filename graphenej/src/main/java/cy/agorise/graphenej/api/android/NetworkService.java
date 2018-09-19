@@ -2,10 +2,8 @@ package cy.agorise.graphenej.api.android;
 
 import android.app.Service;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -23,6 +21,7 @@ import cy.agorise.graphenej.Asset;
 import cy.agorise.graphenej.AssetAmount;
 import cy.agorise.graphenej.BaseOperation;
 import cy.agorise.graphenej.LimitOrder;
+import cy.agorise.graphenej.Memo;
 import cy.agorise.graphenej.RPC;
 import cy.agorise.graphenej.Transaction;
 import cy.agorise.graphenej.UserAccount;
@@ -49,7 +48,9 @@ import cy.agorise.graphenej.models.HistoryOperationDetail;
 import cy.agorise.graphenej.models.JsonRpcNotification;
 import cy.agorise.graphenej.models.JsonRpcResponse;
 import cy.agorise.graphenej.models.OperationHistory;
-import cy.agorise.graphenej.Memo;
+import cy.agorise.graphenej.network.FullNode;
+import cy.agorise.graphenej.network.LatencyNodeProvider;
+import cy.agorise.graphenej.network.NodeProvider;
 import cy.agorise.graphenej.operations.CustomOperation;
 import cy.agorise.graphenej.operations.LimitOrderCreateOperation;
 import cy.agorise.graphenej.operations.TransferOperation;
@@ -76,6 +77,11 @@ public class NetworkService extends Service {
     public static final String KEY_REQUESTED_APIS = "key_requested_apis";
 
     /**
+     * Shared preference
+     */
+    public static final String KEY_AUTO_CONNECT = "key_auto_connect";
+
+    /**
      * Constant used to pass a custom list of node URLs. This should be a simple
      * comma separated list of URLs.
      *
@@ -89,8 +95,6 @@ public class NetworkService extends Service {
 
     private WebSocket mWebSocket;
 
-    private int mSocketIndex;
-
     // Username and password used to connect to a specific node
     private String mUsername;
     private String mPassword;
@@ -100,13 +104,15 @@ public class NetworkService extends Service {
     private String mLastCall;
     private long mCurrentId = 0;
 
+    private boolean mAutoConnect;
+
     // Requested APIs passed to this service
     private int mRequestedApis;
 
     // Variable used to keep track of the currently obtained API accesses
     private HashMap<Integer, Integer> mApiIds = new HashMap<Integer, Integer>();
 
-    private ArrayList<String> mNodeUrls = new ArrayList<>();
+    NodeProvider nodeProvider = new LatencyNodeProvider();
 
     private Gson gson = new GsonBuilder()
             .registerTypeAdapter(Transaction.class, new Transaction.TransactionDeserializer())
@@ -132,36 +138,15 @@ public class NetworkService extends Service {
     // suited for every response type.
     private DeserializationMap mDeserializationMap = new DeserializationMap();
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
-        // Retrieving credentials and requested API data from the shared preferences
-        mUsername = pref.getString(NetworkService.KEY_USERNAME, "");
-        mPassword = pref.getString(NetworkService.KEY_PASSWORD, "");
-        mRequestedApis = pref.getInt(NetworkService.KEY_REQUESTED_APIS, -1);
-
-        // If the user of the library desires, a custom list of node URLs can
-        // be passed using the KEY_CUSTOM_NODE_URLS constant
-        String serializedNodeUrls = pref.getString(NetworkService.KEY_CUSTOM_NODE_URLS, "");
-
-        // Deciding whether to use an externally provided list of node URLs, or use our internal one
-        if(serializedNodeUrls.equals("")){
-            mNodeUrls.addAll(Arrays.asList(Nodes.NODE_URLS));
-        }else{
-            String[] urls = serializedNodeUrls.split(",");
-            mNodeUrls.addAll(Arrays.asList(urls));
-        }
-        connect();
-    }
-
-    private void connect(){
+    /**
+     * Actually establishes a connection from this Service to one of the full nodes.
+     */
+    public void connect(){
         OkHttpClient client = new OkHttpClient();
-        String url = mNodeUrls.get(mSocketIndex % mNodeUrls.size());
-        Log.d(TAG,"Trying to connect with: "+url);
-        Request request = new Request.Builder().url(url).build();
-        client.newWebSocket(request, mWebSocketListener);
+        FullNode fullNode = nodeProvider.getBestNode();
+        Log.d(TAG,"connect.url: "+fullNode.getUrl());
+        Request request = new Request.Builder().url(fullNode.getUrl()).build();
+        mWebSocket = client.newWebSocket(request, mWebSocketListener);
     }
 
     public long sendMessage(String message){
@@ -214,14 +199,38 @@ public class NetworkService extends Service {
             mWebSocket.close(NORMAL_CLOSURE_STATUS, null);
     }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        return super.onStartCommand(intent, flags, startId);
-    }
-
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        Log.d(TAG,"onBind.intent: "+intent);
+        // Retrieving credentials and requested API data from the shared preferences
+        mUsername = intent.getStringExtra(NetworkService.KEY_USERNAME);
+        mPassword = intent.getStringExtra(NetworkService.KEY_PASSWORD);
+        mRequestedApis = intent.getIntExtra(NetworkService.KEY_REQUESTED_APIS, 0);
+        mAutoConnect = intent.getBooleanExtra(NetworkService.KEY_AUTO_CONNECT, true);
+
+
+        ArrayList<String> nodeUrls = new ArrayList<>();
+        // If the user of the library desires, a custom list of node URLs can
+        // be passed using the KEY_CUSTOM_NODE_URLS constant
+        String customNodeUrls = intent.getStringExtra(NetworkService.KEY_CUSTOM_NODE_URLS);
+
+        // Adding user-provided list of node URLs first
+        if(customNodeUrls != null){
+            String[] urls = customNodeUrls.split(",");
+            ArrayList<String> urlList = new ArrayList<>(Arrays.asList(urls));
+            nodeUrls.addAll(urlList);
+        }
+
+        // Adding the library-provided list of nodes second
+        nodeUrls.addAll(Arrays.asList(Nodes.NODE_URLS));
+
+        for(String nodeUrl : nodeUrls){
+            nodeProvider.addNode(new FullNode(nodeUrl));
+        }
+
+        if(mAutoConnect) connect();
+
         return mBinder;
     }
 
@@ -241,7 +250,6 @@ public class NetworkService extends Service {
         @Override
         public void onOpen(WebSocket webSocket, Response response) {
             super.onOpen(webSocket, response);
-            mWebSocket = webSocket;
 
             // Notifying all listeners about the new connection status
             RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.CONNECTED, ApiAccess.API_NONE));
@@ -494,9 +502,8 @@ public class NetworkService extends Service {
             }
 
             RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.DISCONNECTED, ApiAccess.API_NONE));
-            mSocketIndex++;
 
-            if(mSocketIndex > mNodeUrls.size() * 3){
+            if(nodeProvider.getBestNode() == null){
                 Log.e(TAG,"Giving up on connections");
                 stopSelf();
             }else{
@@ -516,11 +523,19 @@ public class NetworkService extends Service {
         return mApiIds.get(whichApi) != null;
     }
 
-    public ArrayList<String> getNodeUrls() {
-        return mNodeUrls;
+    /**
+     * Updates the full node details
+     * @param fullNode  Updated {@link FullNode} instance
+     */
+    public void updateNode(FullNode fullNode){
+        nodeProvider.updateNode(fullNode);
     }
 
-    public void setNodeUrls(ArrayList<String> mNodeUrls) {
-        this.mNodeUrls = mNodeUrls;
+    /**
+     * Returns a list of {@link FullNode} instances
+     * @return  List of full nodes
+     */
+    List<FullNode> getSortedNodes(){
+        return nodeProvider.getSortedNodes();
     }
 }
