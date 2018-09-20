@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import cy.agorise.graphenej.api.android.NetworkService;
+import cy.agorise.graphenej.network.NodeLatencyVerifier;
 
 public abstract class ConnectedActivity extends AppCompatActivity implements ServiceConnection {
     private final String TAG = this.getClass().getName();

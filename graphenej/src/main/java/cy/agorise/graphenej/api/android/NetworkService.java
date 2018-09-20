@@ -68,7 +68,7 @@ import okhttp3.WebSocketListener;
 public class NetworkService extends Service {
     private final String TAG = this.getClass().getName();
 
-    private static final int NORMAL_CLOSURE_STATUS = 1000;
+    public static final int NORMAL_CLOSURE_STATUS = 1000;
 
     public static final String KEY_USERNAME = "key_username";
 
@@ -535,7 +535,7 @@ public class NetworkService extends Service {
      * Returns a list of {@link FullNode} instances
      * @return  List of full nodes
      */
-    List<FullNode> getSortedNodes(){
+    public List<FullNode> getNodes(){
         return nodeProvider.getSortedNodes();
     }
 }
