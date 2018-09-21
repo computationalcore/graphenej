@@ -2,12 +2,14 @@ package cy.agorise.graphenej.network;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import java.util.HashMap;
 import java.util.List;
 
 import cy.agorise.graphenej.api.android.NetworkService;
 import io.reactivex.subjects.PublishSubject;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -18,6 +20,7 @@ import okhttp3.WebSocketListener;
  * Class that encapsulates the node latency verification task
  */
 public class NodeLatencyVerifier {
+    private final String TAG = this.getClass().getName();
 
     public static final int DEFAULT_LATENCY_VERIFICATION_PERIOD = 5 * 1000;
 
@@ -30,7 +33,7 @@ public class NodeLatencyVerifier {
     // Subject used to publish the result to interested parties
     private PublishSubject<FullNode> subject = PublishSubject.create();
 
-    private HashMap<String, FullNode> nodeURLMap = new HashMap<>();
+    private HashMap<HttpUrl, FullNode> nodeURLMap = new HashMap<>();
 
 //    private WebSocket webSocket;
 
@@ -100,10 +103,15 @@ public class NodeLatencyVerifier {
                     requestMap.put(fullNode.getUrl(), request);
                 }
 
-                client.newWebSocket(request, mWebSocketListener);
-                if(!nodeURLMap.containsKey(fullNode.getUrl())){
-                    nodeURLMap.put(fullNode.getUrl(), fullNode);
+                String normalURL = fullNode.getUrl().replace("wss://", "https://");
+                Log.d(TAG,"normal URL : "+normalURL);
+                if(!nodeURLMap.containsKey(fullNode.getUrl().replace("wss://", "https://"))){
+                    HttpUrl key = HttpUrl.parse(normalURL);
+                    Log.i(TAG, "Inserting key: "+key.toString());
+                    nodeURLMap.put(key, fullNode);
                 }
+
+                client.newWebSocket(request, mWebSocketListener);
             }
             mHandler.postDelayed(this, verificationPeriod);
         }
@@ -125,14 +133,32 @@ public class NodeLatencyVerifier {
             handleResponse(webSocket, response);
         }
 
+        /**
+         * Method used to handle the node's first response. The idea here is to obtain
+         * the RTT (Round Trip Time) measurement and publish it using the PublishSubject.
+         *
+         * @param webSocket Websocket instance
+         * @param response  Response instance
+         */
         private void handleResponse(WebSocket webSocket, Response response){
-            String url = "wss://" + webSocket.request().url().host() + webSocket.request().url().encodedPath();
-            FullNode fullNode = nodeURLMap.get(url);
-            long after = System.currentTimeMillis();
-            long before = timestamps.get(fullNode);
-            long delay = after - before;
-            fullNode.addLatencyValue(delay);
-            subject.onNext(fullNode);
+            // Obtaining the HttpUrl instance that was previously used as a key
+            HttpUrl url = webSocket.request().url();
+            if(nodeURLMap.containsKey(url)){
+                FullNode fullNode = nodeURLMap.get(url);
+                long after = System.currentTimeMillis();
+                long before = timestamps.get(fullNode);
+                long delay = after - before;
+                fullNode.addLatencyValue(delay);
+                subject.onNext(fullNode);
+            }else{
+                // We cannot properly handle a response to a request whose
+                // URL was not registered at the nodeURLMap. This is because without this,
+                // we cannot know to which node this response corresponds. This should not happen.
+                Log.e(TAG,"nodeURLMap does not contain url: "+url);
+                for(HttpUrl key : nodeURLMap.keySet()){
+                    Log.e(TAG,"> "+key);
+                }
+            }
             webSocket.close(NetworkService.NORMAL_CLOSURE_STATUS, null);
         }
     };

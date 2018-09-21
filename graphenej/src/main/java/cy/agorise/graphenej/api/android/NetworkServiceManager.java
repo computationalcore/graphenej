@@ -51,6 +51,7 @@ public class NetworkServiceManager implements Application.ActivityLifecycleCallb
     private int mRequestedApis;
     private List<String> mCustomNodeUrls = new ArrayList<>();
     private boolean mAutoConnect;
+    private boolean mVerifyLatency;
 
     /**
      * Runnable used to schedule a service disconnection once the app is not visible to the user for
@@ -104,7 +105,8 @@ public class NetworkServiceManager implements Application.ActivityLifecycleCallb
                     .putExtra(NetworkService.KEY_PASSWORD, mPassword)
                     .putExtra(NetworkService.KEY_REQUESTED_APIS, mRequestedApis)
                     .putExtra(NetworkService.KEY_CUSTOM_NODE_URLS, customNodes)
-                    .putExtra(NetworkService.KEY_AUTO_CONNECT, mAutoConnect);
+                    .putExtra(NetworkService.KEY_AUTO_CONNECT, mAutoConnect)
+                    .putExtra(NetworkService.KEY_ENABLE_LATENCY_VERIFIER, mVerifyLatency);
 
             context.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
         }
@@ -182,6 +184,14 @@ public class NetworkServiceManager implements Application.ActivityLifecycleCallb
         this.mAutoConnect = mAutoConnect;
     }
 
+    public boolean isVerifyLatency() {
+        return mVerifyLatency;
+    }
+
+    public void setVerifyLatency(boolean mVerifyLatency) {
+        this.mVerifyLatency = mVerifyLatency;
+    }
+
     /**
      * Class used to create a {@link NetworkServiceManager} with specific attributes.
      */
@@ -191,27 +201,53 @@ public class NetworkServiceManager implements Application.ActivityLifecycleCallb
         private int requestedApis;
         private List<String> customNodeUrls;
         private boolean autoconnect = true;
+        private boolean verifyNodeLatency;
 
+        /**
+         * Sets the user name, if required to connect to a node.
+         * @param name  User name
+         * @return      The Builder instance
+         */
         public Builder setUserName(String name){
             this.username = name;
             return this;
         }
 
+        /**
+         * Sets the password, if required to connect to a node.
+         * @param password  Password
+         * @return          The Builder instance
+         */
         public Builder setPassword(String password){
             this.password = password;
             return this;
         }
 
+        /**
+         * Sets an integer with the requested APIs encoded as binary flags.
+         * @param apis  Integer representing the different APIs we require from the node.
+         * @return      The Builder instance
+         */
         public Builder setRequestedApis(int apis){
             this.requestedApis = apis;
             return this;
         }
 
+        /**
+         * Adds a list of custom node URLs.
+         * @param nodeUrls  List of custom full node URLs.
+         * @return          The Builder instance
+         */
         public Builder setCustomNodeUrls(List<String> nodeUrls){
             this.customNodeUrls = nodeUrls;
             return this;
         }
 
+        /**
+         * Adds a list of custom node URLs.
+         * @param nodeUrls  List of custom full node URLs.
+         * @return          The Builder instance
+         */
         public Builder setCustomNodeUrls(String nodeUrls){
             String[] urls = nodeUrls.split(",");
             for(String url : urls){
@@ -221,11 +257,33 @@ public class NetworkServiceManager implements Application.ActivityLifecycleCallb
             return this;
         }
 
+        /**
+         * Sets the autoconnect flag. This is true by default.
+         * @param autoConnect   True if we want the service to connect automatically, false otherwise.
+         * @return              The Builder instance
+         */
         public Builder setAutoConnect(boolean autoConnect){
             this.autoconnect = autoConnect;
             return this;
         }
 
+        /**
+         * Sets the node-verification flag. This is false by default.
+         * @param verifyLatency True if we want the service to perform a latency analysis before connecting.
+         * @return              The Builder instance.
+         */
+        public Builder setNodeLatencyVerification(boolean verifyLatency){
+            this.verifyNodeLatency = verifyLatency;
+            return this;
+        }
+
+        /**
+         * Method used to build a {@link NetworkServiceManager} instance with all of the characteristics
+         * passed as parameters.
+         * @param context   A Context of the application package implementing
+         * this class.
+         * @return          Instance of the NetworkServiceManager class.
+         */
         public NetworkServiceManager build(Context context){
             NetworkServiceManager manager = new NetworkServiceManager(context);
             if(username != null) manager.setUserName(username);
@@ -233,6 +291,7 @@ public class NetworkServiceManager implements Application.ActivityLifecycleCallb
             if(customNodeUrls != null) manager.setCustomNodeUrls(customNodeUrls);
             manager.setRequestedApis(requestedApis);
             manager.setAutoConnect(autoconnect);
+            manager.setVerifyLatency(verifyNodeLatency);
             return manager;
         }
     }

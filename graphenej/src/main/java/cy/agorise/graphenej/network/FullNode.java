@@ -1,10 +1,12 @@
 package cy.agorise.graphenej.network;
+
 import cy.agorise.graphenej.stats.ExponentialMovingAverage;
 
 /**
  * Class that represents a full node and is used to keep track of its round-trip time measured in milliseconds.
  */
 public class FullNode implements Comparable {
+
     private String mUrl;
     private ExponentialMovingAverage latency;
 

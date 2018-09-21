@@ -50,11 +50,16 @@ import cy.agorise.graphenej.models.JsonRpcResponse;
 import cy.agorise.graphenej.models.OperationHistory;
 import cy.agorise.graphenej.network.FullNode;
 import cy.agorise.graphenej.network.LatencyNodeProvider;
+import cy.agorise.graphenej.network.NodeLatencyVerifier;
 import cy.agorise.graphenej.network.NodeProvider;
 import cy.agorise.graphenej.operations.CustomOperation;
 import cy.agorise.graphenej.operations.LimitOrderCreateOperation;
 import cy.agorise.graphenej.operations.TransferOperation;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.Nullable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.subjects.PublishSubject;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -75,6 +80,8 @@ public class NetworkService extends Service {
     public static final String KEY_PASSWORD = "key_password";
 
     public static final String KEY_REQUESTED_APIS = "key_requested_apis";
+
+    public static final String KEY_ENABLE_LATENCY_VERIFIER = "key_enable_latency_verifier";
 
     /**
      * Shared preference
@@ -112,7 +119,17 @@ public class NetworkService extends Service {
     // Variable used to keep track of the currently obtained API accesses
     private HashMap<Integer, Integer> mApiIds = new HashMap<Integer, Integer>();
 
-    NodeProvider nodeProvider = new LatencyNodeProvider();
+    // Variable used as a source of node information
+    private NodeProvider nodeProvider = new LatencyNodeProvider();
+
+    // Class used to obtain frequent node latency updates
+    private NodeLatencyVerifier nodeLatencyVerifier;
+
+    // PublishSubject used to announce full node latencies updates
+    private PublishSubject<FullNode> fullNodePublishSubject;
+
+    // Counter used to trigger the connection only after we've received enough node latency updates
+    private long latencyUpdateCounter;
 
     private Gson gson = new GsonBuilder()
             .registerTypeAdapter(Transaction.class, new Transaction.TransactionDeserializer())
@@ -144,7 +161,7 @@ public class NetworkService extends Service {
     public void connect(){
         OkHttpClient client = new OkHttpClient();
         FullNode fullNode = nodeProvider.getBestNode();
-        Log.d(TAG,"connect.url: "+fullNode.getUrl());
+        Log.v(TAG,"connect.url: "+fullNode.getUrl());
         Request request = new Request.Builder().url(fullNode.getUrl()).build();
         mWebSocket = client.newWebSocket(request, mWebSocketListener);
     }
@@ -197,18 +214,19 @@ public class NetworkService extends Service {
     public void onDestroy() {
         if(mWebSocket != null)
             mWebSocket.close(NORMAL_CLOSURE_STATUS, null);
+
+        nodeLatencyVerifier.stop();
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        Log.d(TAG,"onBind.intent: "+intent);
         // Retrieving credentials and requested API data from the shared preferences
         mUsername = intent.getStringExtra(NetworkService.KEY_USERNAME);
         mPassword = intent.getStringExtra(NetworkService.KEY_PASSWORD);
         mRequestedApis = intent.getIntExtra(NetworkService.KEY_REQUESTED_APIS, 0);
         mAutoConnect = intent.getBooleanExtra(NetworkService.KEY_AUTO_CONNECT, true);
-
+        boolean verifyNodeLatency = intent.getBooleanExtra(NetworkService.KEY_ENABLE_LATENCY_VERIFIER, false);
 
         ArrayList<String> nodeUrls = new ArrayList<>();
         // If the user of the library desires, a custom list of node URLs can
@@ -225,14 +243,60 @@ public class NetworkService extends Service {
         // Adding the library-provided list of nodes second
         nodeUrls.addAll(Arrays.asList(Nodes.NODE_URLS));
 
+        // Feeding all node information to the NodeProvider instance
         for(String nodeUrl : nodeUrls){
             nodeProvider.addNode(new FullNode(nodeUrl));
         }
 
-        if(mAutoConnect) connect();
-
+        // We only connect automatically if the auto-connect flag is true AND
+        // we are not going to care about node latency ordering.
+        if(mAutoConnect && !verifyNodeLatency) {
+            connect();
+        }else{
+            // In case we care about node latency ordering, we must first obtain
+            // a first round of measurements in order to be sure to select the
+            // best node.
+            if(verifyNodeLatency){
+                ArrayList<FullNode> fullNodes = new ArrayList<>();
+                for(String url : nodeUrls){
+                    fullNodes.add(new FullNode(url));
+                }
+                nodeLatencyVerifier = new NodeLatencyVerifier(fullNodes);
+                fullNodePublishSubject = nodeLatencyVerifier.start();
+                fullNodePublishSubject.observeOn(AndroidSchedulers.mainThread()).subscribe(nodeLatencyObserver);
+            }
+        }
         return mBinder;
     }
+
+    /**
+     * Observer used to be notified about node latency measurement updates.
+     */
+    private Observer<FullNode> nodeLatencyObserver = new Observer<FullNode>() {
+        @Override
+        public void onSubscribe(Disposable d) { }
+
+        @Override
+        public void onNext(FullNode fullNode) {
+            latencyUpdateCounter++;
+            // Updating the node with the new latency measurement
+            nodeProvider.updateNode(fullNode);
+
+            // Once we have the latency value of all available nodes,
+            // we can safely proceed to start the connection
+            if(latencyUpdateCounter == nodeProvider.getSortedNodes().size()){
+                connect();
+            }
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            Log.e(TAG,"nodeLatencyObserver.onError.Msg: "+e.getMessage());
+        }
+
+        @Override
+        public void onComplete() { }
+    };
 
     /**
      * Class used for the client Binder.  Because we know this service always
@@ -489,7 +553,7 @@ public class NetworkService extends Service {
             Log.e(TAG,"onFailure. Exception: "+t.getClass().getName()+", Msg: "+t.getMessage());
             // Logging error stack trace
             for(StackTraceElement element : t.getStackTrace()){
-                Log.e(TAG,String.format("%s#%s:%s", element.getClassName(), element.getMethodName(), element.getLineNumber()));
+                Log.v(TAG,String.format("%s#%s:%s", element.getClassName(), element.getMethodName(), element.getLineNumber()));
             }
             // Registering current status
             isLoggedIn = false;
@@ -537,5 +601,13 @@ public class NetworkService extends Service {
      */
     public List<FullNode> getNodes(){
         return nodeProvider.getSortedNodes();
+    }
+
+    /**
+     * Returns an observable that will notify its observers about node latency updates.
+     * @return  Observer of {@link FullNode} instances.
+     */
+    public PublishSubject<FullNode> getNodeLatencyObservable(){
+        return fullNodePublishSubject;
     }
 }

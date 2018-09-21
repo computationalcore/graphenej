@@ -1,7 +1,5 @@
 package cy.agorise.graphenej.network;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,7 +7,7 @@ import java.util.List;
 import java.util.PriorityQueue;
 
 public class LatencyNodeProvider implements NodeProvider {
-    private final String TAG = this.getClass().getName();
+    private final String TAG = "LatencyNodeProvider";
     private PriorityQueue<FullNode> mFullNodeHeap;
 
     public LatencyNodeProvider(){
@@ -55,8 +53,6 @@ public class LatencyNodeProvider implements NodeProvider {
         for(FullNode fullNode : nodeList){
             if(fullNode != null){
                 nodeList.add(fullNode);
-            }else{
-                Log.d(TAG,"Found a null node in getSortedNodes");
             }
         }
         Collections.sort(nodeList);
