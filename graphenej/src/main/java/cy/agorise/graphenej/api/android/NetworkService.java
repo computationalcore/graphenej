@@ -215,7 +215,8 @@ public class NetworkService extends Service {
         if(mWebSocket != null)
             mWebSocket.close(NORMAL_CLOSURE_STATUS, null);
 
-        nodeLatencyVerifier.stop();
+        if(nodeLatencyVerifier != null)
+            nodeLatencyVerifier.stop();
     }
 
     @Nullable
