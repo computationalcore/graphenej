@@ -24,6 +24,7 @@ public class SampleApplication extends Application {
                 .setRequestedApis(requestedApis)
                 .setCustomNodeUrls("wss://eu.nodes.bitshares.ws")
                 .setAutoConnect(true)
+                .setNodeLatencyVerification(true)
                 .build(this);
 
         // Registering this class as a listener to all activity's callback cycle events, in order to
