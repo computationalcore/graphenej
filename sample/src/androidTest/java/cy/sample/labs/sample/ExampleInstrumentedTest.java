@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.luminiasoft.labs.sample", appContext.getPackageName());
+        assertEquals("cy.agorise.labs.sample", appContext.getPackageName());
     }
 }
