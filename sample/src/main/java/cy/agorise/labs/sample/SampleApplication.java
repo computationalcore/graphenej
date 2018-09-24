@@ -19,7 +19,7 @@ public class SampleApplication extends Application {
         int requestedApis = ApiAccess.API_DATABASE | ApiAccess.API_HISTORY | ApiAccess.API_NETWORK_BROADCAST;
 
         NetworkServiceManager networkManager = new NetworkServiceManager.Builder()
-                .setUserName("nelson")
+                .setUserName("username")
                 .setPassword("secret")
                 .setRequestedApis(requestedApis)
                 .setCustomNodeUrls("wss://eu.nodes.bitshares.ws")

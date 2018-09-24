@@ -3,7 +3,9 @@ package cy.agorise.graphenej.api.android;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -74,6 +76,9 @@ public class NetworkService extends Service {
     private final String TAG = this.getClass().getName();
 
     public static final int NORMAL_CLOSURE_STATUS = 1000;
+
+    // Time to wait before retrying a connection attempt
+    private final int DEFAULT_RETRY_DELAY = 5000;
 
     public static final String KEY_USERNAME = "key_username";
 
@@ -572,7 +577,14 @@ public class NetworkService extends Service {
                 Log.e(TAG,"Giving up on connections");
                 stopSelf();
             }else{
-                connect();
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d(TAG,"Retrying");
+                        connect();
+                    }
+                }, DEFAULT_RETRY_DELAY);
             }
         }
     };
