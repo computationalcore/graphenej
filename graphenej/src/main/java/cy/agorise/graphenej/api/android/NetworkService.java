@@ -136,6 +136,9 @@ public class NetworkService extends Service {
     // Counter used to trigger the connection only after we've received enough node latency updates
     private long latencyUpdateCounter;
 
+    // Property used to keep track of the currently active node
+    private FullNode mSelectedNode;
+
     private Gson gson = new GsonBuilder()
             .registerTypeAdapter(Transaction.class, new Transaction.TransactionDeserializer())
             .registerTypeAdapter(TransferOperation.class, new TransferOperation.TransferDeserializer())
@@ -165,9 +168,9 @@ public class NetworkService extends Service {
      */
     public void connect(){
         OkHttpClient client = new OkHttpClient();
-        FullNode fullNode = nodeProvider.getBestNode();
-        Log.v(TAG,"connect.url: "+fullNode.getUrl());
-        Request request = new Request.Builder().url(fullNode.getUrl()).build();
+        mSelectedNode = nodeProvider.getBestNode();
+        Log.v(TAG,"connect.url: "+ mSelectedNode.getUrl());
+        Request request = new Request.Builder().url(mSelectedNode.getUrl()).build();
         mWebSocket = client.newWebSocket(request, mWebSocketListener);
     }
 
@@ -254,7 +257,6 @@ public class NetworkService extends Service {
 
         // Feeding all node information to the NodeProvider instance
         for(String nodeUrl : nodeUrls){
-            Log.d(TAG, "NodeUrl: " + nodeUrl);
             nodeProvider.addNode(new FullNode(nodeUrl));
         }
 
@@ -324,6 +326,12 @@ public class NetworkService extends Service {
         @Override
         public void onOpen(WebSocket webSocket, Response response) {
             super.onOpen(webSocket, response);
+
+            // Marking the selected node as connected
+            mSelectedNode.setConnected(true);
+
+            // Updating the selected node's 'connected' status on the NodeLatencyVerifier instance
+            nodeLatencyVerifier.updateActiveNodeInformation(mSelectedNode);
 
             // Notifying all listeners about the new connection status
             RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.CONNECTED, ApiAccess.API_NONE));
@@ -555,6 +563,16 @@ public class NetworkService extends Service {
             RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.DISCONNECTED, ApiAccess.API_NONE));
 
             isLoggedIn = false;
+
+            // Marking the selected node as not connected
+            mSelectedNode.setConnected(false);
+
+            // Updating the selected node's 'connected' status on the NodeLatencyVerifier instance
+            nodeLatencyVerifier.updateActiveNodeInformation(mSelectedNode);
+
+
+            // We have currently no selected node
+            mSelectedNode = null;
         }
 
         @Override
@@ -590,6 +608,14 @@ public class NetworkService extends Service {
                     }
                 }, DEFAULT_RETRY_DELAY);
             }
+            // Marking the selected node as not connected
+            mSelectedNode.setConnected(false);
+
+            // Updating the selected node's 'connected' status on the NodeLatencyVerifier instance
+            nodeLatencyVerifier.updateActiveNodeInformation(mSelectedNode);
+
+            // We have currently no selected node
+            mSelectedNode = null;
         }
     };
 

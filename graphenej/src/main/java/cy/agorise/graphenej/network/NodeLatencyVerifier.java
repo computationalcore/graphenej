@@ -162,4 +162,16 @@ public class NodeLatencyVerifier {
             webSocket.close(NetworkService.NORMAL_CLOSURE_STATUS, null);
         }
     };
+
+    /**
+     * Updates the 'isConnected' attribute of a specific node.
+     * @param fullNode  The node we want to update.
+     */
+    public void updateActiveNodeInformation(FullNode fullNode){
+        for(FullNode node : mNodeList){
+            if(node.equals(fullNode)){
+                node.setConnected(fullNode.isConnected());
+            }
+        }
+    }
 }

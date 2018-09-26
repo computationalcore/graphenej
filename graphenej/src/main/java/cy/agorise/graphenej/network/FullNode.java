@@ -9,6 +9,7 @@ public class FullNode implements Comparable {
 
     private String mUrl;
     private ExponentialMovingAverage latency;
+    private boolean isConnected;
 
     private FullNode(){}
 
@@ -47,6 +48,14 @@ public class FullNode implements Comparable {
      */
     public double getLatencyValue() {
         return latency.getAverage();
+    }
+
+    public boolean isConnected() {
+        return isConnected;
+    }
+
+    public void setConnected(boolean connected) {
+        isConnected = connected;
     }
 
     /**
