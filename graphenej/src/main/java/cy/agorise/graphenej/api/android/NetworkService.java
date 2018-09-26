@@ -246,11 +246,15 @@ public class NetworkService extends Service {
             nodeUrls.addAll(urlList);
         }
 
-        // Adding the library-provided list of nodes second
-        nodeUrls.addAll(Arrays.asList(Nodes.NODE_URLS));
+        // Adding the library-provided list of nodes that are not repeated
+        for(String node : Nodes.NODE_URLS) {
+            if(!nodeUrls.contains(node))
+                nodeUrls.add(node);
+        }
 
         // Feeding all node information to the NodeProvider instance
         for(String nodeUrl : nodeUrls){
+            Log.d(TAG, "NodeUrl: " + nodeUrl);
             nodeProvider.addNode(new FullNode(nodeUrl));
         }
 
