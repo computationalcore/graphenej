@@ -22,7 +22,7 @@ import okhttp3.WebSocketListener;
 public class NodeLatencyVerifier {
     private final String TAG = this.getClass().getName();
 
-    public static final int DEFAULT_LATENCY_VERIFICATION_PERIOD = 5 * 1000;
+    private static final int DEFAULT_LATENCY_VERIFICATION_PERIOD = 5 * 1000;
 
     // Variable used to store the list of nodes that should be verified
     private List<FullNode> mNodeList;
@@ -88,7 +88,7 @@ public class NodeLatencyVerifier {
                 long before = System.currentTimeMillis();
                 timestamps.put(fullNode, before);
 
-                // We want to reuse the same OkHttoClient instance if possible
+                // We want to reuse the same OkHttpClient instance if possible
                 if(client == null) client = new OkHttpClient();
 
                 // Same thing with the Request instance, we want to reuse them. But since
@@ -145,9 +145,18 @@ public class NodeLatencyVerifier {
             HttpUrl url = webSocket.request().url();
             if(nodeURLMap.containsKey(url)){
                 FullNode fullNode = nodeURLMap.get(url);
-                long after = System.currentTimeMillis();
-                long before = timestamps.get(fullNode);
-                long delay = after - before;
+                long delay;
+
+                if(response == null) {
+                    // There is no internet connection, or the node is unreachable. We are just
+                    // putting an artificial delay.
+                    delay = 10000;
+                } else {
+                    long after = System.currentTimeMillis();
+                    long before = timestamps.get(fullNode);
+                    delay = after - before;
+                }
+
                 fullNode.addLatencyValue(delay);
                 subject.onNext(fullNode);
             }else{
