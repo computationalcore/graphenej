@@ -150,7 +150,7 @@ public class NodeLatencyVerifier {
                 if(response == null) {
                     // There is no internet connection, or the node is unreachable. We are just
                     // putting an artificial delay.
-                    delay = 10000;
+                    delay = Long.MAX_VALUE;
                 } else {
                     long after = System.currentTimeMillis();
                     long before = timestamps.get(fullNode);
