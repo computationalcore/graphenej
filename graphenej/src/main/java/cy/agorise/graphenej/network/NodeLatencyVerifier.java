@@ -104,10 +104,8 @@ public class NodeLatencyVerifier {
                 }
 
                 String normalURL = fullNode.getUrl().replace("wss://", "https://");
-                Log.d(TAG,"normal URL : "+normalURL);
                 if(!nodeURLMap.containsKey(fullNode.getUrl().replace("wss://", "https://"))){
                     HttpUrl key = HttpUrl.parse(normalURL);
-                    Log.i(TAG, "Inserting key: "+key.toString());
                     nodeURLMap.put(key, fullNode);
                 }
 
