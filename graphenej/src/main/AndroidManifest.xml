@@ -2,14 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="cy.agorise.graphenej">
 
-    <uses-sdk android:minSdkVersion="1" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application>
         <service
             android:name=".api.android.NetworkService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true"/>
     </application>
 
 </manifest>
