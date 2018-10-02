@@ -331,7 +331,8 @@ public class NetworkService extends Service {
             mSelectedNode.setConnected(true);
 
             // Updating the selected node's 'connected' status on the NodeLatencyVerifier instance
-            nodeLatencyVerifier.updateActiveNodeInformation(mSelectedNode);
+            if(nodeLatencyVerifier != null)
+                nodeLatencyVerifier.updateActiveNodeInformation(mSelectedNode);
 
             // Notifying all listeners about the new connection status
             RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.CONNECTED, ApiAccess.API_NONE));
@@ -568,7 +569,8 @@ public class NetworkService extends Service {
             mSelectedNode.setConnected(false);
 
             // Updating the selected node's 'connected' status on the NodeLatencyVerifier instance
-            nodeLatencyVerifier.updateActiveNodeInformation(mSelectedNode);
+            if(nodeLatencyVerifier != null)
+                nodeLatencyVerifier.updateActiveNodeInformation(mSelectedNode);
 
 
             // We have currently no selected node
@@ -612,7 +614,8 @@ public class NetworkService extends Service {
             mSelectedNode.setConnected(false);
 
             // Updating the selected node's 'connected' status on the NodeLatencyVerifier instance
-            nodeLatencyVerifier.updateActiveNodeInformation(mSelectedNode);
+            if(nodeLatencyVerifier != null)
+                nodeLatencyVerifier.updateActiveNodeInformation(mSelectedNode);
 
             // We have currently no selected node
             mSelectedNode = null;
