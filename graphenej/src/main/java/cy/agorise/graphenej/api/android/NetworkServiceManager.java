@@ -78,7 +78,10 @@ public class NetworkServiceManager implements Application.ActivityLifecycleCallb
     public void onActivityCreated(Activity activity, Bundle bundle) { }
 
     @Override
-    public void onActivityStarted(Activity activity) {
+    public void onActivityStarted(Activity activity) { }
+
+    @Override
+    public void onActivityResumed(Activity activity) {
         mHandler.removeCallbacks(mDisconnectRunnable);
         if(mService == null){
             // Creating a new Intent that will be used to start the NetworkService
@@ -101,13 +104,9 @@ public class NetworkServiceManager implements Application.ActivityLifecycleCallb
                     .putExtra(NetworkService.KEY_CUSTOM_NODE_URLS, customNodes)
                     .putExtra(NetworkService.KEY_AUTO_CONNECT, mAutoConnect)
                     .putExtra(NetworkService.KEY_ENABLE_LATENCY_VERIFIER, mVerifyLatency);
-
             context.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
         }
     }
-
-    @Override
-    public void onActivityResumed(Activity activity) {}
 
     @Override
     public void onActivityPaused(Activity activity) {
