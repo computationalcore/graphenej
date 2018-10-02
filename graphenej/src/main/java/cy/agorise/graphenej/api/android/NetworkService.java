@@ -595,6 +595,11 @@ public class NetworkService extends Service {
                 Log.e(TAG,"Response: "+response.message());
             }
 
+            // Adding a very high latency value to this node in order to prevent
+            // us from getting it again
+            mSelectedNode.addLatencyValue(Long.MAX_VALUE);
+            nodeProvider.updateNode(mSelectedNode);
+
             RxBus.getBusInstance().send(new ConnectionStatusUpdate(ConnectionStatusUpdate.DISCONNECTED, ApiAccess.API_NONE));
 
             if(nodeProvider.getBestNode() == null){

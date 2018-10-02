@@ -9,6 +9,7 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.util.Log;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -74,14 +75,7 @@ public class NetworkServiceManager implements Application.ActivityLifecycleCallb
     }
 
     @Override
-    public void onActivityCreated(Activity activity, Bundle bundle) {
-        if(mService == null){
-            // Starting a NetworkService instance
-            Context context = mContextReference.get();
-            Intent intent = new Intent(context, NetworkService.class);
-            context.startService(intent);
-        }
-    }
+    public void onActivityCreated(Activity activity, Bundle bundle) { }
 
     @Override
     public void onActivityStarted(Activity activity) {
@@ -148,8 +142,8 @@ public class NetworkServiceManager implements Application.ActivityLifecycleCallb
         return mUserName;
     }
 
-    public void setUserName(String mUserName) {
-        this.mUserName = mUserName;
+    public void setUserName(String userName) {
+        this.mUserName = userName;
     }
 
     public String getPassword() {
@@ -286,8 +280,8 @@ public class NetworkServiceManager implements Application.ActivityLifecycleCallb
          */
         public NetworkServiceManager build(Context context){
             NetworkServiceManager manager = new NetworkServiceManager(context);
-            if(username != null) manager.setUserName(username);
-            if(password != null) manager.setPassword(password);
+            if(username != null) manager.setUserName(username); else manager.setUserName("");
+            if(password != null) manager.setPassword(password); else manager.setPassword("");
             if(customNodeUrls != null) manager.setCustomNodeUrls(customNodeUrls);
             manager.setRequestedApis(requestedApis);
             manager.setAutoConnect(autoconnect);
