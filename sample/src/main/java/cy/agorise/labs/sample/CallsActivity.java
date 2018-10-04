@@ -47,7 +47,8 @@ public class CallsActivity extends AppCompatActivity {
             RPC.CALL_GET_LIMIT_ORDERS,
             RPC.CALL_GET_ACCOUNT_HISTORY_BY_OPERATIONS,
             RPC.CALL_GET_FULL_ACCOUNTS,
-            RPC.CALL_SET_SUBSCRIBE_CALLBACK
+            RPC.CALL_SET_SUBSCRIBE_CALLBACK,
+            RPC.CALL_GET_DYNAMIC_GLOBAL_PROPERTIES
         };
 
         @NonNull

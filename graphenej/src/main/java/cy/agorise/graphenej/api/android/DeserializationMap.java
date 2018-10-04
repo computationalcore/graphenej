@@ -16,6 +16,7 @@ import cy.agorise.graphenej.Authority;
 import cy.agorise.graphenej.BaseOperation;
 import cy.agorise.graphenej.Extensions;
 import cy.agorise.graphenej.LimitOrder;
+import cy.agorise.graphenej.Memo;
 import cy.agorise.graphenej.Transaction;
 import cy.agorise.graphenej.UserAccount;
 import cy.agorise.graphenej.api.calls.GetAccountByName;
@@ -23,6 +24,7 @@ import cy.agorise.graphenej.api.calls.GetAccountHistoryByOperations;
 import cy.agorise.graphenej.api.calls.GetAccounts;
 import cy.agorise.graphenej.api.calls.GetBlock;
 import cy.agorise.graphenej.api.calls.GetBlockHeader;
+import cy.agorise.graphenej.api.calls.GetDynamicGlobalProperties;
 import cy.agorise.graphenej.api.calls.GetFullAccounts;
 import cy.agorise.graphenej.api.calls.GetLimitOrders;
 import cy.agorise.graphenej.api.calls.GetMarketHistory;
@@ -35,10 +37,10 @@ import cy.agorise.graphenej.models.AccountProperties;
 import cy.agorise.graphenej.models.Block;
 import cy.agorise.graphenej.models.BlockHeader;
 import cy.agorise.graphenej.models.BucketObject;
+import cy.agorise.graphenej.models.DynamicGlobalProperties;
 import cy.agorise.graphenej.models.FullAccountDetails;
 import cy.agorise.graphenej.models.HistoryOperationDetail;
 import cy.agorise.graphenej.models.OperationHistory;
-import cy.agorise.graphenej.Memo;
 import cy.agorise.graphenej.operations.CustomOperation;
 import cy.agorise.graphenej.operations.LimitOrderCreateOperation;
 import cy.agorise.graphenej.operations.TransferOperation;
@@ -56,7 +58,7 @@ public class DeserializationMap {
 
     private HashMap<Class, Gson> mGsonMap = new HashMap<>();
 
-    public DeserializationMap(){
+    DeserializationMap(){
         Gson genericGson = new Gson();
 
         // GetBlock
@@ -169,6 +171,13 @@ public class DeserializationMap {
                 .registerTypeAdapter(AccountOptions.class, new AccountOptions.AccountOptionsDeserializer())
                 .create();
         mGsonMap.put(GetFullAccounts.class, getFullAccountsGson);
+
+        // GetDynamicGlobalProperties
+        mClassMap.put(GetDynamicGlobalProperties.class, DynamicGlobalProperties.class);
+        Gson getDynamicGlobalPropertiesGson = new GsonBuilder()
+                .registerTypeAdapter(DynamicGlobalProperties.class, new DynamicGlobalProperties.DynamicGlobalPropertiesDeserializer())
+                .create();
+        mGsonMap.put(GetDynamicGlobalProperties.class, getDynamicGlobalPropertiesGson);
     }
 
     public Class getReceivedClass(Class _class){

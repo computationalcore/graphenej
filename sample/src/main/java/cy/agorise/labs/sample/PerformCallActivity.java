@@ -33,6 +33,7 @@ import cy.agorise.graphenej.api.calls.GetAccountByName;
 import cy.agorise.graphenej.api.calls.GetAccountHistoryByOperations;
 import cy.agorise.graphenej.api.calls.GetAccounts;
 import cy.agorise.graphenej.api.calls.GetBlock;
+import cy.agorise.graphenej.api.calls.GetDynamicGlobalProperties;
 import cy.agorise.graphenej.api.calls.GetFullAccounts;
 import cy.agorise.graphenej.api.calls.GetLimitOrders;
 import cy.agorise.graphenej.api.calls.GetObjects;
@@ -135,6 +136,8 @@ public class PerformCallActivity extends ConnectedActivity {
             case RPC.CALL_GET_FULL_ACCOUNTS:
                 setupGetFullAccounts();
                 break;
+            case RPC.CALL_GET_DYNAMIC_GLOBAL_PROPERTIES:
+                setupGetDynamicGlobalProperties();
             default:
                 Log.d(TAG,"Default called");
         }
@@ -250,8 +253,17 @@ public class PerformCallActivity extends ConnectedActivity {
         param1.setInputType(InputType.TYPE_CLASS_TEXT);
     }
 
+    private void setupGetDynamicGlobalProperties(){
+        requiredInput(0);
+    }
+
     private void requiredInput(int inputCount){
-        if(inputCount == 1){
+        if(inputCount == 0){
+            mParam1View.setVisibility(View.GONE);
+            mParam2View.setVisibility(View.GONE);
+            mParam3View.setVisibility(View.GONE);
+            mParam4View.setVisibility(View.GONE);
+        }else if(inputCount == 1){
             mParam1View.setVisibility(View.VISIBLE);
             mParam2View.setVisibility(View.GONE);
             mParam3View.setVisibility(View.GONE);
@@ -309,6 +321,9 @@ public class PerformCallActivity extends ConnectedActivity {
                 break;
             case RPC.CALL_GET_FULL_ACCOUNTS:
                 getFullAccounts();
+                break;
+            case RPC.CALL_GET_DYNAMIC_GLOBAL_PROPERTIES:
+                getDynamicGlobalProperties();
             default:
                 Log.d(TAG,"Default called");
         }
@@ -391,6 +406,11 @@ public class PerformCallActivity extends ConnectedActivity {
         responseMap.put(id, mRPC);
     }
 
+    private void getDynamicGlobalProperties(){
+        long id = mNetworkService.sendMessage(new GetDynamicGlobalProperties(), GetDynamicGlobalProperties.REQUIRED_API);
+        responseMap.put(id, mRPC);
+    }
+
     /**
      * Internal method that will decide what to do with each JSON-RPC response
      *
@@ -414,6 +434,7 @@ public class PerformCallActivity extends ConnectedActivity {
                 case RPC.CALL_GET_LIMIT_ORDERS:
                 case RPC.CALL_GET_ACCOUNT_HISTORY_BY_OPERATIONS:
                 case RPC.CALL_GET_FULL_ACCOUNTS:
+                case RPC.CALL_GET_DYNAMIC_GLOBAL_PROPERTIES:
                     mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
                     break;
                 default:

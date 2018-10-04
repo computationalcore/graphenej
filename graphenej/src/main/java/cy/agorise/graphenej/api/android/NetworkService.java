@@ -458,6 +458,9 @@ public class NetworkService extends Service {
                 } else if(responsePayloadClass == HistoryOperationDetail.class){
                     Type GetAccountHistoryByOperationsResponse = new TypeToken<JsonRpcResponse<HistoryOperationDetail>>(){}.getType();
                     parsedResponse = gson.fromJson(text, GetAccountHistoryByOperationsResponse);
+                }else if(responsePayloadClass == DynamicGlobalProperties.class){
+                    Type GetDynamicGlobalPropertiesResponse = new TypeToken<JsonRpcResponse<DynamicGlobalProperties>>(){}.getType();
+                    parsedResponse = gson.fromJson(text, GetDynamicGlobalPropertiesResponse);
                 }else if(responsePayloadClass == List.class){
                     // If the response payload is a List, further inquiry is required in order to
                     // determine a list of what is expected here
