@@ -23,6 +23,7 @@ import java.util.HashMap;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import cy.agorise.graphenej.Memo;
 import cy.agorise.graphenej.OperationType;
 import cy.agorise.graphenej.RPC;
 import cy.agorise.graphenej.UserAccount;
@@ -35,11 +36,12 @@ import cy.agorise.graphenej.api.calls.GetAccounts;
 import cy.agorise.graphenej.api.calls.GetBlock;
 import cy.agorise.graphenej.api.calls.GetDynamicGlobalProperties;
 import cy.agorise.graphenej.api.calls.GetFullAccounts;
+import cy.agorise.graphenej.api.calls.GetKeyReferences;
 import cy.agorise.graphenej.api.calls.GetLimitOrders;
 import cy.agorise.graphenej.api.calls.GetObjects;
 import cy.agorise.graphenej.api.calls.ListAssets;
+import cy.agorise.graphenej.errors.MalformedAddressException;
 import cy.agorise.graphenej.models.JsonRpcResponse;
-import cy.agorise.graphenej.Memo;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
@@ -138,6 +140,10 @@ public class PerformCallActivity extends ConnectedActivity {
                 break;
             case RPC.CALL_GET_DYNAMIC_GLOBAL_PROPERTIES:
                 setupGetDynamicGlobalProperties();
+                break;
+            case RPC.CALL_GET_KEY_REFERENCES:
+                setupGetKeyReferences();
+                break;
             default:
                 Log.d(TAG,"Default called");
         }
@@ -257,6 +263,12 @@ public class PerformCallActivity extends ConnectedActivity {
         requiredInput(0);
     }
 
+    private void setupGetKeyReferences(){
+        requiredInput(1);
+        // Test address
+        param1.setText("BTS8a7XJ94u1traaLGFHw6NgpvUaxmbG4MyCcZC1hBj9HCBuMEwXP");
+    }
+
     private void requiredInput(int inputCount){
         if(inputCount == 0){
             mParam1View.setVisibility(View.GONE);
@@ -324,6 +336,10 @@ public class PerformCallActivity extends ConnectedActivity {
                 break;
             case RPC.CALL_GET_DYNAMIC_GLOBAL_PROPERTIES:
                 getDynamicGlobalProperties();
+                break;
+            case RPC.CALL_GET_KEY_REFERENCES:
+                getKeyReferences();
+                break;
             default:
                 Log.d(TAG,"Default called");
         }
@@ -411,6 +427,19 @@ public class PerformCallActivity extends ConnectedActivity {
         responseMap.put(id, mRPC);
     }
 
+    private void getKeyReferences(){
+        String address = param1.getText().toString();
+        long id = 0;
+        try {
+            id = mNetworkService.sendMessage(new GetKeyReferences(address), GetKeyReferences.REQUIRED_API);
+            responseMap.put(id, mRPC);
+        } catch (MalformedAddressException | IllegalArgumentException e) {
+            Log.e(TAG,"MalformedAddressException. Msg: "+e.getMessage());
+            Toast.makeText(this, "Malformed address exception", Toast.LENGTH_SHORT).show();
+            param1.setText("");
+        }
+    }
+
     /**
      * Internal method that will decide what to do with each JSON-RPC response
      *
@@ -435,6 +464,7 @@ public class PerformCallActivity extends ConnectedActivity {
                 case RPC.CALL_GET_ACCOUNT_HISTORY_BY_OPERATIONS:
                 case RPC.CALL_GET_FULL_ACCOUNTS:
                 case RPC.CALL_GET_DYNAMIC_GLOBAL_PROPERTIES:
+                case RPC.CALL_GET_KEY_REFERENCES:
                     mResponseView.setText(mResponseView.getText() + gson.toJson(response, JsonRpcResponse.class) + "\n");
                     break;
                 default:

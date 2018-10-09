@@ -26,6 +26,7 @@ import cy.agorise.graphenej.api.calls.GetBlock;
 import cy.agorise.graphenej.api.calls.GetBlockHeader;
 import cy.agorise.graphenej.api.calls.GetDynamicGlobalProperties;
 import cy.agorise.graphenej.api.calls.GetFullAccounts;
+import cy.agorise.graphenej.api.calls.GetKeyReferences;
 import cy.agorise.graphenej.api.calls.GetLimitOrders;
 import cy.agorise.graphenej.api.calls.GetMarketHistory;
 import cy.agorise.graphenej.api.calls.GetObjects;
@@ -178,6 +179,13 @@ public class DeserializationMap {
                 .registerTypeAdapter(DynamicGlobalProperties.class, new DynamicGlobalProperties.DynamicGlobalPropertiesDeserializer())
                 .create();
         mGsonMap.put(GetDynamicGlobalProperties.class, getDynamicGlobalPropertiesGson);
+
+        // GetKeyReferences
+        mClassMap.put(GetKeyReferences.class, List.class);
+        Gson getKeyReferencesGson = new GsonBuilder()
+                .registerTypeAdapter(UserAccount.class, new UserAccount.UserAccountSimpleDeserializer())
+                .create();
+        mGsonMap.put(GetKeyReferences.class, getKeyReferencesGson);
     }
 
     public Class getReceivedClass(Class _class){
