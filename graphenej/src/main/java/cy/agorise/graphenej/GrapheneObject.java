@@ -2,6 +2,8 @@ package cy.agorise.graphenej;
 
 import com.google.gson.annotations.Expose;
 
+import java.util.Locale;
+
 /**
  * <p>
  * Generic class used to represent a graphene object as defined in
@@ -34,15 +36,15 @@ public class GrapheneObject {
 
     /**
      *
-     * @return: A String containing the full object apiId in the form {space}.{type}.{instance}
+     * @return A String containing the full object apiId in the form {space}.{type}.{instance}
      */
     public String getObjectId(){
-        return String.format("%d.%d.%d", space, type, instance);
+        return String.format(Locale.US, "%d.%d.%d", space, type, instance);
     }
 
     /**
      * Returns the type of this object.
-     * @return: Instance of the ObjectType enum.
+     * @return Instance of the ObjectType enum.
      */
     public ObjectType getObjectType(){
         switch(space){
