@@ -33,6 +33,7 @@ import cy.agorise.graphenej.api.bitshares.Nodes;
 import cy.agorise.graphenej.api.calls.ApiCallable;
 import cy.agorise.graphenej.api.calls.GetAccounts;
 import cy.agorise.graphenej.api.calls.GetFullAccounts;
+import cy.agorise.graphenej.api.calls.GetKeyReferences;
 import cy.agorise.graphenej.api.calls.GetLimitOrders;
 import cy.agorise.graphenej.api.calls.GetMarketHistory;
 import cy.agorise.graphenej.api.calls.GetObjects;
@@ -490,6 +491,9 @@ public class NetworkService extends Service {
                     } else if (requestClass == GetFullAccounts.class) {
                         Type GetFullAccountsResponse = new TypeToken<JsonRpcResponse<List<FullAccountDetails>>>(){}.getType();
                         parsedResponse = gson.fromJson(text, GetFullAccountsResponse);
+                    } else if(requestClass == GetKeyReferences.class){
+                        Type GetKeyReferencesResponse = new TypeToken<JsonRpcResponse<List<List<UserAccount>>>>(){}.getType();
+                        parsedResponse = gson.fromJson(text, GetKeyReferencesResponse);
                     } else {
                         Log.w(TAG,"Unknown request class");
                     }
