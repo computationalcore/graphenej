@@ -33,15 +33,49 @@ public class AccountOptions implements GrapheneSerializable {
     private Vote[] votes;
     private Extensions extensions;
 
+    /**
+     * Constructor used to instantiate only the following attributes:
+     * <ul>
+     *     <li>voting_account</li>
+     *     <li>votes</li>
+     *     <li>extensions</li>
+     * </ul>
+     */
     public AccountOptions(){
         voting_account = new UserAccount(UserAccount.PROXY_TO_SELF);
         this.votes = new Vote[0];
         this.extensions = new Extensions();
     }
 
+    /**
+     * Constructor used to instantiate only the following attributes:
+     * <ul>
+     *     <li>voting_account</li>
+     *     <li>votes</li>
+     *     <li>memo_key</li>
+     *     <li>extensions</li>
+     * </ul>
+     */
     public AccountOptions(PublicKey memoKey){
         this();
         this.memo_key = memoKey;
+    }
+
+    /**
+     * Constructor that can be used to instantiate a version of the AccountOptions object
+     * with a null reference in the 'voting_account' attribute. This can be used to prevent
+     * a circular dependency situation when de-serializing the UserAccount instance.
+     *
+     * @param memoKey          Memo public key used by this account
+     * @param includeAccount   Whether or not to instantiate an UserAccount
+     */
+    public AccountOptions(PublicKey memoKey, boolean includeAccount){
+        if(includeAccount){
+            voting_account = new UserAccount(UserAccount.PROXY_TO_SELF);
+        }
+        this.memo_key = memoKey;
+        this.votes = new Vote[0];
+        this.extensions = new Extensions();
     }
 
     //TODO: Implement constructor that takes a Vote array.
@@ -149,13 +183,23 @@ public class AccountOptions implements GrapheneSerializable {
      */
     public static class AccountOptionsDeserializer implements JsonDeserializer<AccountOptions> {
 
+        boolean mIncludeUserAccount;
+
+        public AccountOptionsDeserializer(){
+            this.mIncludeUserAccount = true;
+        }
+
+        public AccountOptionsDeserializer(boolean includeUserAccount){
+            this.mIncludeUserAccount = includeUserAccount;
+        }
+
         @Override
         public AccountOptions deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject baseObject = json.getAsJsonObject();
             AccountOptions options;
             try {
                 Address address = new Address(baseObject.get(KEY_MEMO_KEY).getAsString());
-                options = new AccountOptions(address.getPublicKey());
+                options = new AccountOptions(address.getPublicKey(), mIncludeUserAccount);
             } catch (MalformedAddressException e) {
                 System.out.println("MalformedAddressException. Msg: "+e.getMessage());
                 options = new AccountOptions();

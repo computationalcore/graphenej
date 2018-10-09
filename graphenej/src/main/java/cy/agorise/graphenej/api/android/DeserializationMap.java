@@ -76,9 +76,8 @@ public class DeserializationMap {
         // GetAccounts
         mClassMap.put(GetAccounts.class, List.class);
         Gson getAccountsGson = new GsonBuilder()
-                .setExclusionStrategies(new SkipAccountOptionsStrategy())
                 .registerTypeAdapter(Authority.class, new Authority.AuthorityDeserializer())
-                .registerTypeAdapter(AccountOptions.class, new AccountOptions.AccountOptionsDeserializer())
+                .registerTypeAdapter(AccountOptions.class, new AccountOptions.AccountOptionsDeserializer(false))
                 .create();
         mGsonMap.put(GetAccounts.class, getAccountsGson);
 
