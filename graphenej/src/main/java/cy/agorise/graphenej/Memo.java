@@ -1,4 +1,4 @@
-package cy.agorise.graphenej.objects;
+package cy.agorise.graphenej;
 
 import com.google.common.primitives.Bytes;
 import com.google.gson.Gson;
@@ -19,9 +19,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-import cy.agorise.graphenej.Address;
-import cy.agorise.graphenej.PublicKey;
-import cy.agorise.graphenej.Util;
 import cy.agorise.graphenej.errors.ChecksumException;
 import cy.agorise.graphenej.errors.MalformedAddressException;
 import cy.agorise.graphenej.interfaces.ByteSerializable;
@@ -32,7 +29,6 @@ import cy.agorise.graphenej.interfaces.JsonSerializable;
  * {@url https://bitshares.org/doxygen/structgraphene_1_1chain_1_1memo__data.html}
  */
 public class Memo implements ByteSerializable, JsonSerializable {
-    public final static String TAG = "Memo";
     public static final String KEY_FROM = "from";
     public static final String KEY_TO = "to";
     public static final String KEY_NONCE = "nonce";
@@ -291,13 +287,15 @@ public class Memo implements ByteSerializable, JsonSerializable {
             memoObject.addProperty(KEY_FROM, "");
             memoObject.addProperty(KEY_TO, "");
             memoObject.addProperty(KEY_NONCE, "");
-            memoObject.addProperty(KEY_MESSAGE, Util.bytesToHex(this.message));
+            if(this.message != null)
+                memoObject.addProperty(KEY_MESSAGE, Util.bytesToHex(this.message));
             return null;
         }else{
             memoObject.addProperty(KEY_FROM, this.from.toString());
             memoObject.addProperty(KEY_TO, this.to.toString());
             memoObject.addProperty(KEY_NONCE, String.format("%x", this.nonce));
-            memoObject.addProperty(KEY_MESSAGE, Util.bytesToHex(this.message));
+            if(this.message != null)
+                memoObject.addProperty(KEY_MESSAGE, Util.bytesToHex(this.message));
         }
         return memoObject;
     }
@@ -310,8 +308,9 @@ public class Memo implements ByteSerializable, JsonSerializable {
      */
     public JsonElement toJson(boolean decimal){
         JsonElement jsonElement = toJsonObject();
-        if(decimal){
+        if(decimal && jsonElement != null){
             JsonObject jsonObject = (JsonObject) jsonElement;
+            // The nonce is interpreted in base 16, but it is going to be written in base 10
             BigInteger nonce = new BigInteger(jsonObject.get(KEY_NONCE).getAsString(), 16);
             jsonObject.addProperty(KEY_NONCE, nonce.toString());
         }

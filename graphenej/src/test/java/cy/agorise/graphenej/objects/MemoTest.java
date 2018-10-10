@@ -13,6 +13,7 @@ import org.junit.Test;
 import java.math.BigInteger;
 
 import cy.agorise.graphenej.Address;
+import cy.agorise.graphenej.Memo;
 import cy.agorise.graphenej.PublicKey;
 import cy.agorise.graphenej.TestAccounts;
 import cy.agorise.graphenej.Util;

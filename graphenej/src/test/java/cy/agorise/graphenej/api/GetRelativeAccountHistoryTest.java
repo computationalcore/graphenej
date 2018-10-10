@@ -8,7 +8,7 @@ import java.util.List;
 import cy.agorise.graphenej.UserAccount;
 import cy.agorise.graphenej.interfaces.WitnessResponseListener;
 import cy.agorise.graphenej.models.BaseResponse;
-import cy.agorise.graphenej.models.HistoricalTransfer;
+import cy.agorise.graphenej.models.OperationHistory;
 import cy.agorise.graphenej.models.WitnessResponse;
 import cy.agorise.graphenej.operations.TransferOperation;
 
@@ -51,11 +51,11 @@ public class GetRelativeAccountHistoryTest extends BaseApiTest {
         public void onSuccess(WitnessResponse response) {
             System.out.println("mTransferHistoryListener.onSuccess");
             historicalTransferCount++;
-            WitnessResponse<List<HistoricalTransfer>> resp = response;
-            for(HistoricalTransfer historicalTransfer : resp.result){
+            WitnessResponse<List<OperationHistory>> resp = response;
+            for(OperationHistory historicalTransfer : resp.result){
                 if(historicalTransfer.getOperation() != null){
                     System.out.println("Got transfer operation!");
-                    TransferOperation transferOperation = historicalTransfer.getOperation();
+                    TransferOperation transferOperation = (TransferOperation) historicalTransfer.getOperation();
                     System.out.println(String.format("%s - > %s, memo: %s",
                             transferOperation.getFrom().getObjectId(),
                             transferOperation.getTo().getObjectId(),

@@ -24,7 +24,6 @@ import cy.agorise.graphenej.api.TransactionBroadcastSequence;
 import cy.agorise.graphenej.interfaces.WitnessResponseListener;
 import cy.agorise.graphenej.models.BaseResponse;
 import cy.agorise.graphenej.models.WitnessResponse;
-import cy.agorise.graphenej.objects.Memo;
 import cy.agorise.graphenej.operations.CustomOperation;
 import cy.agorise.graphenej.operations.LimitOrderCancelOperation;
 import cy.agorise.graphenej.operations.LimitOrderCreateOperation;

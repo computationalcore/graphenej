@@ -17,7 +17,7 @@ import cy.agorise.graphenej.AssetAmount;
 import cy.agorise.graphenej.BaseOperation;
 import cy.agorise.graphenej.OperationType;
 import cy.agorise.graphenej.UserAccount;
-import cy.agorise.graphenej.objects.Memo;
+import cy.agorise.graphenej.Memo;
 
 /**
  * Class used to encapsulate the TransferOperation operation related functionalities.

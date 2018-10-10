@@ -5,12 +5,10 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketFrame;
 
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +22,9 @@ import cy.agorise.graphenej.RPC;
 import cy.agorise.graphenej.UserAccount;
 import cy.agorise.graphenej.interfaces.WitnessResponseListener;
 import cy.agorise.graphenej.models.ApiCall;
+import cy.agorise.graphenej.models.AssetFeed;
 import cy.agorise.graphenej.models.BitAssetData;
+import cy.agorise.graphenej.models.ReportedAssetFeed;
 import cy.agorise.graphenej.models.WitnessResponse;
 
 /**
@@ -75,11 +75,9 @@ public class GetObjects extends BaseGrapheneHandler {
     public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
         ArrayList<Serializable> params = new ArrayList<>();
         ArrayList<Serializable> subParams = new ArrayList<>();
-        for(String id : this.ids){
-            subParams.add(id);
-        }
+        subParams.addAll(this.ids);
         params.add(subParams);
-        ApiCall apiCall = new ApiCall(0, RPC.GET_OBJECTS, params, RPC.VERSION, 0);
+        ApiCall apiCall = new ApiCall(0, RPC.CALL_GET_OBJECTS, params, RPC.VERSION, 0);
         websocket.sendText(apiCall.toJsonString());
     }
 
@@ -91,6 +89,9 @@ public class GetObjects extends BaseGrapheneHandler {
         String response = frame.getPayloadText();
         GsonBuilder gsonBuilder = new GsonBuilder();
 
+        gsonBuilder.registerTypeAdapter(BitAssetData.class, new BitAssetData.BitAssetDataDeserializer());
+        gsonBuilder.registerTypeAdapter(AssetFeed.class, new AssetFeed.AssetFeedDeserializer());
+        gsonBuilder.registerTypeAdapter(ReportedAssetFeed.class, new ReportedAssetFeed.ReportedAssetFeedDeserializer());
         gsonBuilder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer());
         gsonBuilder.registerTypeAdapter(Asset.class, new Asset.AssetDeserializer());
         gsonBuilder.registerTypeAdapter(UserAccount.class, new UserAccount.UserAccountFullDeserializer());
@@ -102,7 +103,8 @@ public class GetObjects extends BaseGrapheneHandler {
 
         JsonParser parser = new JsonParser();
         JsonArray resultArray = parser.parse(response).getAsJsonObject().get(WitnessResponse.KEY_RESULT).getAsJsonArray();
-        for(JsonElement element : resultArray){
+        for(int i = 0; i < resultArray.size(); i++){
+            JsonElement element = resultArray.get(i);
             String id = element.getAsJsonObject().get(GrapheneObject.KEY_ID).getAsString();
             GrapheneObject grapheneObject = new GrapheneObject(id);
             switch (grapheneObject.getObjectType()){
@@ -115,10 +117,9 @@ public class GetObjects extends BaseGrapheneHandler {
                     parsedResult.add(account);
                     break;
                 case ASSET_BITASSET_DATA:
-                    Type BitAssetDataType = new TypeToken<WitnessResponse<List<BitAssetData>>>(){}.getType();
-                    WitnessResponse<List<BitAssetData>> witnessResponse = gsonBuilder.create().fromJson(response, BitAssetDataType);
-                    BitAssetData bitAssetData = witnessResponse.result.get(0);
+                    BitAssetData bitAssetData = gson.fromJson(element, BitAssetData.class);
                     parsedResult.add(bitAssetData);
+                    break;
             }
         }
 

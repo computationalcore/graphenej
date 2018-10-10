@@ -1,34 +1,48 @@
 group 'cy.agorise'
-version '0.4.6'
+version '0.4.7-alpha2'
 
 apply plugin: 'com.android.library'
-apply from: 'maven-push.gradle'
-
-
-dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile 'com.neovisionaries:nv-websocket-client:1.30'
-    compile 'org.bitcoinj:bitcoinj-core:0.14.3'
-    compile group: 'com.google.code.gson', name: 'gson', version: '2.8.0'
-    compile group: "org.tukaani", name: "xz", version: "1.6"
-}
-
+//apply from: 'maven-push.gradle'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "25.0.0"
+    buildToolsVersion '28.0.2'
 
     defaultConfig {
-        minSdkVersion 9
+        minSdkVersion 14
         targetSdkVersion 24
-        versionCode 9
-        versionName "0.4.6"
+        versionCode 12
+        versionName "0.4.7-alpha3"
         vectorDrawables.useSupportLibrary = true
     }
     buildTypes {
+        debug{}
+        preRelease{}
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
+    defaultConfig {
+        multiDexEnabled true
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+}
+
+dependencies {
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    implementation 'com.neovisionaries:nv-websocket-client:1.30'
+    implementation 'org.bitcoinj:bitcoinj-core:0.14.3'
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.0'
+    implementation group: "org.tukaani", name: "xz", version: "1.6"
+
+    androidTestImplementation 'com.android.support:support-annotations:27.1.1'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test:rules:1.0.2'
+
+    //  Rx dependencies
+    api 'io.reactivex.rxjava2:rxandroid:2.0.2'
+    api 'io.reactivex.rxjava2:rxjava:2.1.16'
+    api 'com.jakewharton.rxrelay2:rxrelay:2.0.0'
+    api 'com.squareup.okhttp3:okhttp:3.5.0'
 }

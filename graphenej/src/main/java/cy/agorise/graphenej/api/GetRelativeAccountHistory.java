@@ -18,9 +18,9 @@ import cy.agorise.graphenej.UserAccount;
 import cy.agorise.graphenej.interfaces.WitnessResponseListener;
 import cy.agorise.graphenej.models.ApiCall;
 import cy.agorise.graphenej.models.BaseResponse;
-import cy.agorise.graphenej.models.HistoricalTransfer;
+import cy.agorise.graphenej.models.OperationHistory;
 import cy.agorise.graphenej.models.WitnessResponse;
-import cy.agorise.graphenej.objects.Memo;
+import cy.agorise.graphenej.Memo;
 import cy.agorise.graphenej.operations.TransferOperation;
 
 /**
@@ -158,12 +158,13 @@ public class GetRelativeAccountHistory extends BaseGrapheneHandler {
 
                 sendRelativeAccountHistoryRequest();
             }else if(baseResponse.id >= GET_HISTORY_DATA){
-                Type RelativeAccountHistoryResponse = new TypeToken<WitnessResponse<List<HistoricalTransfer>>>(){}.getType();
+                Type RelativeAccountHistoryResponse = new TypeToken<WitnessResponse<List<OperationHistory>>>(){}.getType();
                 GsonBuilder gsonBuilder = new GsonBuilder();
+                gsonBuilder.registerTypeAdapter(OperationHistory.class, new OperationHistory.OperationHistoryDeserializer());
                 gsonBuilder.registerTypeAdapter(TransferOperation.class, new TransferOperation.TransferDeserializer());
                 gsonBuilder.registerTypeAdapter(AssetAmount.class, new AssetAmount.AssetAmountDeserializer());
                 gsonBuilder.registerTypeAdapter(Memo.class, new Memo.MemoDeserializer());
-                WitnessResponse<List<HistoricalTransfer>> transfersResponse = gsonBuilder.create().fromJson(response, RelativeAccountHistoryResponse);
+                WitnessResponse<List<OperationHistory>> transfersResponse = gsonBuilder.create().fromJson(response, RelativeAccountHistoryResponse);
                 mListener.onSuccess(transfersResponse);
             }
         }

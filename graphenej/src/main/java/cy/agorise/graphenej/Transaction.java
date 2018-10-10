@@ -100,11 +100,19 @@ public class Transaction implements ByteSerializable, JsonSerializable {
     }
 
     /**
-     * Updates the block data
+     * Block data getter
      * @param blockData New block data
      */
     public void setBlockData(BlockData blockData){
         this.blockData = blockData;
+    }
+
+    /**
+     * Block data setter
+     * @return BlockData instance
+     */
+    public BlockData getBlockData(){
+        return this.blockData;
     }
 
     /**

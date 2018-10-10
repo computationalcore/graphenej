@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="cy.agorise.graphenej"
-          android:versionCode="9"
-          android:versionName="0.4.6" >
-    <uses-sdk android:minSdkVersion="1" />
-    <application/>
+    package="cy.agorise.graphenej">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application>
+        <service
+            android:name=".api.android.NetworkService"
+            android:enabled="true"
+            android:exported="true"/>
+    </application>
+
 </manifest>
